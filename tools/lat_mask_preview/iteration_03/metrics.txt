@@ -1,0 +1,9 @@
+﻿official opaque=36911 left=18457 right=18454 outside=9524 (25.8%) bbox=368,416-655,659
+v2 opaque=31396 left=15741 right=15655 outside=0 (0.0%) bbox=362,419-662,643
+candidate opaque=26580 left=13288 right=13292 outside=55 (0.2%) bbox=370,417-653,626
+teres_major neighbor=5450 officialOverlap=38.8% ofNeighbor 5.7% ofOfficial v2Overlap=45.5% ofNeighbor candidateOverlap=46.3% ofNeighbor 9.5% ofCandidate
+trapezius_lower neighbor=5780 officialOverlap=12.9% ofNeighbor 2.0% ofOfficial v2Overlap=19.2% ofNeighbor candidateOverlap=2.9% ofNeighbor 0.6% ofCandidate
+trapezius_middle neighbor=11844 officialOverlap=0.0% ofNeighbor 0.0% ofOfficial v2Overlap=4.1% ofNeighbor candidateOverlap=1.1% ofNeighbor 0.5% ofCandidate
+trapezius_upper neighbor=17958 officialOverlap=0.0% ofNeighbor 0.0% ofOfficial v2Overlap=0.0% ofNeighbor candidateOverlap=0.0% ofNeighbor 0.0% ofCandidate
+erector_spinae neighbor=2642 officialOverlap=10.4% ofNeighbor 0.7% ofOfficial v2Overlap=46.4% ofNeighbor candidateOverlap=6.7% ofNeighbor 0.7% ofCandidate
+gluteus_medius neighbor=7005 officialOverlap=13.1% ofNeighbor 2.5% ofOfficial v2Overlap=0.0% ofNeighbor candidateOverlap=0.0% ofNeighbor 0.0% ofCandidate

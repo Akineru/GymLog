@@ -1,0 +1,738 @@
+{
+  "datasetRoot": "D:\\exercises-dataset-zh-master\\exercises-dataset-zh-master",
+  "generatedAt": "2026-10-18T14:24:26.600337+08:00",
+  "recordCount": 1324,
+  "idRange": [
+    "0001",
+    "0859"
+  ],
+  "uniqueIds": 1324,
+  "uniqueNames": 1318,
+  "duplicateIds": [],
+  "duplicateExactNames": [
+    "barbell seated calf raise",
+    "ez barbell spider curl",
+    "lever chest press",
+    "push-up (on stability ball)",
+    "self assisted inverse leg curl",
+    "smith reverse calf raises"
+  ],
+  "duplicateNormalizedNames": [
+    "barbellseatedcalfraise",
+    "dumbbellclosegrippress",
+    "dumbbellstandingonearmcurloverinclinebench",
+    "ezbarbellspidercurl",
+    "leverchestpress",
+    "pushuponstabilityball",
+    "selfassistedinverselegcurl",
+    "smithreversecalfraises"
+  ],
+  "duplicateMediaIds": [],
+  "missingRequiredFields": {},
+  "languageCounts": {
+    "en": 1324,
+    "it": 1324,
+    "tr": 1324,
+    "es": 1324,
+    "ru": 1324,
+    "zh": 1324,
+    "hi": 1324,
+    "pl": 1324,
+    "ko": 1324,
+    "fr": 1324
+  },
+  "stepLanguageCounts": {
+    "en": 1324,
+    "it": 1324,
+    "tr": 1324,
+    "es": 1324,
+    "ru": 1324,
+    "zh": 1324,
+    "hi": 1324,
+    "pl": 1324,
+    "ko": 1324,
+    "fr": 1324
+  },
+  "missingLanguages": [],
+  "missingStepLanguages": [],
+  "emptyInstructions": {},
+  "emptyStepArrays": {},
+  "instructionStepKeyMismatch": [],
+  "media": {
+    "imageFiles": 1324,
+    "gifFiles": 1324,
+    "imageBytes": 8875057,
+    "gifBytes": 128741397,
+    "totalBytes": 137616454,
+    "imageDimensions": {
+      "180x180": 1324
+    },
+    "gifDimensions": {
+      "180x180": 1324
+    },
+    "gifFrames": {
+      "min": 12,
+      "max": 54,
+      "avg": 12.99,
+      "distribution": {
+        "12": 1206,
+        "18": 48,
+        "24": 57,
+        "30": 5,
+        "36": 4,
+        "47": 2,
+        "48": 1,
+        "54": 1
+      }
+    },
+    "imageSizeBytes": {
+      "min": 3324,
+      "max": 11118,
+      "avg": 6703.2
+    },
+    "gifSizeBytes": {
+      "min": 46144,
+      "max": 232578,
+      "avg": 97236.7
+    },
+    "imageCorrupt": [],
+    "gifCorrupt": [],
+    "duplicateImageHashes": [],
+    "duplicateGifHashes": []
+  },
+  "references": {
+    "imageReferenced": 1324,
+    "gifReferenced": 1324,
+    "missingImageRefs": [],
+    "missingGifRefs": [],
+    "imageNameMismatch": [],
+    "gifNameMismatch": [],
+    "unreferencedImages": [],
+    "unreferencedGifs": [],
+    "missingImageId": [],
+    "missingGifId": []
+  },
+  "categories": {
+    "bodyPart": [
+      [
+        "upper arms",
+        292
+      ],
+      [
+        "upper legs",
+        227
+      ],
+      [
+        "back",
+        203
+      ],
+      [
+        "waist",
+        169
+      ],
+      [
+        "chest",
+        163
+      ],
+      [
+        "shoulders",
+        143
+      ],
+      [
+        "lower legs",
+        59
+      ],
+      [
+        "lower arms",
+        37
+      ],
+      [
+        "cardio",
+        29
+      ],
+      [
+        "neck",
+        2
+      ]
+    ],
+    "category": [
+      [
+        "upper arms",
+        292
+      ],
+      [
+        "upper legs",
+        227
+      ],
+      [
+        "back",
+        203
+      ],
+      [
+        "waist",
+        169
+      ],
+      [
+        "chest",
+        163
+      ],
+      [
+        "shoulders",
+        143
+      ],
+      [
+        "lower legs",
+        59
+      ],
+      [
+        "lower arms",
+        37
+      ],
+      [
+        "cardio",
+        29
+      ],
+      [
+        "neck",
+        2
+      ]
+    ],
+    "equipment": [
+      [
+        "body weight",
+        325
+      ],
+      [
+        "dumbbell",
+        294
+      ],
+      [
+        "cable",
+        157
+      ],
+      [
+        "barbell",
+        154
+      ],
+      [
+        "leverage machine",
+        81
+      ],
+      [
+        "band",
+        54
+      ],
+      [
+        "smith machine",
+        48
+      ],
+      [
+        "kettlebell",
+        41
+      ],
+      [
+        "weighted",
+        36
+      ],
+      [
+        "stability ball",
+        28
+      ],
+      [
+        "ez barbell",
+        23
+      ],
+      [
+        "assisted",
+        15
+      ],
+      [
+        "sled machine",
+        15
+      ],
+      [
+        "medicine ball",
+        13
+      ],
+      [
+        "rope",
+        10
+      ],
+      [
+        "roller",
+        8
+      ],
+      [
+        "resistance band",
+        7
+      ],
+      [
+        "bosu ball",
+        3
+      ],
+      [
+        "olympic barbell",
+        2
+      ],
+      [
+        "wheel roller",
+        2
+      ],
+      [
+        "upper body ergometer",
+        1
+      ],
+      [
+        "skierg machine",
+        1
+      ],
+      [
+        "hammer",
+        1
+      ],
+      [
+        "stationary bike",
+        1
+      ],
+      [
+        "tire",
+        1
+      ],
+      [
+        "trap bar",
+        1
+      ],
+      [
+        "elliptical machine",
+        1
+      ],
+      [
+        "stepmill machine",
+        1
+      ]
+    ],
+    "muscleGroup": [
+      [
+        "shoulders",
+        191
+      ],
+      [
+        "forearms",
+        165
+      ],
+      [
+        "biceps",
+        164
+      ],
+      [
+        "triceps",
+        161
+      ],
+      [
+        "hamstrings",
+        127
+      ],
+      [
+        "quadriceps",
+        110
+      ],
+      [
+        "glutes",
+        71
+      ],
+      [
+        "obliques",
+        67
+      ],
+      [
+        "hip flexors",
+        66
+      ],
+      [
+        "chest",
+        53
+      ],
+      [
+        "trapezius",
+        36
+      ],
+      [
+        "traps",
+        32
+      ],
+      [
+        "deltoids",
+        24
+      ],
+      [
+        "calves",
+        11
+      ],
+      [
+        "ankles",
+        11
+      ],
+      [
+        "core",
+        7
+      ],
+      [
+        "lower back",
+        6
+      ],
+      [
+        "rotator cuff",
+        4
+      ],
+      [
+        "soleus",
+        4
+      ],
+      [
+        "rhomboids",
+        2
+      ],
+      [
+        "wrist flexors",
+        2
+      ],
+      [
+        "latissimus dorsi",
+        2
+      ],
+      [
+        "abdominals",
+        2
+      ],
+      [
+        "ankle stabilizers",
+        1
+      ],
+      [
+        "upper back",
+        1
+      ],
+      [
+        "wrist extensors",
+        1
+      ],
+      [
+        "lats",
+        1
+      ],
+      [
+        "wrists",
+        1
+      ],
+      [
+        "hands",
+        1
+      ]
+    ],
+    "target": [
+      [
+        "abs",
+        169
+      ],
+      [
+        "pectorals",
+        158
+      ],
+      [
+        "biceps",
+        151
+      ],
+      [
+        "glutes",
+        144
+      ],
+      [
+        "delts",
+        143
+      ],
+      [
+        "triceps",
+        141
+      ],
+      [
+        "upper back",
+        88
+      ],
+      [
+        "lats",
+        81
+      ],
+      [
+        "calves",
+        59
+      ],
+      [
+        "quads",
+        44
+      ],
+      [
+        "forearms",
+        37
+      ],
+      [
+        "cardiovascular system",
+        29
+      ],
+      [
+        "hamstrings",
+        28
+      ],
+      [
+        "spine",
+        19
+      ],
+      [
+        "traps",
+        15
+      ],
+      [
+        "adductors",
+        6
+      ],
+      [
+        "serratus anterior",
+        5
+      ],
+      [
+        "abductors",
+        5
+      ],
+      [
+        "levator scapulae",
+        2
+      ]
+    ],
+    "secondaryMuscles": [
+      [
+        "shoulders",
+        400
+      ],
+      [
+        "hamstrings",
+        289
+      ],
+      [
+        "forearms",
+        277
+      ],
+      [
+        "triceps",
+        268
+      ],
+      [
+        "biceps",
+        194
+      ],
+      [
+        "quadriceps",
+        161
+      ],
+      [
+        "calves",
+        147
+      ],
+      [
+        "glutes",
+        136
+      ],
+      [
+        "core",
+        94
+      ],
+      [
+        "chest",
+        91
+      ],
+      [
+        "hip flexors",
+        77
+      ],
+      [
+        "obliques",
+        72
+      ],
+      [
+        "lower back",
+        71
+      ],
+      [
+        "rhomboids",
+        54
+      ],
+      [
+        "trapezius",
+        47
+      ],
+      [
+        "upper back",
+        37
+      ],
+      [
+        "traps",
+        33
+      ],
+      [
+        "deltoids",
+        28
+      ],
+      [
+        "rear deltoids",
+        20
+      ],
+      [
+        "brachialis",
+        14
+      ],
+      [
+        "back",
+        11
+      ],
+      [
+        "ankles",
+        11
+      ],
+      [
+        "feet",
+        8
+      ],
+      [
+        "rotator cuff",
+        6
+      ],
+      [
+        "latissimus dorsi",
+        5
+      ],
+      [
+        "ankle stabilizers",
+        4
+      ],
+      [
+        "soleus",
+        4
+      ],
+      [
+        "wrists",
+        3
+      ],
+      [
+        "upper chest",
+        3
+      ],
+      [
+        "wrist flexors",
+        2
+      ],
+      [
+        "wrist extensors",
+        2
+      ],
+      [
+        "abdominals",
+        2
+      ],
+      [
+        "sternocleidomastoid",
+        2
+      ],
+      [
+        "hands",
+        2
+      ],
+      [
+        "groin",
+        1
+      ],
+      [
+        "grip muscles",
+        1
+      ],
+      [
+        "lower abs",
+        1
+      ],
+      [
+        "lats",
+        1
+      ],
+      [
+        "inner thighs",
+        1
+      ],
+      [
+        "shins",
+        1
+      ]
+    ]
+  },
+  "nameZh": {
+    "mappingType": "dict",
+    "keyType": "English exercise name",
+    "count": 1318,
+    "uniqueEnglishNames": 1318,
+    "missingNames": [],
+    "extraNames": [],
+    "recordsWithoutTranslation": [],
+    "recordsWithDuplicateEnglishName": [
+      "0088",
+      "1371",
+      "0454",
+      "1628",
+      "0577",
+      "0576",
+      "0655",
+      "0656",
+      "0697",
+      "1766",
+      "0763",
+      "1394"
+    ],
+    "duplicateValues": [
+      "哑铃 窄距 推举"
+    ],
+    "sample": [
+      [
+        "3/4 sit-up",
+        "3/4 仰卧起坐"
+      ],
+      [
+        "45° side bend",
+        "45° 体侧屈"
+      ],
+      [
+        "air bike",
+        "空中蹬车"
+      ],
+      [
+        "all fours squad stretch",
+        "四肢 s股四头肌 拉伸"
+      ],
+      [
+        "alternate heel touchers",
+        "交替 触踵"
+      ],
+      [
+        "alternate lateral pulldown",
+        "交替 侧向下拉"
+      ],
+      [
+        "ankle circles",
+        "脚踝 绕环"
+      ],
+      [
+        "archer pull up",
+        "弓箭手 引体向上"
+      ]
+    ]
+  },
+  "createdAt": {
+    "min": "2026-03-18T12:31:32.854798+00:00",
+    "max": "2026-03-18T12:31:32.906631+00:00"
+  },
+  "attributionPresent": 1324
+}

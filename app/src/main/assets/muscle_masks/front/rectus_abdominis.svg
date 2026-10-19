@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536">
+<title>front mask: rectus_abdominis</title>
+<path d="M 448,486 C 460,477 478,477 495,486 L 497,526 C 483,536 463,536 448,526 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 529,486 C 545,477 563,477 576,486 L 576,526 C 561,536 541,536 527,526 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 446,533 C 461,529 481,531 497,539 L 497,580 C 481,588 461,588 446,579 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 527,539 C 543,531 563,529 578,533 L 578,579 C 563,588 543,588 527,580 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 446,588 C 462,583 482,585 497,593 L 497,635 C 480,643 460,642 445,633 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 527,593 C 542,585 562,583 579,588 L 580,633 C 565,642 545,643 527,635 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 446,642 C 462,637 482,638 497,646 L 496,689 C 480,700 462,698 446,687 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 528,646 C 543,638 563,637 579,642 L 579,687 C 563,698 545,700 528,689 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 451,697 C 465,692 481,695 496,702 L 494,737 C 481,749 466,746 454,735 Z" fill="#ffffff" fill-rule="nonzero"/>
+<path d="M 530,702 C 545,695 561,692 575,697 L 572,735 C 560,746 545,749 532,737 Z" fill="#ffffff" fill-rule="nonzero"/>
+</svg>

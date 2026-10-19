@@ -1,0 +1,2 @@
+﻿muscle_front_base.png 1024x1536 pixelFormat=Format32bppArgb alpha>=16=392235 partialAlpha=19743 note=alpha<16 is the transparent background of this illustration, including gaps between limbs.
+muscle_back_base.png 1024x1536 pixelFormat=Format32bppArgb alpha>=16=386562 partialAlpha=20789 note=alpha<16 is the transparent background of this illustration, including gaps between limbs.

@@ -1,0 +1,34 @@
+﻿id,nameZh,nameEn,frontFile,backFile,frontStatus,backStatus,frontPixels,backPixels,frontBbox,backBbox,parent,children,assetAlias,reviewStatus,reviewNotes
+pectoralis_major,胸大肌,Pectoralis major,pectoralis_major.png,pectoralis_major.png,drawn,empty_on_this_side,37584,0,"[359, 331, 665, 485]",,,,,pending_human_review,边界可接受；与三角肌前束约 9.6% 邻接重叠。
+deltoid_anterior,三角肌前束,Anterior deltoid,deltoid_anterior.png,deltoid_anterior.png,drawn,empty_on_this_side,18299,0,"[290, 329, 734, 455]",,,,,pending_human_review,与三角肌中束约 24.9% 重叠（中束 61% 落在前束内）。
+deltoid_lateral,三角肌中束,Middle deltoid,deltoid_middle.png,deltoid_middle.png,drawn,empty_on_this_side,7612,0,"[279, 366, 745, 474]",,,,deltoid_middle,pending_human_review,应用 ID 使用 deltoid_middle.png；越界约 24.7%，大部分区域与前束重叠。
+deltoid_posterior,三角肌后束,Posterior deltoid,deltoid_posterior.png,deltoid_posterior.png,empty_on_this_side,drawn,0,15156,,"[291, 326, 733, 451]",,,,pending_human_review,越界 0；与肱三头肌约 4.9% 重叠。
+trapezius_upper,斜方肌上部,Upper trapezius,trapezius_upper.png,trapezius_upper.png,empty_on_this_side,drawn,0,18598,,"[352, 194, 672, 376]",,,,pending_human_review,越界约 27.2%，外缘伸到肩外侧透明区。
+trapezius_middle,斜方肌中部,Middle trapezius,trapezius_middle.png,trapezius_middle.png,empty_on_this_side,drawn,0,12299,,"[399, 365, 625, 462]",,,,pending_human_review,与斜方肌下部约 30.2% 重叠。
+trapezius_lower,斜方肌下部,Lower trapezius,trapezius_lower.png,trapezius_lower.png,empty_on_this_side,drawn,0,6247,,"[469, 390, 555, 548]",,,,pending_human_review,与斜方肌中部约 30.2% 重叠，且与竖脊肌约 24.9% 重叠。
+latissimus_dorsi,背阔肌,Latissimus dorsi,latissimus_dorsi.png,latissimus_dorsi.png,empty_on_this_side,drawn,0,25010,,"[374, 412, 651, 628]",,,,pending_human_review,越界约 25.8%；大圆肌约 38.8% 落在背阔肌遮罩内。
+teres_major,大圆肌,Teres major,teres_major.png,teres_major.png,empty_on_this_side,drawn,0,5740,,"[382, 388, 642, 466]",,,,pending_human_review,自身越界 0；约 38.8% 落在背阔肌遮罩内。
+rhomboids,菱形肌,Rhomboids,rhomboids.png,rhomboids.png,no_independent_mask,no_independent_mask,0,0,,,,,,pending_human_review,现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。
+erector_spinae,竖脊肌,Erector spinae,erector_spinae.png,erector_spinae.png,empty_on_this_side,drawn,0,3240,,"[475, 430, 549, 649]",,,,pending_human_review,下段覆盖不足，存在 2 个碎片；与下斜方约 24.9% 重叠。
+biceps_brachii,肱二头肌,Biceps brachii,biceps_brachii.png,biceps_brachii.png,drawn,empty_on_this_side,13923,0,"[296, 425, 728, 580]",,,,,pending_human_review,边界可接受；与三角肌前束约 9.3% 邻接重叠。
+brachialis,肱肌,Brachialis,brachialis.png,brachialis.png,no_independent_mask,no_independent_mask,0,0,,,,,,pending_human_review,现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。
+triceps_brachii,肱三头肌,Triceps brachii,triceps_brachii.png,triceps_brachii.png,empty_on_this_side,drawn,0,10772,,"[302, 425, 722, 570]",,,,pending_human_review,越界约 11.8%。
+brachioradialis,肱桡肌,Brachioradialis,brachioradialis.png,brachioradialis.png,drawn,empty_on_this_side,11645,0,"[263, 566, 761, 733]",,,,,pending_human_review,正面伸肌群 100% 落在肱桡肌内；屈肌群约 25.7% 被覆盖。
+forearm_flexors,前臂屈肌群,Forearm flexors,forearm_flexors.png,forearm_flexors.png,drawn,empty_on_this_side,7904,0,"[251, 690, 773, 804]",,,,,pending_human_review,越界约 21.1%。
+forearm_extensors,前臂伸肌群,Forearm extensors,forearm_extensors.png,forearm_extensors.png,drawn,drawn,5503,7640,"[276, 596, 748, 701]","[276, 588, 748, 725]",,,,pending_human_review,正面 100% 落在肱桡肌内；背面越界约 12.0%。
+rectus_abdominis,腹直肌,Rectus abdominis,rectus_abdominis.png,rectus_abdominis.png,drawn,empty_on_this_side,24830,0,"[445, 479, 580, 745]",,,,,pending_human_review,边界可接受；分节色块，不是纤维描边。
+external_oblique,腹外斜肌,External oblique,external_oblique.png,external_oblique.png,drawn,empty_on_this_side,15419,0,"[380, 490, 644, 699]",,,,,pending_human_review,越界约 26.7%，下缘提前结束。
+internal_oblique,腹内斜肌,Internal oblique,internal_oblique.png,internal_oblique.png,no_independent_mask,no_independent_mask,0,0,,,,,,pending_human_review,现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。
+transversus_abdominis,腹横肌,Transversus abdominis,transversus_abdominis.png,transversus_abdominis.png,no_independent_mask,no_independent_mask,0,0,,,,,,pending_human_review,现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。
+gluteus_maximus,臀大肌,Gluteus maximus,gluteus_maximus.png,gluteus_maximus.png,empty_on_this_side,drawn,0,31415,,"[374, 676, 650, 828]",,,,pending_human_review,边界可接受；与臀中肌约 5.8% 重叠。
+gluteus_medius,臀中肌,Gluteus medius,gluteus_medius.png,gluteus_medius.png,empty_on_this_side,drawn,0,7322,,"[391, 633, 633, 706]",,,,pending_human_review,约 25.6% 落在臀大肌内，需人工判断是邻接还是过宽。
+quadriceps,股四头肌,Quadriceps femoris,quadriceps.png,quadriceps.png,drawn,empty_on_this_side,57026,0,"[359, 782, 665, 1060]",,,rectus_femoris;vastus_lateralis;vastus_medialis,,pending_human_review,合并遮罩；与缝匠肌约 82.4%、内收肌约 48.9% 重叠；自身越界约 1.7%。
+rectus_femoris,股直肌,Rectus femoris,rectus_femoris.png,rectus_femoris.png,drawn,empty_on_this_side,24798,0,"[437, 782, 587, 1051]",,quadriceps,,,pending_human_review,与股内侧肌约 54.3%、缝匠肌约 49.6%、内收肌约 40.6% 重叠。
+vastus_lateralis,股外侧肌,Vastus lateralis,vastus_lateralis.png,vastus_lateralis.png,drawn,empty_on_this_side,30091,0,"[359, 795, 665, 1038]",,quadriceps,,,pending_human_review,边界可接受；100% 位于股四头肌合成遮罩内，属设计关系。
+vastus_medialis,股内侧肌,Vastus medialis,vastus_medialis.png,vastus_medialis.png,drawn,empty_on_this_side,5852,0,"[456, 962, 568, 1060]",,quadriceps,,,pending_human_review,越界约 16.6%；与股直肌约 54.3% 重叠。
+hamstrings,腘绳肌,Hamstrings,hamstrings.png,hamstrings.png,empty_on_this_side,drawn,0,30365,,"[403, 831, 621, 1085]",,,,pending_human_review,越界约 4.8%，轮廓需人工确认。
+adductors,内收肌群,Hip adductors,adductors.png,adductors.png,drawn,empty_on_this_side,10738,0,"[480, 795, 544, 1025]",,,,,pending_human_review,越界约 30.3%；约 48.9% 落在股四头肌合成遮罩内。
+sartorius,缝匠肌,Sartorius,sartorius.png,sartorius.png,drawn,empty_on_this_side,8415,0,"[418, 793, 606, 1006]",,,,,pending_human_review,约 82.4% 落在股四头肌合成遮罩内；正面有独立遮罩，背面为空。
+gastrocnemius,腓肠肌,Gastrocnemius,gastrocnemius.png,gastrocnemius.png,empty_on_this_side,drawn,0,11539,,"[401, 1093, 623, 1246]",,,,pending_human_review,边界可接受；与比目鱼肌约 0.4% 重叠。
+soleus,比目鱼肌,Soleus,soleus.png,soleus.png,empty_on_this_side,drawn,0,5643,,"[412, 1237, 612, 1362]",,,,pending_human_review,轮廓需人工确认；与腓肠肌几乎不重叠。
+tibialis_anterior,胫骨前肌,Tibialis anterior,tibialis_anterior.png,tibialis_anterior.png,drawn,empty_on_this_side,8102,0,"[407, 1094, 617, 1265]",,,,,pending_human_review,轮廓需人工确认；越界 0。

@@ -1,0 +1,11 @@
+﻿dataset_body_part,mapped_BodyPart,count,status
+back,BACK,203,mapped
+cardio,OTHER,29,mapped
+chest,CHEST,163,mapped
+lower arms,ARMS,37,mapped
+lower legs,LEGS,59,mapped
+neck,OTHER,2,mapped
+shoulders,SHOULDERS,143,mapped
+upper arms,ARMS,292,mapped
+upper legs,LEGS,227,mapped
+waist,ABS,169,mapped

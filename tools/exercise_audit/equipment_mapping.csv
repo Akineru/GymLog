@@ -1,0 +1,29 @@
+﻿dataset_equipment,mapped_EquipmentType,count,status
+assisted,OTHER,15,mapped
+band,FREE_WEIGHT,54,mapped
+barbell,FREE_WEIGHT,154,mapped
+body weight,FREE_WEIGHT,325,mapped
+bosu ball,OTHER,3,mapped
+cable,MACHINE,157,mapped
+dumbbell,FREE_WEIGHT,294,mapped
+elliptical machine,MACHINE,1,mapped
+ez barbell,FREE_WEIGHT,23,mapped
+hammer,OTHER,1,mapped
+kettlebell,FREE_WEIGHT,41,mapped
+leverage machine,MACHINE,81,mapped
+medicine ball,FREE_WEIGHT,13,mapped
+olympic barbell,FREE_WEIGHT,2,mapped
+resistance band,FREE_WEIGHT,7,mapped
+roller,OTHER,8,mapped
+rope,FREE_WEIGHT,10,mapped
+skierg machine,MACHINE,1,mapped
+sled machine,MACHINE,15,mapped
+smith machine,MACHINE,48,mapped
+stability ball,OTHER,28,mapped
+stationary bike,MACHINE,1,mapped
+stepmill machine,MACHINE,1,mapped
+tire,,1,unmapped
+trap bar,FREE_WEIGHT,1,mapped
+upper body ergometer,MACHINE,1,mapped
+weighted,FREE_WEIGHT,36,mapped
+wheel roller,OTHER,2,mapped

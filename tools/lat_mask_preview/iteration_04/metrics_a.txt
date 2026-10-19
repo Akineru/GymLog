@@ -1,0 +1,9 @@
+﻿size=1024x1536
+iter03 opaque=26580 left=13288 right=13292 outside=55 (0.2%) bbox=370,417-653,626
+iter04 opaque=26393 left=13191 right=13202 outside=126 (0.5%) bbox=374,412-650,649
+teres_major iter03=46.3% ofNeighbor iter04=45.2% ofNeighbor 9.3% ofCandidate
+trapezius_lower iter03=2.9% ofNeighbor iter04=0.9% ofNeighbor 0.2% ofCandidate
+trapezius_middle iter03=1.1% ofNeighbor iter04=0.0% ofNeighbor 0.0% ofCandidate
+trapezius_upper iter03=0.0% ofNeighbor iter04=0.0% ofNeighbor 0.0% ofCandidate
+erector_spinae iter03=6.7% ofNeighbor iter04=1.2% ofNeighbor 0.1% ofCandidate
+gluteus_medius iter03=0.0% ofNeighbor iter04=4.5% ofNeighbor 1.2% ofCandidate

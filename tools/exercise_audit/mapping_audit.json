@@ -1,0 +1,1758 @@
+{
+  "presetCount": 89,
+  "presetMatchStatus": {
+    "UNIQUE": 23,
+    "NO_MATCH": 65,
+    "AMBIGUOUS": 1
+  },
+  "presetMatches": [
+    {
+      "id": "preset_barbell_bench_press",
+      "key": "barbell_bench_press",
+      "nameZh": "杠铃卧推",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "bench press",
+        "barbell bench",
+        "bench"
+      ],
+      "match": "0025",
+      "status": "UNIQUE",
+      "evidence": [
+        "key"
+      ]
+    },
+    {
+      "id": "preset_dumbbell_bench_press",
+      "key": "dumbbell_bench_press",
+      "nameZh": "哑铃卧推",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "dumbbell bench",
+        "db bench"
+      ],
+      "match": "0289",
+      "status": "UNIQUE",
+      "evidence": [
+        "key"
+      ]
+    },
+    {
+      "id": "preset_incline_bench_press",
+      "key": "incline_bench_press",
+      "nameZh": "上斜杠铃卧推",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "incline bench",
+        "incline press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_decline_bench_press",
+      "key": "decline_bench_press",
+      "nameZh": "下斜卧推",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "decline bench",
+        "decline press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_dumbbell_fly",
+      "key": "dumbbell_fly",
+      "nameZh": "哑铃飞鸟",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "fly",
+        "pec fly",
+        "dumbbell fly"
+      ],
+      "match": "0308",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:dumbbell fly",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_cable_crossover",
+      "key": "cable_crossover",
+      "nameZh": "绳索夹胸",
+      "bodyPart": "CHEST",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "cable fly",
+        "crossover",
+        "cable crossover"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_chest_press_machine",
+      "key": "chest_press_machine",
+      "nameZh": "器械推胸",
+      "bodyPart": "CHEST",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "chest press",
+        "machine chest press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_pec_deck",
+      "key": "pec_deck",
+      "nameZh": "蝴蝶机夹胸",
+      "bodyPart": "CHEST",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "pec deck",
+        "pec fly machine"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_push_up",
+      "key": "push_up",
+      "nameZh": "俯卧撑",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "push up",
+        "pushup",
+        "press up"
+      ],
+      "match": "0662",
+      "status": "UNIQUE",
+      "evidence": [
+        "zh_name",
+        "alias:push up",
+        "alias:pushup",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_overhead_press",
+      "key": "overhead_press",
+      "nameZh": "杠铃推举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "ohp",
+        "overhead press",
+        "military press",
+        "shoulder press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_dumbbell_shoulder_press",
+      "key": "dumbbell_shoulder_press",
+      "nameZh": "哑铃推举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "dumbbell press",
+        "db press",
+        "shoulder press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_lateral_raise",
+      "key": "lateral_raise",
+      "nameZh": "侧平举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "lateral raise",
+        "side raise"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_front_raise",
+      "key": "front_raise",
+      "nameZh": "前平举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "front raise"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_rear_delt_fly",
+      "key": "rear_delt_fly",
+      "nameZh": "反向飞鸟",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "reverse fly",
+        "rear delt",
+        "rear delt fly"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_face_pull",
+      "key": "face_pull",
+      "nameZh": "面拉",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "face pull",
+        "facepull"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_arnold_press",
+      "key": "arnold_press",
+      "nameZh": "阿诺德推举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "arnold press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_shoulder_press_machine",
+      "key": "shoulder_press_machine",
+      "nameZh": "器械推肩",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "machine shoulder press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_pull_up",
+      "key": "pull_up",
+      "nameZh": "引体向上",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "pull up",
+        "pullup",
+        "chin up"
+      ],
+      "match": [
+        "0652",
+        "1326"
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": {
+        "0652": [
+          "zh_name",
+          "alias:pull up",
+          "alias:pullup",
+          "key"
+        ],
+        "1326": [
+          "alias:chin up"
+        ]
+      }
+    },
+    {
+      "id": "preset_lat_pulldown",
+      "key": "lat_pulldown",
+      "nameZh": "高位下拉",
+      "bodyPart": "BACK",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "lat pulldown",
+        "pulldown"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_barbell_row",
+      "key": "barbell_row",
+      "nameZh": "杠铃划船",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "barbell row",
+        "bent over row"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_dumbbell_row",
+      "key": "dumbbell_row",
+      "nameZh": "哑铃划船",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "dumbbell row",
+        "db row",
+        "one arm row"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_seated_row",
+      "key": "seated_row",
+      "nameZh": "坐姿划船",
+      "bodyPart": "BACK",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "seated row",
+        "cable row"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_deadlift",
+      "key": "deadlift",
+      "nameZh": "硬拉",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "deadlift",
+        "conventional deadlift",
+        "dl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_t_bar_row",
+      "key": "t_bar_row",
+      "nameZh": "T杠划船",
+      "bodyPart": "BACK",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "t bar row",
+        "t-bar row"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_inverted_row",
+      "key": "inverted_row",
+      "nameZh": "反向划船",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "inverted row",
+        "australian pull up"
+      ],
+      "match": "0499",
+      "status": "UNIQUE",
+      "evidence": [
+        "zh_name",
+        "alias:inverted row",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_barbell_squat",
+      "key": "barbell_squat",
+      "nameZh": "杠铃深蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "squat",
+        "barbell squat",
+        "back squat"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_leg_press",
+      "key": "leg_press",
+      "nameZh": "腿举",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "leg press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_lunge",
+      "key": "lunge",
+      "nameZh": "箭步蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "lunge",
+        "walking lunge"
+      ],
+      "match": "1460",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:walking lunge"
+      ]
+    },
+    {
+      "id": "preset_romanian_deadlift",
+      "key": "romanian_deadlift",
+      "nameZh": "罗马尼亚硬拉",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "rdl",
+        "romanian deadlift"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_leg_extension",
+      "key": "leg_extension",
+      "nameZh": "腿屈伸",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "leg extension"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_leg_curl",
+      "key": "leg_curl",
+      "nameZh": "腿弯举",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "leg curl",
+        "hamstring curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_calf_raise",
+      "key": "calf_raise",
+      "nameZh": "提踵",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "calf raise",
+        "standing calf raise"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_hip_thrust",
+      "key": "hip_thrust",
+      "nameZh": "臀桥",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "hip thrust",
+        "glute bridge",
+        "glute bridge hip thrust"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_bulgarian_split_squat",
+      "key": "bulgarian_split_squat",
+      "nameZh": "保加利亚分腿蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "bulgarian split squat",
+        "split squat"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_hip_abduction",
+      "key": "hip_abduction",
+      "nameZh": "髋外展",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "hip abduction",
+        "abductor"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_barbell_curl",
+      "key": "barbell_curl",
+      "nameZh": "杠铃弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "barbell curl",
+        "bicep curl"
+      ],
+      "match": "0031",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:barbell curl",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_dumbbell_curl",
+      "key": "dumbbell_curl",
+      "nameZh": "哑铃弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "dumbbell curl",
+        "db curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_hammer_curl",
+      "key": "hammer_curl",
+      "nameZh": "锤式弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "hammer curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_tricep_pushdown",
+      "key": "tricep_pushdown",
+      "nameZh": "绳索下压",
+      "bodyPart": "ARMS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "tricep pushdown",
+        "pushdown",
+        "cable pushdown"
+      ],
+      "match": "0201",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:cable pushdown"
+      ]
+    },
+    {
+      "id": "preset_skull_crusher",
+      "key": "skull_crusher",
+      "nameZh": "颈后臂屈伸",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "skull crusher",
+        "overhead extension",
+        "french press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_dip",
+      "key": "dip",
+      "nameZh": "双杠臂屈伸",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "dip",
+        "dips",
+        "tricep dip"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_close_grip_bench",
+      "key": "close_grip_bench",
+      "nameZh": "窄距卧推",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "close grip bench",
+        "close-grip bench press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_crunch",
+      "key": "crunch",
+      "nameZh": "卷腹",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "crunch",
+        "crunches"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_sit_up",
+      "key": "sit_up",
+      "nameZh": "仰卧起坐",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "sit up",
+        "situp"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_plank",
+      "key": "plank",
+      "nameZh": "平板支撑",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "plank"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_hanging_leg_raise",
+      "key": "hanging_leg_raise",
+      "nameZh": "悬挂举腿",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "hanging leg raise",
+        "hanging knee raise",
+        "hlr"
+      ],
+      "match": "0472",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:hanging leg raise",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_russian_twist",
+      "key": "russian_twist",
+      "nameZh": "俄罗斯转体",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "russian twist"
+      ],
+      "match": "0687",
+      "status": "UNIQUE",
+      "evidence": [
+        "zh_name",
+        "alias:russian twist",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_mountain_climber",
+      "key": "mountain_climber",
+      "nameZh": "登山跑",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "mountain climber"
+      ],
+      "match": "0630",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:mountain climber",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_cable_crunch",
+      "key": "cable_crunch",
+      "nameZh": "绳索卷腹",
+      "bodyPart": "ABS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "cable crunch"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_weighted_push_up",
+      "key": "weighted_push_up",
+      "nameZh": "负重俯卧撑",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "weighted push up",
+        "push up plus weight"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_incline_dumbbell_bench",
+      "key": "incline_dumbbell_bench",
+      "nameZh": "上斜哑铃卧推",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "incline dumbbell press",
+        "incline db bench"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_decline_dumbbell_bench",
+      "key": "decline_dumbbell_bench",
+      "nameZh": "下斜哑铃卧推",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "decline dumbbell press",
+        "decline db bench"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_incline_push_up",
+      "key": "incline_push_up",
+      "nameZh": "上斜俯卧撑",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "incline push up",
+        "hands elevated push up"
+      ],
+      "match": "0493",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:incline push up",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_decline_push_up",
+      "key": "decline_push_up",
+      "nameZh": "下斜俯卧撑",
+      "bodyPart": "CHEST",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "decline push up",
+        "feet elevated push up"
+      ],
+      "match": "0279",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:decline push up",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_seated_barbell_press",
+      "key": "seated_barbell_press",
+      "nameZh": "坐姿杠铃推举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "seated overhead press",
+        "seated barbell press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_cable_lateral_raise",
+      "key": "cable_lateral_raise",
+      "nameZh": "绳索侧平举",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "cable lateral raise"
+      ],
+      "match": "0178",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:cable lateral raise",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_assisted_pull_up",
+      "key": "assisted_pull_up",
+      "nameZh": "辅助引体向上",
+      "bodyPart": "BACK",
+      "equipmentType": "MACHINE",
+      "weightMode": "BODYWEIGHT_PLUS",
+      "aliases": [
+        "assisted pull up",
+        "band pull up"
+      ],
+      "match": "0017",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:assisted pull up",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_straight_arm_pulldown",
+      "key": "straight_arm_pulldown",
+      "nameZh": "直臂下压",
+      "bodyPart": "BACK",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "straight arm pulldown",
+        "straight-arm pulldown"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_chest_supported_row",
+      "key": "chest_supported_row",
+      "nameZh": "胸托划船",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "chest supported row",
+        "chest-supported row"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_landmine_row",
+      "key": "landmine_row",
+      "nameZh": "地雷管划船",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "landmine row",
+        "meadow row"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_sumo_deadlift",
+      "key": "sumo_deadlift",
+      "nameZh": "相扑硬拉",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "sumo deadlift",
+        "sumo dl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_stiff_leg_deadlift",
+      "key": "stiff_leg_deadlift",
+      "nameZh": "直腿硬拉",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "stiff leg deadlift",
+        "straight leg deadlift",
+        "sldl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_barbell_shrug",
+      "key": "barbell_shrug",
+      "nameZh": "杠铃耸肩",
+      "bodyPart": "BACK",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "shrug",
+        "barbell shrug"
+      ],
+      "match": "0095",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:barbell shrug",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_front_squat",
+      "key": "front_squat",
+      "nameZh": "前蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "front squat"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_goblet_squat",
+      "key": "goblet_squat",
+      "nameZh": "高脚杯深蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "goblet squat"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_hack_squat",
+      "key": "hack_squat",
+      "nameZh": "哈克深蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "hack squat"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_smith_squat",
+      "key": "smith_squat",
+      "nameZh": "史密斯深蹲",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "smith squat",
+        "smith machine squat"
+      ],
+      "match": "0770",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:smith squat",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_step_up",
+      "key": "step_up",
+      "nameZh": "台阶上步",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "step up",
+        "step-up"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_barbell_hip_thrust",
+      "key": "barbell_hip_thrust",
+      "nameZh": "杠铃臀推",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "barbell hip thrust"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_hip_adduction",
+      "key": "hip_adduction",
+      "nameZh": "髋内收",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "hip adduction",
+        "adductor machine"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_seated_calf_raise",
+      "key": "seated_calf_raise",
+      "nameZh": "坐姿提踵",
+      "bodyPart": "LEGS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "seated calf raise"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_tibialis_raise",
+      "key": "tibialis_raise",
+      "nameZh": "胫骨前肌训练",
+      "bodyPart": "LEGS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "tibialis raise",
+        "toe raise"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_preacher_curl",
+      "key": "preacher_curl",
+      "nameZh": "牧师凳弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "preacher curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_incline_dumbbell_curl",
+      "key": "incline_dumbbell_curl",
+      "nameZh": "斜板弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "incline curl",
+        "incline dumbbell curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_cable_curl",
+      "key": "cable_curl",
+      "nameZh": "绳索弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "cable curl"
+      ],
+      "match": "0868",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:cable curl",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_reverse_curl",
+      "key": "reverse_curl",
+      "nameZh": "反向弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "reverse curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_overhead_tricep_extension",
+      "key": "overhead_tricep_extension",
+      "nameZh": "过顶臂屈伸",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "overhead tricep extension",
+        "french press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_wrist_curl",
+      "key": "wrist_curl",
+      "nameZh": "腕弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "wrist curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_reverse_wrist_curl",
+      "key": "reverse_wrist_curl",
+      "nameZh": "反向腕弯举",
+      "bodyPart": "ARMS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "reverse wrist curl"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_reverse_crunch",
+      "key": "reverse_crunch",
+      "nameZh": "反向卷腹",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "reverse crunch"
+      ],
+      "match": "0872",
+      "status": "UNIQUE",
+      "evidence": [
+        "zh_name",
+        "alias:reverse crunch",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_side_plank",
+      "key": "side_plank",
+      "nameZh": "侧平板支撑",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "side plank"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_dead_bug",
+      "key": "dead_bug",
+      "nameZh": "死虫",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "dead bug"
+      ],
+      "match": "0276",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:dead bug",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_bird_dog",
+      "key": "bird_dog",
+      "nameZh": "鸟狗",
+      "bodyPart": "ABS",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "bird dog"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_pallof_press",
+      "key": "pallof_press",
+      "nameZh": "帕洛夫推",
+      "bodyPart": "ABS",
+      "equipmentType": "MACHINE",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "pallof press",
+        "anti-rotation press"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_band_pull_apart",
+      "key": "band_pull_apart",
+      "nameZh": "弹力带拉开",
+      "bodyPart": "SHOULDERS",
+      "equipmentType": "OTHER",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "band pull apart",
+        "band pull-apart"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_farmer_carry",
+      "key": "farmer_carry",
+      "nameZh": "农夫行走",
+      "bodyPart": "OTHER",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "farmer walk",
+        "farmer carry",
+        "farmers walk"
+      ],
+      "match": "2133",
+      "status": "UNIQUE",
+      "evidence": [
+        "zh_name",
+        "alias:farmers walk"
+      ]
+    },
+    {
+      "id": "preset_burpee",
+      "key": "burpee",
+      "nameZh": "波比跳",
+      "bodyPart": "OTHER",
+      "equipmentType": "OTHER",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "burpee",
+        "burpees"
+      ],
+      "match": "1160",
+      "status": "UNIQUE",
+      "evidence": [
+        "zh_name",
+        "alias:burpee",
+        "key"
+      ]
+    },
+    {
+      "id": "preset_jumping_jack",
+      "key": "jumping_jack",
+      "nameZh": "开合跳",
+      "bodyPart": "OTHER",
+      "equipmentType": "OTHER",
+      "weightMode": "BODYWEIGHT",
+      "aliases": [
+        "jumping jack",
+        "jumping jacks"
+      ],
+      "match": null,
+      "status": "NO_MATCH"
+    },
+    {
+      "id": "preset_kettlebell_swing",
+      "key": "kettlebell_swing",
+      "nameZh": "壶铃摆动",
+      "bodyPart": "OTHER",
+      "equipmentType": "FREE_WEIGHT",
+      "weightMode": "WEIGHTED",
+      "aliases": [
+        "kettlebell swing",
+        "kb swing"
+      ],
+      "match": "0549",
+      "status": "UNIQUE",
+      "evidence": [
+        "alias:kettlebell swing",
+        "key"
+      ]
+    }
+  ],
+  "datasetRecords": 1324,
+  "datasetUniqueNames": 1318,
+  "chineseMappingEntries": 1318,
+  "chineseMissingByName": [],
+  "chineseAmbiguousByDuplicateName": [
+    "0088",
+    "1371",
+    "0454",
+    "1628",
+    "0577",
+    "0576",
+    "0655",
+    "0656",
+    "0697",
+    "1766",
+    "0763",
+    "1394"
+  ],
+  "duplicateNameDetails": [
+    {
+      "name": "barbell seated calf raise",
+      "ids": [
+        "0088",
+        "1371"
+      ],
+      "zh": "杠铃 坐姿 提踵",
+      "mediaIds": [
+        "ktsFQAZ",
+        "ipvgBnC"
+      ]
+    },
+    {
+      "name": "ez barbell spider curl",
+      "ids": [
+        "0454",
+        "1628"
+      ],
+      "zh": "曲杠 蜘蛛弯举",
+      "mediaIds": [
+        "Ye5Qxb0",
+        "2kattbR"
+      ]
+    },
+    {
+      "name": "lever chest press",
+      "ids": [
+        "0577",
+        "0576"
+      ],
+      "zh": "杠杆机 胸部推举",
+      "mediaIds": [
+        "T0yTjgW",
+        "DOoWcnA"
+      ]
+    },
+    {
+      "name": "push-up (on stability ball)",
+      "ids": [
+        "0655",
+        "0656"
+      ],
+      "zh": "俯卧撑 (在稳定球)",
+      "mediaIds": [
+        "Y4BRNQF",
+        "tgryw5Y"
+      ]
+    },
+    {
+      "name": "self assisted inverse leg curl",
+      "ids": [
+        "0697",
+        "1766"
+      ],
+      "zh": "自我 辅助 反向腿弯举",
+      "mediaIds": [
+        "GwYwElT",
+        "ZSY3MsL"
+      ]
+    },
+    {
+      "name": "smith reverse calf raises",
+      "ids": [
+        "0763",
+        "1394"
+      ],
+      "zh": "史密斯 反向 提踵s",
+      "mediaIds": [
+        "ywaNfuh",
+        "Lsqrgh4"
+      ]
+    }
+  ],
+  "bodyPartMap": {
+    "chest": "CHEST",
+    "shoulders": "SHOULDERS",
+    "back": "BACK",
+    "upper legs": "LEGS",
+    "lower legs": "LEGS",
+    "upper arms": "ARMS",
+    "lower arms": "ARMS",
+    "waist": "ABS",
+    "cardio": "OTHER",
+    "neck": "OTHER"
+  },
+  "bodyPartMappedCounts": {
+    "ABS": 169,
+    "LEGS": 286,
+    "BACK": 203,
+    "CHEST": 163,
+    "ARMS": 329,
+    "OTHER": 31,
+    "SHOULDERS": 143
+  },
+  "bodyPartUnmapped": {},
+  "equipmentMap": {
+    "body weight": "FREE_WEIGHT",
+    "dumbbell": "FREE_WEIGHT",
+    "barbell": "FREE_WEIGHT",
+    "ez barbell": "FREE_WEIGHT",
+    "olympic barbell": "FREE_WEIGHT",
+    "trap bar": "FREE_WEIGHT",
+    "kettlebell": "FREE_WEIGHT",
+    "weighted": "FREE_WEIGHT",
+    "band": "FREE_WEIGHT",
+    "resistance band": "FREE_WEIGHT",
+    "medicine ball": "FREE_WEIGHT",
+    "rope": "FREE_WEIGHT",
+    "roller": "OTHER",
+    "wheel roller": "OTHER",
+    "hammer": "OTHER",
+    "stability ball": "OTHER",
+    "bosu ball": "OTHER",
+    "assisted": "OTHER",
+    "cable": "MACHINE",
+    "leverage machine": "MACHINE",
+    "smith machine": "MACHINE",
+    "sled machine": "MACHINE",
+    "stationary bike": "MACHINE",
+    "elliptical machine": "MACHINE",
+    "stepmill machine": "MACHINE",
+    "skierg machine": "MACHINE",
+    "upper body ergometer": "MACHINE"
+  },
+  "equipmentMappedCounts": {
+    "FREE_WEIGHT": 960,
+    "MACHINE": 306,
+    "OTHER": 57
+  },
+  "equipmentUnmapped": {
+    "tire": 1
+  },
+  "weightModeDerivedCounts": {
+    "BODYWEIGHT": 340,
+    "WEIGHTED": 948,
+    "BODYWEIGHT_PLUS": 36
+  },
+  "muscleTokenCount": 50,
+  "muscleTokensMapped": {
+    "abs": {
+      "count": 169,
+      "ids": [
+        "rectus_abdominis"
+      ]
+    },
+    "lower back": {
+      "count": 77,
+      "ids": [
+        "erector_spinae"
+      ]
+    },
+    "obliques": {
+      "count": 139,
+      "ids": [
+        "external_oblique"
+      ]
+    },
+    "quads": {
+      "count": 44,
+      "ids": [
+        "quadriceps"
+      ]
+    },
+    "hamstrings": {
+      "count": 444,
+      "ids": [
+        "hamstrings"
+      ]
+    },
+    "glutes": {
+      "count": 351,
+      "ids": [
+        "gluteus_maximus"
+      ]
+    },
+    "lats": {
+      "count": 83,
+      "ids": [
+        "latissimus_dorsi"
+      ]
+    },
+    "biceps": {
+      "count": 509,
+      "ids": [
+        "biceps_brachii"
+      ]
+    },
+    "rhomboids": {
+      "count": 56,
+      "ids": [
+        "rhomboids"
+      ]
+    },
+    "calves": {
+      "count": 217,
+      "ids": [
+        "gastrocnemius",
+        "soleus"
+      ]
+    },
+    "forearms": {
+      "count": 479,
+      "ids": [
+        "forearm_flexors",
+        "forearm_extensors"
+      ]
+    },
+    "pectorals": {
+      "count": 158,
+      "ids": [
+        "pectoralis_major"
+      ]
+    },
+    "triceps": {
+      "count": 570,
+      "ids": [
+        "triceps_brachii"
+      ]
+    },
+    "shoulders": {
+      "count": 591,
+      "ids": [
+        "deltoid_anterior",
+        "deltoid_lateral",
+        "deltoid_posterior"
+      ]
+    },
+    "core": {
+      "count": 101,
+      "ids": [
+        "rectus_abdominis"
+      ]
+    },
+    "quadriceps": {
+      "count": 271,
+      "ids": [
+        "quadriceps"
+      ]
+    },
+    "adductors": {
+      "count": 6,
+      "ids": [
+        "adductors"
+      ]
+    },
+    "chest": {
+      "count": 144,
+      "ids": [
+        "pectoralis_major"
+      ]
+    },
+    "spine": {
+      "count": 19,
+      "ids": [
+        "erector_spinae"
+      ]
+    },
+    "upper back": {
+      "count": 126,
+      "ids": [
+        "trapezius_middle"
+      ]
+    },
+    "rear deltoids": {
+      "count": 20,
+      "ids": [
+        "deltoid_posterior"
+      ]
+    },
+    "delts": {
+      "count": 143,
+      "ids": [
+        "deltoid_anterior",
+        "deltoid_lateral",
+        "deltoid_posterior"
+      ]
+    },
+    "traps": {
+      "count": 80,
+      "ids": [
+        "trapezius_upper",
+        "trapezius_middle",
+        "trapezius_lower"
+      ]
+    },
+    "trapezius": {
+      "count": 83,
+      "ids": [
+        "trapezius_upper",
+        "trapezius_middle",
+        "trapezius_lower"
+      ]
+    },
+    "deltoids": {
+      "count": 52,
+      "ids": [
+        "deltoid_anterior",
+        "deltoid_lateral",
+        "deltoid_posterior"
+      ]
+    },
+    "brachialis": {
+      "count": 14,
+      "ids": [
+        "brachialis"
+      ]
+    },
+    "upper chest": {
+      "count": 3,
+      "ids": [
+        "pectoralis_major"
+      ]
+    },
+    "latissimus dorsi": {
+      "count": 7,
+      "ids": [
+        "latissimus_dorsi"
+      ]
+    },
+    "wrist flexors": {
+      "count": 4,
+      "ids": [
+        "forearm_flexors"
+      ]
+    },
+    "wrist extensors": {
+      "count": 3,
+      "ids": [
+        "forearm_extensors"
+      ]
+    },
+    "abdominals": {
+      "count": 4,
+      "ids": [
+        "rectus_abdominis"
+      ]
+    },
+    "lower abs": {
+      "count": 1,
+      "ids": [
+        "rectus_abdominis"
+      ]
+    },
+    "inner thighs": {
+      "count": 1,
+      "ids": [
+        "adductors"
+      ]
+    },
+    "soleus": {
+      "count": 8,
+      "ids": [
+        "soleus"
+      ]
+    },
+    "shins": {
+      "count": 1,
+      "ids": [
+        "tibialis_anterior"
+      ]
+    }
+  },
+  "muscleTokensUnmapped": {
+    "hip flexors": 143,
+    "ankle stabilizers": 5,
+    "back": 11,
+    "cardiovascular system": 29,
+    "ankles": 22,
+    "feet": 8,
+    "serratus anterior": 5,
+    "groin": 1,
+    "wrists": 4,
+    "rotator cuff": 10,
+    "grip muscles": 1,
+    "abductors": 5,
+    "levator scapulae": 2,
+    "sternocleidomastoid": 2,
+    "hands": 3
+  },
+  "recordsWithMappedTarget": 1283,
+  "recordsWithAnyMappedMuscle": 1324
+}

@@ -1,0 +1,7 @@
+﻿app\src\main\assets\muscle_manifest.json	12717	2026-10-14T11:17:01.5350599Z	c02c9290398f412ab0e1db6181ad2ee4a7eb18f698dda59f7a7c6b279bbbc2e3
+app\src\main\res\drawable-nodpi\muscle_front_base.png	1447970	2026-10-14T11:17:01.6876219Z	3122827b650cf1bd71644be467575b9efac10a319b17bb443bbacb78796a8844
+app\src\main\res\drawable-nodpi\muscle_back_base.png	1742100	2026-10-14T11:17:01.6637749Z	03d81eedcb24621cf6584cc3b2c0f280f554cfc4ee4a2d3658dd2ac2597cade7
+app\src\main\assets\muscle_masks\front\latissimus_dorsi.png	6208	2026-10-14T11:17:01.7200099Z	cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da
+app\src\main\assets\muscle_masks\back\latissimus_dorsi.png	12928	2026-10-14T11:17:02.1752601Z	fe7c1ceca549a9084626cb1343ff3625a3e69990cf718f6da26426a2f06a358f
+app\src\main\assets\muscle_masks\front\quadriceps.png	16517	2026-10-14T11:17:02.0977138Z	ae317db376610fbe78282581b35c58fb08a7b0239c87129ac036e31e910bdccc
+app\src\main\java\com\example\gymlog\ui\muscle\MuscleMaskCatalog.kt	5072	2026-10-14T11:37:32.6188817Z	ce426e24851533bfefa62691801e0cdbc94ad392987665d0c73dd7450f93c361

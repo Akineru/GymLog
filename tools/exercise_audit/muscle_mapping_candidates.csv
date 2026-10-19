@@ -1,0 +1,51 @@
+﻿token,occurrences,mapped_stable_ids,status,notes
+shoulders,591,deltoid_anterior;deltoid_lateral;deltoid_posterior,mapped,generic group token; may map to multiple stable IDs
+triceps,570,triceps_brachii,mapped,
+biceps,509,biceps_brachii,mapped,
+forearms,479,forearm_flexors;forearm_extensors,mapped,generic group token; may map to multiple stable IDs
+hamstrings,444,hamstrings,mapped,
+glutes,351,gluteus_maximus,mapped,
+quadriceps,271,quadriceps,mapped,
+calves,217,gastrocnemius;soleus,mapped,generic group token; may map to multiple stable IDs
+abs,169,rectus_abdominis,mapped,
+pectorals,158,pectoralis_major,mapped,
+chest,144,pectoralis_major,mapped,
+delts,143,deltoid_anterior;deltoid_lateral;deltoid_posterior,mapped,generic group token; may map to multiple stable IDs
+obliques,139,external_oblique,mapped,
+upper back,126,trapezius_middle,mapped,
+core,101,rectus_abdominis,mapped,
+lats,83,latissimus_dorsi,mapped,
+trapezius,83,trapezius_upper;trapezius_middle;trapezius_lower,mapped,generic group token; may map to multiple stable IDs
+traps,80,trapezius_upper;trapezius_middle;trapezius_lower,mapped,generic group token; may map to multiple stable IDs
+lower back,77,erector_spinae,mapped,
+rhomboids,56,rhomboids,mapped,
+deltoids,52,deltoid_anterior;deltoid_lateral;deltoid_posterior,mapped,generic group token; may map to multiple stable IDs
+quads,44,quadriceps,mapped,
+rear deltoids,20,deltoid_posterior,mapped,
+spine,19,erector_spinae,mapped,
+brachialis,14,brachialis,mapped,
+soleus,8,soleus,mapped,
+latissimus dorsi,7,latissimus_dorsi,mapped,
+adductors,6,adductors,mapped,
+wrist flexors,4,forearm_flexors,mapped,
+abdominals,4,rectus_abdominis,mapped,
+upper chest,3,pectoralis_major,mapped,
+wrist extensors,3,forearm_extensors,mapped,
+lower abs,1,rectus_abdominis,mapped,
+inner thighs,1,adductors,mapped,
+shins,1,tibialis_anterior,mapped,
+hip flexors,143,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+cardiovascular system,29,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+ankles,22,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+back,11,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+rotator cuff,10,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+feet,8,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+ankle stabilizers,5,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+serratus anterior,5,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+abductors,5,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+wrists,4,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+hands,3,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+levator scapulae,2,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+sternocleidomastoid,2,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+groin,1,,unmapped,no stable 33-ID equivalent; keep explicit unmapped
+grip muscles,1,,unmapped,no stable 33-ID equivalent; keep explicit unmapped

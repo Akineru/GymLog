@@ -1,0 +1,8 @@
+Exercise data source: exercises-dataset-zh (fork of hasaneyldrm/exercises-dataset; ExerciseDB v1 by AscendAPI via Kaggle).
+Data/tooling: MIT.
+Media: © Gym visual — https://gymvisual.com/, 180x180 thumbnails and GIFs.
+The project owner confirmed authorization for bundling this media with this app on 2026-10-18.
+The media remains the property of Gym visual and is subject to Gym visual's Terms & Conditions of Use:
+https://gymvisual.com/content/3-terms-and-conditions-of-use
+Attribution must remain visible: © Gym visual — https://gymvisual.com/.
+Structured records are bundled for import; thumbnails and GIFs are bundled under assets/exercises/media.

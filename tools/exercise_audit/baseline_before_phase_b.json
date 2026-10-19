@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-10-18T17:33:15+08:00",
+  "roomVersion": 13,
+  "backupCodecVersion": 2,
+  "testSuites": 43,
+  "tests": 167,
+  "testFailures": 0,
+  "testErrors": 0,
+  "testSkipped": 0,
+  "debugApkBytes": 27961716,
+  "datasetActions": 1324,
+  "legacyPresetExercises": 89,
+  "stableMuscleIds": 33,
+  "customExerciseCount": null,
+  "customExerciseCountNote": "No accessible real user database; custom count is not measurable in this workspace.",
+  "gymVisualMediaBundled": false,
+  "sourceBackup": "C:\\Users\\75192\\AndroidStudioProjects\\GymLog-phase-b-backup-20261018-173315.zip",
+  "sourceBackupBytes": 103084226
+}

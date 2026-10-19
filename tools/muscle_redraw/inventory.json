@@ -1,0 +1,1765 @@
+{
+  "generatedAt": "2026-10-18T05:24:40.032894+00:00",
+  "projectRoot": "C:\\Users\\75192\\AndroidStudioProjects\\GymLog",
+  "canvas": {
+    "width": 1024,
+    "height": 1536,
+    "alphaThreshold": 16
+  },
+  "paths": {
+    "frontBase": "app\\src\\main\\res\\drawable-nodpi\\muscle_front_base.png",
+    "backBase": "app\\src\\main\\res\\drawable-nodpi\\muscle_back_base.png",
+    "frontMasks": "app\\src\\main\\assets\\muscle_masks\\front",
+    "backMasks": "app\\src\\main\\assets\\muscle_masks\\back",
+    "manifest": "app\\src\\main\\assets\\muscle_manifest.json"
+  },
+  "bases": {
+    "front": {
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha_gt0": 398934,
+      "bbox": [
+        181,
+        67,
+        842,
+        1510
+      ],
+      "sha256": "3122827b650cf1bd71644be467575b9efac10a319b17bb443bbacb78796a8844"
+    },
+    "back": {
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha_gt0": 393915,
+      "bbox": [
+        181,
+        67,
+        838,
+        1510
+      ],
+      "sha256": "03d81eedcb24621cf6584cc3b2c0f280f554cfc4ee4a2d3658dd2ac2597cade7"
+    },
+    "manifestSha256": "c02c9290398f412ab0e1db6181ad2ee4a7eb18f698dda59f7a7c6b279bbbc2e3"
+  },
+  "counts": {
+    "muscles": 33,
+    "frontPng": 33,
+    "backPng": 33,
+    "frontSvg": 33,
+    "backSvg": 33,
+    "frontDrawn": 16,
+    "backDrawn": 14,
+    "noIndependentMask": 4
+  },
+  "files": {
+    "frontPng": [
+      "adductors.png",
+      "biceps_brachii.png",
+      "brachialis.png",
+      "brachioradialis.png",
+      "deltoid_anterior.png",
+      "deltoid_middle.png",
+      "deltoid_posterior.png",
+      "erector_spinae.png",
+      "external_oblique.png",
+      "forearm_extensors.png",
+      "forearm_flexors.png",
+      "gastrocnemius.png",
+      "gluteus_maximus.png",
+      "gluteus_medius.png",
+      "hamstrings.png",
+      "internal_oblique.png",
+      "latissimus_dorsi.png",
+      "pectoralis_major.png",
+      "quadriceps.png",
+      "rectus_abdominis.png",
+      "rectus_femoris.png",
+      "rhomboids.png",
+      "sartorius.png",
+      "soleus.png",
+      "teres_major.png",
+      "tibialis_anterior.png",
+      "transversus_abdominis.png",
+      "trapezius_lower.png",
+      "trapezius_middle.png",
+      "trapezius_upper.png",
+      "triceps_brachii.png",
+      "vastus_lateralis.png",
+      "vastus_medialis.png"
+    ],
+    "backPng": [
+      "adductors.png",
+      "biceps_brachii.png",
+      "brachialis.png",
+      "brachioradialis.png",
+      "deltoid_anterior.png",
+      "deltoid_middle.png",
+      "deltoid_posterior.png",
+      "erector_spinae.png",
+      "external_oblique.png",
+      "forearm_extensors.png",
+      "forearm_flexors.png",
+      "gastrocnemius.png",
+      "gluteus_maximus.png",
+      "gluteus_medius.png",
+      "hamstrings.png",
+      "internal_oblique.png",
+      "latissimus_dorsi.png",
+      "pectoralis_major.png",
+      "quadriceps.png",
+      "rectus_abdominis.png",
+      "rectus_femoris.png",
+      "rhomboids.png",
+      "sartorius.png",
+      "soleus.png",
+      "teres_major.png",
+      "tibialis_anterior.png",
+      "transversus_abdominis.png",
+      "trapezius_lower.png",
+      "trapezius_middle.png",
+      "trapezius_upper.png",
+      "triceps_brachii.png",
+      "vastus_lateralis.png",
+      "vastus_medialis.png"
+    ],
+    "frontSvg": [
+      "adductors.svg",
+      "biceps_brachii.svg",
+      "brachialis.svg",
+      "brachioradialis.svg",
+      "deltoid_anterior.svg",
+      "deltoid_middle.svg",
+      "deltoid_posterior.svg",
+      "erector_spinae.svg",
+      "external_oblique.svg",
+      "forearm_extensors.svg",
+      "forearm_flexors.svg",
+      "gastrocnemius.svg",
+      "gluteus_maximus.svg",
+      "gluteus_medius.svg",
+      "hamstrings.svg",
+      "internal_oblique.svg",
+      "latissimus_dorsi.svg",
+      "pectoralis_major.svg",
+      "quadriceps.svg",
+      "rectus_abdominis.svg",
+      "rectus_femoris.svg",
+      "rhomboids.svg",
+      "sartorius.svg",
+      "soleus.svg",
+      "teres_major.svg",
+      "tibialis_anterior.svg",
+      "transversus_abdominis.svg",
+      "trapezius_lower.svg",
+      "trapezius_middle.svg",
+      "trapezius_upper.svg",
+      "triceps_brachii.svg",
+      "vastus_lateralis.svg",
+      "vastus_medialis.svg"
+    ],
+    "backSvg": [
+      "adductors.svg",
+      "biceps_brachii.svg",
+      "brachialis.svg",
+      "brachioradialis.svg",
+      "deltoid_anterior.svg",
+      "deltoid_middle.svg",
+      "deltoid_posterior.svg",
+      "erector_spinae.svg",
+      "external_oblique.svg",
+      "forearm_extensors.svg",
+      "forearm_flexors.svg",
+      "gastrocnemius.svg",
+      "gluteus_maximus.svg",
+      "gluteus_medius.svg",
+      "hamstrings.svg",
+      "internal_oblique.svg",
+      "latissimus_dorsi.svg",
+      "pectoralis_major.svg",
+      "quadriceps.svg",
+      "rectus_abdominis.svg",
+      "rectus_femoris.svg",
+      "rhomboids.svg",
+      "sartorius.svg",
+      "soleus.svg",
+      "teres_major.svg",
+      "tibialis_anterior.svg",
+      "transversus_abdominis.svg",
+      "trapezius_lower.svg",
+      "trapezius_middle.svg",
+      "trapezius_upper.svg",
+      "triceps_brachii.svg",
+      "vastus_lateralis.svg",
+      "vastus_medialis.svg"
+    ]
+  },
+  "muscles": [
+    {
+      "index": 1,
+      "id": "pectoralis_major",
+      "manifestId": "pectoralis_major",
+      "nameZh": "胸大肌",
+      "nameEn": "Pectoralis major",
+      "frontFile": "pectoralis_major.png",
+      "backFile": "pectoralis_major.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 37710,
+        "hit_pixels": 37584,
+        "bbox": [
+          359,
+          331,
+          665,
+          485
+        ],
+        "center": [
+          511.49,
+          407.14
+        ],
+        "sha256": "f5d324fd54074f6abc45d6a0920ff4829e0b66fe94c6d49acdbe655006f95738"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "边界可接受；与三角肌前束约 9.6% 邻接重叠。"
+    },
+    {
+      "index": 2,
+      "id": "deltoid_anterior",
+      "manifestId": "deltoid_anterior",
+      "nameZh": "三角肌前束",
+      "nameEn": "Anterior deltoid",
+      "frontFile": "deltoid_anterior.png",
+      "backFile": "deltoid_anterior.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 18430,
+        "hit_pixels": 18299,
+        "bbox": [
+          290,
+          329,
+          734,
+          455
+        ],
+        "center": [
+          511.49,
+          388.77
+        ],
+        "sha256": "e45eced85191a6b6327f2a8edf5a22fc73dbf9764fcb275b216b5fee462e66c9"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "与三角肌中束约 24.9% 重叠（中束 61% 落在前束内）。"
+    },
+    {
+      "index": 3,
+      "id": "deltoid_lateral",
+      "manifestId": "deltoid_middle",
+      "nameZh": "三角肌中束",
+      "nameEn": "Middle deltoid",
+      "frontFile": "deltoid_middle.png",
+      "backFile": "deltoid_middle.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 7698,
+        "hit_pixels": 7612,
+        "bbox": [
+          279,
+          366,
+          745,
+          474
+        ],
+        "center": [
+          511.45,
+          419.23
+        ],
+        "sha256": "2d6d4a335b6919b7ac3f4b9725e26ca178abf7e8a9005036ebd4457f606ee77b"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": "deltoid_middle",
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "应用 ID 使用 deltoid_middle.png；越界约 24.7%，大部分区域与前束重叠。"
+    },
+    {
+      "index": 4,
+      "id": "deltoid_posterior",
+      "manifestId": "deltoid_posterior",
+      "nameZh": "三角肌后束",
+      "nameEn": "Posterior deltoid",
+      "frontFile": "deltoid_posterior.png",
+      "backFile": "deltoid_posterior.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 15265,
+        "hit_pixels": 15156,
+        "bbox": [
+          291,
+          326,
+          733,
+          451
+        ],
+        "center": [
+          511.5,
+          385.28
+        ],
+        "sha256": "b05fbaf1140fab48fb34bbfe40d4a8a2bd9df42e7b403e06691a04a476d93da8"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界 0；与肱三头肌约 4.9% 重叠。"
+    },
+    {
+      "index": 5,
+      "id": "trapezius_upper",
+      "manifestId": "trapezius_upper",
+      "nameZh": "斜方肌上部",
+      "nameEn": "Upper trapezius",
+      "frontFile": "trapezius_upper.png",
+      "backFile": "trapezius_upper.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 18728,
+        "hit_pixels": 18598,
+        "bbox": [
+          352,
+          194,
+          672,
+          376
+        ],
+        "center": [
+          511.52,
+          297.98
+        ],
+        "sha256": "4a38dbe240d3890064e6dba4dc0e98f2081d7f7fbbbf22fc6ae8f8cb04c276b7"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 27.2%，外缘伸到肩外侧透明区。"
+    },
+    {
+      "index": 6,
+      "id": "trapezius_middle",
+      "manifestId": "trapezius_middle",
+      "nameZh": "斜方肌中部",
+      "nameEn": "Middle trapezius",
+      "frontFile": "trapezius_middle.png",
+      "backFile": "trapezius_middle.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 12372,
+        "hit_pixels": 12299,
+        "bbox": [
+          399,
+          365,
+          625,
+          462
+        ],
+        "center": [
+          511.51,
+          406.58
+        ],
+        "sha256": "fdec6feba7636b5da3b4f0924a93dcba69e38b17a275bea17710a2935ca6cee7"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "与斜方肌下部约 30.2% 重叠。"
+    },
+    {
+      "index": 7,
+      "id": "trapezius_lower",
+      "manifestId": "trapezius_lower",
+      "nameZh": "斜方肌下部",
+      "nameEn": "Lower trapezius",
+      "frontFile": "trapezius_lower.png",
+      "backFile": "trapezius_lower.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 6319,
+        "hit_pixels": 6247,
+        "bbox": [
+          469,
+          390,
+          555,
+          548
+        ],
+        "center": [
+          511.51,
+          474.04
+        ],
+        "sha256": "07bfcc925fad1f56415d9749e5e53950a5a3ee0f200a9b5b5c0a9ca9613e3019"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "与斜方肌中部约 30.2% 重叠，且与竖脊肌约 24.9% 重叠。"
+    },
+    {
+      "index": 8,
+      "id": "latissimus_dorsi",
+      "manifestId": "latissimus_dorsi",
+      "nameZh": "背阔肌",
+      "nameEn": "Latissimus dorsi",
+      "frontFile": "latissimus_dorsi.png",
+      "backFile": "latissimus_dorsi.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 25010,
+        "hit_pixels": 25010,
+        "bbox": [
+          374,
+          412,
+          651,
+          628
+        ],
+        "center": [
+          511.58,
+          512.42
+        ],
+        "sha256": "729469a7da608da26574b5ff44845d42f62f79ec59c372ed2959136b81a10ec7"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 25.8%；大圆肌约 38.8% 落在背阔肌遮罩内。"
+    },
+    {
+      "index": 9,
+      "id": "teres_major",
+      "manifestId": "teres_major",
+      "nameZh": "大圆肌",
+      "nameEn": "Teres major",
+      "frontFile": "teres_major.png",
+      "backFile": "teres_major.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 5806,
+        "hit_pixels": 5740,
+        "bbox": [
+          382,
+          388,
+          642,
+          466
+        ],
+        "center": [
+          511.47,
+          423.9
+        ],
+        "sha256": "21fe0265f7aeee340d4991a3f8f5b05d6a594b4ef0e863ef3e110a235eb161a2"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "自身越界 0；约 38.8% 落在背阔肌遮罩内。"
+    },
+    {
+      "index": 10,
+      "id": "rhomboids",
+      "manifestId": "rhomboids",
+      "nameZh": "菱形肌",
+      "nameEn": "Rhomboids",
+      "frontFile": "rhomboids.png",
+      "backFile": "rhomboids.png",
+      "frontStatus": "no_independent_mask",
+      "backStatus": "no_independent_mask",
+      "overallStatus": "no_independent_mask",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。"
+    },
+    {
+      "index": 11,
+      "id": "erector_spinae",
+      "manifestId": "erector_spinae",
+      "nameZh": "竖脊肌",
+      "nameEn": "Erector spinae",
+      "frontFile": "erector_spinae.png",
+      "backFile": "erector_spinae.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 3349,
+        "hit_pixels": 3240,
+        "bbox": [
+          475,
+          430,
+          549,
+          649
+        ],
+        "center": [
+          511.52,
+          549.34
+        ],
+        "sha256": "53611eb2fa4c7fc2c73fac1b5f7c86ea7877a12df209fb73c6691e3ec1e36ae6"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "下段覆盖不足，存在 2 个碎片；与下斜方约 24.9% 重叠。"
+    },
+    {
+      "index": 12,
+      "id": "biceps_brachii",
+      "manifestId": "biceps_brachii",
+      "nameZh": "肱二头肌",
+      "nameEn": "Biceps brachii",
+      "frontFile": "biceps_brachii.png",
+      "backFile": "biceps_brachii.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 14004,
+        "hit_pixels": 13923,
+        "bbox": [
+          296,
+          425,
+          728,
+          580
+        ],
+        "center": [
+          511.54,
+          499.85
+        ],
+        "sha256": "84306e3fc0da1c7c8f1017639225aa177122cdc1fcdfdd0333d689a66a9e20c0"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "边界可接受；与三角肌前束约 9.3% 邻接重叠。"
+    },
+    {
+      "index": 13,
+      "id": "brachialis",
+      "manifestId": "brachialis",
+      "nameZh": "肱肌",
+      "nameEn": "Brachialis",
+      "frontFile": "brachialis.png",
+      "backFile": "brachialis.png",
+      "frontStatus": "no_independent_mask",
+      "backStatus": "no_independent_mask",
+      "overallStatus": "no_independent_mask",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。"
+    },
+    {
+      "index": 14,
+      "id": "triceps_brachii",
+      "manifestId": "triceps_brachii",
+      "nameZh": "肱三头肌",
+      "nameEn": "Triceps brachii",
+      "frontFile": "triceps_brachii.png",
+      "backFile": "triceps_brachii.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 10876,
+        "hit_pixels": 10772,
+        "bbox": [
+          302,
+          425,
+          722,
+          570
+        ],
+        "center": [
+          511.5,
+          496.72
+        ],
+        "sha256": "03676ddf761c711647cbc6e3338b1a8e251950cfdaded2b37a0bf8c1dc386791"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 11.8%。"
+    },
+    {
+      "index": 15,
+      "id": "brachioradialis",
+      "manifestId": "brachioradialis",
+      "nameZh": "肱桡肌",
+      "nameEn": "Brachioradialis",
+      "frontFile": "brachioradialis.png",
+      "backFile": "brachioradialis.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 11739,
+        "hit_pixels": 11645,
+        "bbox": [
+          263,
+          566,
+          761,
+          733
+        ],
+        "center": [
+          511.48,
+          652.82
+        ],
+        "sha256": "e329c4babaa5cab2113d64923a902b3d51b606bb01657b53ed2f8cdbb7ab3843"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "正面伸肌群 100% 落在肱桡肌内；屈肌群约 25.7% 被覆盖。"
+    },
+    {
+      "index": 16,
+      "id": "forearm_flexors",
+      "manifestId": "forearm_flexors",
+      "nameZh": "前臂屈肌群",
+      "nameEn": "Forearm flexors",
+      "frontFile": "forearm_flexors.png",
+      "backFile": "forearm_flexors.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 7965,
+        "hit_pixels": 7904,
+        "bbox": [
+          251,
+          690,
+          773,
+          804
+        ],
+        "center": [
+          511.44,
+          745.02
+        ],
+        "sha256": "f8a36c7d547f68c080815dbd87dc21c0431882c5c3ff24d39cfce12305879d96"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 21.1%。"
+    },
+    {
+      "index": 17,
+      "id": "forearm_extensors",
+      "manifestId": "forearm_extensors",
+      "nameZh": "前臂伸肌群",
+      "nameEn": "Forearm extensors",
+      "frontFile": "forearm_extensors.png",
+      "backFile": "forearm_extensors.png",
+      "frontStatus": "drawn",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 5583,
+        "hit_pixels": 5503,
+        "bbox": [
+          276,
+          596,
+          748,
+          701
+        ],
+        "center": [
+          511.46,
+          647.85
+        ],
+        "sha256": "0edfae174f52d34411515075a8da5ac619f277f94d78e491cb0f7595d1cbd489"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 7731,
+        "hit_pixels": 7640,
+        "bbox": [
+          276,
+          588,
+          748,
+          725
+        ],
+        "center": [
+          511.5,
+          659.23
+        ],
+        "sha256": "00b1d3a9e2bab677151b6d573f0e99c1a795a67bca06da09962f3891e062dc59"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "正面 100% 落在肱桡肌内；背面越界约 12.0%。"
+    },
+    {
+      "index": 18,
+      "id": "rectus_abdominis",
+      "manifestId": "rectus_abdominis",
+      "nameZh": "腹直肌",
+      "nameEn": "Rectus abdominis",
+      "frontFile": "rectus_abdominis.png",
+      "backFile": "rectus_abdominis.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 24940,
+        "hit_pixels": 24830,
+        "bbox": [
+          445,
+          479,
+          580,
+          745
+        ],
+        "center": [
+          511.92,
+          608.78
+        ],
+        "sha256": "208f826d67ab3875d2daba6bc323edf1d66c06d1aa6ccc97aeb3eb49f38ee49f"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "边界可接受；分节色块，不是纤维描边。"
+    },
+    {
+      "index": 19,
+      "id": "external_oblique",
+      "manifestId": "external_oblique",
+      "nameZh": "腹外斜肌",
+      "nameEn": "External oblique",
+      "frontFile": "external_oblique.png",
+      "backFile": "external_oblique.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 15532,
+        "hit_pixels": 15419,
+        "bbox": [
+          380,
+          490,
+          644,
+          699
+        ],
+        "center": [
+          511.49,
+          591.52
+        ],
+        "sha256": "d59c15c17ae899dbc7bb22e2fb0b6392fbd7823a4eca76d0f3b138b2b7e2c33d"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 26.7%，下缘提前结束。"
+    },
+    {
+      "index": 20,
+      "id": "internal_oblique",
+      "manifestId": "internal_oblique",
+      "nameZh": "腹内斜肌",
+      "nameEn": "Internal oblique",
+      "frontFile": "internal_oblique.png",
+      "backFile": "internal_oblique.png",
+      "frontStatus": "no_independent_mask",
+      "backStatus": "no_independent_mask",
+      "overallStatus": "no_independent_mask",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。"
+    },
+    {
+      "index": 21,
+      "id": "transversus_abdominis",
+      "manifestId": "transversus_abdominis",
+      "nameZh": "腹横肌",
+      "nameEn": "Transversus abdominis",
+      "frontFile": "transversus_abdominis.png",
+      "backFile": "transversus_abdominis.png",
+      "frontStatus": "no_independent_mask",
+      "backStatus": "no_independent_mask",
+      "overallStatus": "no_independent_mask",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "现有设计为无独立遮罩（深层/不可见），不映射到邻近表层肌肉。"
+    },
+    {
+      "index": 22,
+      "id": "gluteus_maximus",
+      "manifestId": "gluteus_maximus",
+      "nameZh": "臀大肌",
+      "nameEn": "Gluteus maximus",
+      "frontFile": "gluteus_maximus.png",
+      "backFile": "gluteus_maximus.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 31525,
+        "hit_pixels": 31415,
+        "bbox": [
+          374,
+          676,
+          650,
+          828
+        ],
+        "center": [
+          511.5,
+          749.14
+        ],
+        "sha256": "f1c0614a1791a473445110376496daf19d1ba0eebf75692067b4b3a12c06fbe3"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "边界可接受；与臀中肌约 5.8% 重叠。"
+    },
+    {
+      "index": 23,
+      "id": "gluteus_medius",
+      "manifestId": "gluteus_medius",
+      "nameZh": "臀中肌",
+      "nameEn": "Gluteus medius",
+      "frontFile": "gluteus_medius.png",
+      "backFile": "gluteus_medius.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 7375,
+        "hit_pixels": 7322,
+        "bbox": [
+          391,
+          633,
+          633,
+          706
+        ],
+        "center": [
+          511.5,
+          664.97
+        ],
+        "sha256": "fd6a214ff3b562e7dcc93eefd5295a163ac069ac0a8a277a3ef70e8a2ca330e5"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "约 25.6% 落在臀大肌内，需人工判断是邻接还是过宽。"
+    },
+    {
+      "index": 24,
+      "id": "quadriceps",
+      "manifestId": "quadriceps",
+      "nameZh": "股四头肌",
+      "nameEn": "Quadriceps femoris",
+      "frontFile": "quadriceps.png",
+      "backFile": "quadriceps.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 57283,
+        "hit_pixels": 57026,
+        "bbox": [
+          359,
+          782,
+          665,
+          1060
+        ],
+        "center": [
+          511.51,
+          919.29
+        ],
+        "sha256": "ae317db376610fbe78282581b35c58fb08a7b0239c87129ac036e31e910bdccc"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [
+        "rectus_femoris",
+        "vastus_lateralis",
+        "vastus_medialis"
+      ],
+      "relation": "composite",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "合并遮罩；与缝匠肌约 82.4%、内收肌约 48.9% 重叠；自身越界约 1.7%。"
+    },
+    {
+      "index": 25,
+      "id": "rectus_femoris",
+      "manifestId": "rectus_femoris",
+      "nameZh": "股直肌",
+      "nameEn": "Rectus femoris",
+      "frontFile": "rectus_femoris.png",
+      "backFile": "rectus_femoris.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 24912,
+        "hit_pixels": 24798,
+        "bbox": [
+          437,
+          782,
+          587,
+          1051
+        ],
+        "center": [
+          511.5,
+          906.71
+        ],
+        "sha256": "3839c4798d498106c85380151f6d8820b45667fb5a3a024e4561382c8c87fd73"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": "quadriceps",
+      "children": [],
+      "relation": "child",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "与股内侧肌约 54.3%、缝匠肌约 49.6%、内收肌约 40.6% 重叠。"
+    },
+    {
+      "index": 26,
+      "id": "vastus_lateralis",
+      "manifestId": "vastus_lateralis",
+      "nameZh": "股外侧肌",
+      "nameEn": "Vastus lateralis",
+      "frontFile": "vastus_lateralis.png",
+      "backFile": "vastus_lateralis.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 30238,
+        "hit_pixels": 30091,
+        "bbox": [
+          359,
+          795,
+          665,
+          1038
+        ],
+        "center": [
+          511.52,
+          921.33
+        ],
+        "sha256": "5e977e7709b311356854cb294db3b1b29ce54cea27bf305e6773f1528db1af8d"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": "quadriceps",
+      "children": [],
+      "relation": "child",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "边界可接受；100% 位于股四头肌合成遮罩内，属设计关系。"
+    },
+    {
+      "index": 27,
+      "id": "vastus_medialis",
+      "manifestId": "vastus_medialis",
+      "nameZh": "股内侧肌",
+      "nameEn": "Vastus medialis",
+      "frontFile": "vastus_medialis.png",
+      "backFile": "vastus_medialis.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 5931,
+        "hit_pixels": 5852,
+        "bbox": [
+          456,
+          962,
+          568,
+          1060
+        ],
+        "center": [
+          511.51,
+          1008.31
+        ],
+        "sha256": "dc0dcb5160160bd915f780852f6c7a39981b6f5cd09b822b67ea975ee905bf6d"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": "quadriceps",
+      "children": [],
+      "relation": "child",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 16.6%；与股直肌约 54.3% 重叠。"
+    },
+    {
+      "index": 28,
+      "id": "hamstrings",
+      "manifestId": "hamstrings",
+      "nameZh": "腘绳肌",
+      "nameEn": "Hamstrings",
+      "frontFile": "hamstrings.png",
+      "backFile": "hamstrings.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 30524,
+        "hit_pixels": 30365,
+        "bbox": [
+          403,
+          831,
+          621,
+          1085
+        ],
+        "center": [
+          511.49,
+          940.23
+        ],
+        "sha256": "0c528e7e8eac14640bad199aec92e294edaf5620db781e10470c2b60bb5c1f80"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 4.8%，轮廓需人工确认。"
+    },
+    {
+      "index": 29,
+      "id": "adductors",
+      "manifestId": "adductors",
+      "nameZh": "内收肌群",
+      "nameEn": "Hip adductors",
+      "frontFile": "adductors.png",
+      "backFile": "adductors.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 10824,
+        "hit_pixels": 10738,
+        "bbox": [
+          480,
+          795,
+          544,
+          1025
+        ],
+        "center": [
+          511.49,
+          901.38
+        ],
+        "sha256": "dbee7cf0d55f000e39dd66b35d945766f1d3512a4e463622ab421547f20d890a"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "越界约 30.3%；约 48.9% 落在股四头肌合成遮罩内。"
+    },
+    {
+      "index": 30,
+      "id": "sartorius",
+      "manifestId": "sartorius",
+      "nameZh": "缝匠肌",
+      "nameEn": "Sartorius",
+      "frontFile": "sartorius.png",
+      "backFile": "sartorius.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 8508,
+        "hit_pixels": 8415,
+        "bbox": [
+          418,
+          793,
+          606,
+          1006
+        ],
+        "center": [
+          511.51,
+          888.12
+        ],
+        "sha256": "0864ab05c44c9ea2ef9f6ea706e40fdd4fcb18fbe6791a401696127578f37392"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "约 82.4% 落在股四头肌合成遮罩内；正面有独立遮罩，背面为空。"
+    },
+    {
+      "index": 31,
+      "id": "gastrocnemius",
+      "manifestId": "gastrocnemius",
+      "nameZh": "腓肠肌",
+      "nameEn": "Gastrocnemius",
+      "frontFile": "gastrocnemius.png",
+      "backFile": "gastrocnemius.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 11641,
+        "hit_pixels": 11539,
+        "bbox": [
+          401,
+          1093,
+          623,
+          1246
+        ],
+        "center": [
+          511.51,
+          1164.64
+        ],
+        "sha256": "77be114b6fa34b076ac2bb0d2383b5cb920b0e32e4140499744e466efdab8b1c"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "边界可接受；与比目鱼肌约 0.4% 重叠。"
+    },
+    {
+      "index": 32,
+      "id": "soleus",
+      "manifestId": "soleus",
+      "nameZh": "比目鱼肌",
+      "nameEn": "Soleus",
+      "frontFile": "soleus.png",
+      "backFile": "soleus.png",
+      "frontStatus": "empty_on_this_side",
+      "backStatus": "drawn",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 5702,
+        "hit_pixels": 5643,
+        "bbox": [
+          412,
+          1237,
+          612,
+          1362
+        ],
+        "center": [
+          511.48,
+          1292.84
+        ],
+        "sha256": "07ea51be2be6aa1c24729e8c3dce3ccac780082f6aadebbb507b026f40bf3bf2"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "轮廓需人工确认；与腓肠肌几乎不重叠。"
+    },
+    {
+      "index": 33,
+      "id": "tibialis_anterior",
+      "manifestId": "tibialis_anterior",
+      "nameZh": "胫骨前肌",
+      "nameEn": "Tibialis anterior",
+      "frontFile": "tibialis_anterior.png",
+      "backFile": "tibialis_anterior.png",
+      "frontStatus": "drawn",
+      "backStatus": "empty_on_this_side",
+      "overallStatus": "drawn",
+      "front": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 8185,
+        "hit_pixels": 8102,
+        "bbox": [
+          407,
+          1094,
+          617,
+          1265
+        ],
+        "center": [
+          511.49,
+          1172.52
+        ],
+        "sha256": "4df1830a004bd23eb4cd3259c7d72537675b6d60bc08b34f47509803a6988df0"
+      },
+      "back": {
+        "size": [
+          1024,
+          1536
+        ],
+        "alpha_gt0": 0,
+        "hit_pixels": 0,
+        "bbox": null,
+        "center": null,
+        "sha256": "cbfe95200033c1f3069d53f93fb44c91fe4db2169f4a02b8c02cff06d53a28da"
+      },
+      "parent": null,
+      "children": [],
+      "relation": "single",
+      "assetAlias": null,
+      "reviewStatus": "pending_human_review",
+      "reviewNotes": "轮廓需人工确认；越界 0。"
+    }
+  ]
+}

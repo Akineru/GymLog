@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536">
+  <!-- 背阔肌人工校准稿。坐标系与 muscle_back_base.png 相同：1024 x 1536。 -->
+  <!-- 曲线穿过全部编号锚点。改圆点坐标时，请同时改对应 path 的端点。 -->
+  <!-- 下缘 inferior 整段不确定：髂嵴白带清楚，肌纤维在白带上方何处结束无法确认。 -->
+  <!-- 外缘 lateral 上中段与躯干外轮廓重合，插画里没有更靠内的独立肌界。 -->
+  <!-- 锚点 4 和 17：上缘白线变淡，与内缘的交角不确定。 -->
+  <g id="lat-fill" fill="#ffffff">
+    <path id="lat-left" d="M 370 422 C 376 414.33 388.67 424.67 400 426 C 411.33 427.33 427.67 428.33 438 430 C 448.33 431.67 455 426 462 436 C 469 446 475.67 472.67 480 490 C 484.33 507.33 489.67 521.67 488 540 C 486.33 558.33 476.67 582.33 470 600 C 463.33 617.67 455 637.33 448 646 C 441 654.67 433 654.33 428 652 C 423 649.67 418.33 642.33 418 632 C 417.67 621.67 429 607 426 590 C 423 573 410.33 549.67 400 530 C 389.67 510.33 369 490 364 472 C 359 454 364 429.67 370 422 Z"/>
+    <path id="lat-right" d="M 654 422 C 648 414.33 635.33 424.67 624 426 C 612.67 427.33 597.33 428.33 586 430 C 574.67 431.67 563 426 556 436 C 549 446 547.67 472.67 544 490 C 540.33 507.33 532.67 521.67 534 540 C 535.33 558.33 545.33 582.33 552 600 C 558.67 617.67 566.67 637.33 574 646 C 581.33 654.67 590.67 655 596 652 C 601.33 649 607.33 638.33 606 628 C 604.67 617.67 586.33 606 588 590 C 589.67 574 604 551.67 616 532 C 628 512.33 653.67 490.33 660 472 C 666.33 453.67 660 429.67 654 422 Z"/>
+  </g>
+  <g id="borders" fill="none" stroke-width="3" stroke-linejoin="round">
+    <path id="left-superior" data-edge="superior" stroke="#E6B400" data-certainty="visible" d="M 370 422 C 376 414.33 388.67 424.67 400 426 C 411.33 427.33 427.67 428.33 438 430 C 448.33 431.67 455 426 462 436"/>
+    <path id="left-medial" data-edge="medial" stroke="#285AE6" data-certainty="visible" d="M 462 436 C 469 446 475.67 472.67 480 490 C 484.33 507.33 489.67 521.67 488 540 C 486.33 558.33 476.67 582.33 470 600"/>
+    <path id="left-inferior" data-edge="inferior" stroke="#D22858" stroke-dasharray="8 6" data-certainty="uncertain" d="M 470 600 C 463.33 617.67 455 637.33 448 646 C 441 654.67 433 654.33 428 652 C 423 649.67 418.33 642.33 418 632"/>
+    <path id="left-lateral" data-edge="lateral" stroke="#1E9A46" data-certainty="silhouette" d="M 418 632 C 417.67 621.67 429 607 426 590 C 423 573 410.33 549.67 400 530 C 389.67 510.33 369 490 364 472 C 359 454 364 429.67 370 422"/>
+    <path id="right-superior" data-edge="superior" stroke="#E6B400" data-certainty="visible" d="M 654 422 C 648 414.33 635.33 424.67 624 426 C 612.67 427.33 597.33 428.33 586 430 C 574.67 431.67 563 426 556 436"/>
+    <path id="right-medial" data-edge="medial" stroke="#285AE6" data-certainty="visible" d="M 556 436 C 549 446 547.67 472.67 544 490 C 540.33 507.33 532.67 521.67 534 540 C 535.33 558.33 545.33 582.33 552 600"/>
+    <path id="right-inferior" data-edge="inferior" stroke="#D22858" stroke-dasharray="8 6" data-certainty="uncertain" d="M 552 600 C 558.67 617.67 566.67 637.33 574 646 C 581.33 654.67 590.67 655 596 652 C 601.33 649 607.33 638.33 606 628"/>
+    <path id="right-lateral" data-edge="lateral" stroke="#1E9A46" data-certainty="silhouette" d="M 606 628 C 604.67 617.67 586.33 606 588 590 C 589.67 574 604 551.67 616 532 C 628 512.33 653.67 490.33 660 472 C 666.33 453.67 660 429.67 654 422"/>
+  </g>
+  <g id="anchors" font-family="Consolas, monospace" font-size="14">
+    <!-- 1 superior 上缘与外缘的交角。白线在腋窝处变圆，交点可再移。 -->
+    <circle id="p1" cx="370" cy="422" r="5" data-edge="superior" data-note="上缘与外缘的交角。白线在腋窝处变圆，交点可再移。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 2 superior 上缘。肩胛下方可看见的白线。 -->
+    <circle id="p2" cx="400" cy="426" r="5" data-edge="superior" data-note="上缘。肩胛下方可看见的白线。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 3 superior 上缘。白线仍清楚。 -->
+    <circle id="p3" cx="438" cy="430" r="5" data-edge="superior" data-note="上缘。白线仍清楚。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 4 superior 上缘内侧终点。白线在这里变淡，并转入内缘。 -->
+    <circle id="p4" cx="462" cy="436" r="5" data-edge="superior" data-note="上缘内侧终点。白线在这里变淡，并转入内缘。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 5 medial 内缘上段。竖脊肌外侧的浅沟。 -->
+    <circle id="p5" cx="480" cy="490" r="5" data-edge="medial" data-note="内缘上段。竖脊肌外侧的浅沟。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 6 medial 内缘中段。仍贴着竖脊肌外侧。 -->
+    <circle id="p6" cx="488" cy="540" r="5" data-edge="medial" data-note="内缘中段。仍贴着竖脊肌外侧。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 7 medial 内缘下段。腰筋膜开始向外斜。 -->
+    <circle id="p7" cx="470" cy="600" r="5" data-edge="medial" data-note="内缘下段。腰筋膜开始向外斜。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 8 inferior 内缘与下缘的交角。髂嵴白带上方，纤维终点不锐利。 -->
+    <circle id="p8" cx="448" cy="646" r="5" data-edge="inferior" data-note="内缘与下缘的交角。髂嵴白带上方，纤维终点不锐利。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 9 inferior 下缘中点。沿髂嵴白带上沿，精确终点无法确认。 -->
+    <circle id="p9" cx="428" cy="652" r="5" data-edge="inferior" data-note="下缘中点。沿髂嵴白带上沿，精确终点无法确认。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 10 inferior 下缘与外缘的交角。腰部转折，白带与体侧轮廓叠在一起。 -->
+    <circle id="p10" cx="418" cy="632" r="5" data-edge="inferior" data-note="下缘与外缘的交角。腰部转折，白带与体侧轮廓叠在一起。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 11 lateral 外缘下段。这里没有单独的肌内膜，边缘与躯干外轮廓重合。 -->
+    <circle id="p11" cx="426" cy="590" r="5" data-edge="lateral" data-note="外缘下段。这里没有单独的肌内膜，边缘与躯干外轮廓重合。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 12 lateral 外缘。腋窝凹陷内侧，贴躯干外轮廓。 -->
+    <circle id="p12" cx="400" cy="530" r="5" data-edge="lateral" data-note="外缘。腋窝凹陷内侧，贴躯干外轮廓。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 13 lateral 外缘上段。贴躯干外轮廓，没有更靠内的可见肌界。 -->
+    <circle id="p13" cx="364" cy="472" r="5" data-edge="lateral" data-note="外缘上段。贴躯干外轮廓，没有更靠内的可见肌界。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 14 superior 上缘与外缘的交角。白线在腋窝处变圆，交点可再移。 -->
+    <circle id="p14" cx="654" cy="422" r="5" data-edge="superior" data-note="上缘与外缘的交角。白线在腋窝处变圆，交点可再移。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 15 superior 上缘。肩胛下方可看见的白线。 -->
+    <circle id="p15" cx="624" cy="426" r="5" data-edge="superior" data-note="上缘。肩胛下方可看见的白线。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 16 superior 上缘。白线仍清楚。 -->
+    <circle id="p16" cx="586" cy="430" r="5" data-edge="superior" data-note="上缘。白线仍清楚。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 17 superior 上缘内侧终点。白线在这里变淡，并转入内缘。 -->
+    <circle id="p17" cx="556" cy="436" r="5" data-edge="superior" data-note="上缘内侧终点。白线在这里变淡，并转入内缘。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 18 medial 内缘上段。竖脊肌外侧的浅沟。 -->
+    <circle id="p18" cx="544" cy="490" r="5" data-edge="medial" data-note="内缘上段。竖脊肌外侧的浅沟。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 19 medial 内缘中段。仍贴着竖脊肌外侧。 -->
+    <circle id="p19" cx="534" cy="540" r="5" data-edge="medial" data-note="内缘中段。仍贴着竖脊肌外侧。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 20 medial 内缘下段。腰筋膜开始向外斜。 -->
+    <circle id="p20" cx="552" cy="600" r="5" data-edge="medial" data-note="内缘下段。腰筋膜开始向外斜。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 21 inferior 内缘与下缘的交角。髂嵴白带上方，纤维终点不锐利。 -->
+    <circle id="p21" cx="574" cy="646" r="5" data-edge="inferior" data-note="内缘与下缘的交角。髂嵴白带上方，纤维终点不锐利。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 22 inferior 下缘中点。沿髂嵴白带上沿，精确终点无法确认。 -->
+    <circle id="p22" cx="596" cy="652" r="5" data-edge="inferior" data-note="下缘中点。沿髂嵴白带上沿，精确终点无法确认。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 23 inferior 下缘与外缘的交角。腰部转折，白带与体侧轮廓叠在一起。 -->
+    <circle id="p23" cx="606" cy="628" r="5" data-edge="inferior" data-note="下缘与外缘的交角。腰部转折，白带与体侧轮廓叠在一起。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 24 lateral 外缘下段。这里没有单独的肌内膜，边缘与躯干外轮廓重合。 -->
+    <circle id="p24" cx="588" cy="590" r="5" data-edge="lateral" data-note="外缘下段。这里没有单独的肌内膜，边缘与躯干外轮廓重合。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 25 lateral 外缘。腋窝凹陷内侧，贴躯干外轮廓。 -->
+    <circle id="p25" cx="616" cy="532" r="5" data-edge="lateral" data-note="外缘。腋窝凹陷内侧，贴躯干外轮廓。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 26 lateral 外缘上段。贴躯干外轮廓，没有更靠内的可见肌界。 -->
+    <circle id="p26" cx="660" cy="472" r="5" data-edge="lateral" data-note="外缘上段。贴躯干外轮廓，没有更靠内的可见肌界。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+  </g>
+</svg>

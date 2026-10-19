@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-10-18T15:01:00+08:00",
+  "backup": "C:\\Users\\75192\\AndroidStudioProjects\\GymLog-acceptance-fix-backup-20261018-150049.zip",
+  "roomVersion": 13,
+  "backupVersion": 2,
+  "presetCount": 89,
+  "presetMuscleMappingCount": 89,
+  "stableMuscleIdCount": 33,
+  "testBaseline": {
+    "suites": 39,
+    "tests": 154,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "apkBytes": 27961716,
+  "accessibleUserDatabase": false,
+  "note": "No accessible user gymlog.db; no real database was created or modified during this fix."
+}

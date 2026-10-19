@@ -1,0 +1,389 @@
+{
+  "format": "traivol-muscle-mask-pack",
+  "version": 2,
+  "canvas": {
+    "width": 1024,
+    "height": 1536,
+    "viewBox": "0 0 1024 1536",
+    "background": "transparent",
+    "alignment": "Every mask PNG uses the same 1024x1536 canvas as both base images; do not crop or rescale masks independently."
+  },
+  "colorGuidance": {
+    "primary": "#F0444F",
+    "secondary": "#FF9A9E",
+    "recommendedOverlayAlpha": 0.42,
+    "untrained": "show base grayscale image"
+  },
+  "important": [
+    "Base PNGs are transparent-background raster illustrations.",
+    "Masks are white opaque inside the selected area and transparent elsewhere.",
+    "IDs in this manifest are semantic hints; Cursor must map them to the app’s existing muscle IDs without changing database IDs.",
+    "Several deep muscles intentionally have empty masks because the illustration cannot accurately isolate them as a visible superficial region.",
+    "This is a UI prototype asset pack, not a clinically certified anatomical atlas. Review region masks before production use."
+  ],
+  "muscles": [
+    {
+      "muscleIdHint": "pectoralis_major",
+      "nameZh": "胸大肌",
+      "nameEn": "Pectoralis major",
+      "bodyRegion": "胸部",
+      "frontMask": "masks/front/pectoralis_major.png",
+      "backMask": "masks/back/pectoralis_major.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "deltoid_anterior",
+      "nameZh": "三角肌前束",
+      "nameEn": "Anterior deltoid",
+      "bodyRegion": "肩部",
+      "frontMask": "masks/front/deltoid_anterior.png",
+      "backMask": "masks/back/deltoid_anterior.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "deltoid_middle",
+      "nameZh": "三角肌中束",
+      "nameEn": "Middle deltoid",
+      "bodyRegion": "肩部",
+      "frontMask": "masks/front/deltoid_middle.png",
+      "backMask": "masks/back/deltoid_middle.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "deltoid_posterior",
+      "nameZh": "三角肌后束",
+      "nameEn": "Posterior deltoid",
+      "bodyRegion": "肩部",
+      "frontMask": "masks/front/deltoid_posterior.png",
+      "backMask": "masks/back/deltoid_posterior.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "trapezius_upper",
+      "nameZh": "斜方肌上部",
+      "nameEn": "Upper trapezius",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/trapezius_upper.png",
+      "backMask": "masks/back/trapezius_upper.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "trapezius_middle",
+      "nameZh": "斜方肌中部",
+      "nameEn": "Middle trapezius",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/trapezius_middle.png",
+      "backMask": "masks/back/trapezius_middle.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "trapezius_lower",
+      "nameZh": "斜方肌下部",
+      "nameEn": "Lower trapezius",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/trapezius_lower.png",
+      "backMask": "masks/back/trapezius_lower.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "latissimus_dorsi",
+      "nameZh": "背阔肌",
+      "nameEn": "Latissimus dorsi",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/latissimus_dorsi.png",
+      "backMask": "masks/back/latissimus_dorsi.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "teres_major",
+      "nameZh": "大圆肌",
+      "nameEn": "Teres major",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/teres_major.png",
+      "backMask": "masks/back/teres_major.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "rhomboids",
+      "nameZh": "菱形肌",
+      "nameEn": "Rhomboids",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/rhomboids.png",
+      "backMask": "masks/back/rhomboids.png",
+      "frontVisible": false,
+      "backVisible": false,
+      "notes": "Intentionally empty: this generated superficial illustration does not provide a reliable independent visible region for this muscle. Do not map it to a neighboring surface muscle."
+    },
+    {
+      "muscleIdHint": "erector_spinae",
+      "nameZh": "竖脊肌",
+      "nameEn": "Erector spinae",
+      "bodyRegion": "背部",
+      "frontMask": "masks/front/erector_spinae.png",
+      "backMask": "masks/back/erector_spinae.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "biceps_brachii",
+      "nameZh": "肱二头肌",
+      "nameEn": "Biceps brachii",
+      "bodyRegion": "手臂",
+      "frontMask": "masks/front/biceps_brachii.png",
+      "backMask": "masks/back/biceps_brachii.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "brachialis",
+      "nameZh": "肱肌",
+      "nameEn": "Brachialis",
+      "bodyRegion": "手臂",
+      "frontMask": "masks/front/brachialis.png",
+      "backMask": "masks/back/brachialis.png",
+      "frontVisible": false,
+      "backVisible": false,
+      "notes": "Intentionally empty: this generated superficial illustration does not provide a reliable independent visible region for this muscle. Do not map it to a neighboring surface muscle."
+    },
+    {
+      "muscleIdHint": "triceps_brachii",
+      "nameZh": "肱三头肌",
+      "nameEn": "Triceps brachii",
+      "bodyRegion": "手臂",
+      "frontMask": "masks/front/triceps_brachii.png",
+      "backMask": "masks/back/triceps_brachii.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "brachioradialis",
+      "nameZh": "肱桡肌",
+      "nameEn": "Brachioradialis",
+      "bodyRegion": "手臂",
+      "frontMask": "masks/front/brachioradialis.png",
+      "backMask": "masks/back/brachioradialis.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "forearm_flexors",
+      "nameZh": "前臂屈肌群",
+      "nameEn": "Forearm flexors",
+      "bodyRegion": "手臂",
+      "frontMask": "masks/front/forearm_flexors.png",
+      "backMask": "masks/back/forearm_flexors.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "forearm_extensors",
+      "nameZh": "前臂伸肌群",
+      "nameEn": "Forearm extensors",
+      "bodyRegion": "手臂",
+      "frontMask": "masks/front/forearm_extensors.png",
+      "backMask": "masks/back/forearm_extensors.png",
+      "frontVisible": true,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "rectus_abdominis",
+      "nameZh": "腹直肌",
+      "nameEn": "Rectus abdominis",
+      "bodyRegion": "核心",
+      "frontMask": "masks/front/rectus_abdominis.png",
+      "backMask": "masks/back/rectus_abdominis.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "external_oblique",
+      "nameZh": "腹外斜肌",
+      "nameEn": "External oblique",
+      "bodyRegion": "核心",
+      "frontMask": "masks/front/external_oblique.png",
+      "backMask": "masks/back/external_oblique.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "internal_oblique",
+      "nameZh": "腹内斜肌",
+      "nameEn": "Internal oblique",
+      "bodyRegion": "核心",
+      "frontMask": "masks/front/internal_oblique.png",
+      "backMask": "masks/back/internal_oblique.png",
+      "frontVisible": false,
+      "backVisible": false,
+      "notes": "Intentionally empty: this generated superficial illustration does not provide a reliable independent visible region for this muscle. Do not map it to a neighboring surface muscle."
+    },
+    {
+      "muscleIdHint": "transversus_abdominis",
+      "nameZh": "腹横肌",
+      "nameEn": "Transversus abdominis",
+      "bodyRegion": "核心",
+      "frontMask": "masks/front/transversus_abdominis.png",
+      "backMask": "masks/back/transversus_abdominis.png",
+      "frontVisible": false,
+      "backVisible": false,
+      "notes": "Intentionally empty: this generated superficial illustration does not provide a reliable independent visible region for this muscle. Do not map it to a neighboring surface muscle."
+    },
+    {
+      "muscleIdHint": "gluteus_maximus",
+      "nameZh": "臀大肌",
+      "nameEn": "Gluteus maximus",
+      "bodyRegion": "臀部",
+      "frontMask": "masks/front/gluteus_maximus.png",
+      "backMask": "masks/back/gluteus_maximus.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "gluteus_medius",
+      "nameZh": "臀中肌",
+      "nameEn": "Gluteus medius",
+      "bodyRegion": "臀部",
+      "frontMask": "masks/front/gluteus_medius.png",
+      "backMask": "masks/back/gluteus_medius.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "quadriceps",
+      "nameZh": "股四头肌",
+      "nameEn": "Quadriceps femoris",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/quadriceps.png",
+      "backMask": "masks/back/quadriceps.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": "Composite region combining rectus femoris, vastus lateralis and vastus medialis; do not tint this mask simultaneously with those component masks."
+    },
+    {
+      "muscleIdHint": "rectus_femoris",
+      "nameZh": "股直肌",
+      "nameEn": "Rectus femoris",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/rectus_femoris.png",
+      "backMask": "masks/back/rectus_femoris.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "vastus_lateralis",
+      "nameZh": "股外侧肌",
+      "nameEn": "Vastus lateralis",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/vastus_lateralis.png",
+      "backMask": "masks/back/vastus_lateralis.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "vastus_medialis",
+      "nameZh": "股内侧肌",
+      "nameEn": "Vastus medialis",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/vastus_medialis.png",
+      "backMask": "masks/back/vastus_medialis.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "hamstrings",
+      "nameZh": "腘绳肌",
+      "nameEn": "Hamstrings",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/hamstrings.png",
+      "backMask": "masks/back/hamstrings.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "adductors",
+      "nameZh": "内收肌群",
+      "nameEn": "Hip adductors",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/adductors.png",
+      "backMask": "masks/back/adductors.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "sartorius",
+      "nameZh": "缝匠肌",
+      "nameEn": "Sartorius",
+      "bodyRegion": "腿部",
+      "frontMask": "masks/front/sartorius.png",
+      "backMask": "masks/back/sartorius.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "gastrocnemius",
+      "nameZh": "腓肠肌",
+      "nameEn": "Gastrocnemius",
+      "bodyRegion": "小腿",
+      "frontMask": "masks/front/gastrocnemius.png",
+      "backMask": "masks/back/gastrocnemius.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "soleus",
+      "nameZh": "比目鱼肌",
+      "nameEn": "Soleus",
+      "bodyRegion": "小腿",
+      "frontMask": "masks/front/soleus.png",
+      "backMask": "masks/back/soleus.png",
+      "frontVisible": false,
+      "backVisible": true,
+      "notes": ""
+    },
+    {
+      "muscleIdHint": "tibialis_anterior",
+      "nameZh": "胫骨前肌",
+      "nameEn": "Tibialis anterior",
+      "bodyRegion": "小腿",
+      "frontMask": "masks/front/tibialis_anterior.png",
+      "backMask": "masks/back/tibialis_anterior.png",
+      "frontVisible": true,
+      "backVisible": false,
+      "notes": ""
+    }
+  ]
+}

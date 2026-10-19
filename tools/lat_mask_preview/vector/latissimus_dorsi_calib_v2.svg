@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536">
+  <!-- 背阔肌校准第二版。第一版保留为 latissimus_dorsi_calib.svg 与 latissimus_dorsi_calib_v1.svg。 -->
+  <!-- 上缘 1-4、14-17 未移动。内缘 5-7、18-20 保留为参考。 -->
+  <!-- 下缘 8-9、21-22 与外缘下段 10-11、23-24 改到腰部可见斜向浅沟内侧，离开躯干剪影。这些点均为待人工确认。 -->
+  <!-- 外缘上段 12-13、25-26 未移动：底图没有独立肌界，不能把身体剪影写成背阔肌边界。 -->
+  <g id="lat-fill" fill="#ffffff">
+    <path id="lat-left" d="M 370 422 C 376 414.33 388.67 424.67 400 426 C 411.33 427.33 427.67 428.33 438 430 C 448.33 431.67 455 426 462 436 C 469 446 475.67 472.67 480 490 C 484.33 507.33 489.67 521.67 488 540 C 486.33 558.33 474.67 585.33 470 600 C 465.33 614.67 463 620.67 460 628 C 457 635.33 455 644.67 452 644 C 449 643.33 445.33 634.33 442 624 C 438.67 613.67 439 597.67 432 582 C 425 566.33 411.33 548.33 400 530 C 388.67 511.67 369 490 364 472 C 359 454 364 429.67 370 422 Z"/>
+    <path id="lat-right" d="M 654 422 C 648 414.33 635.33 424.67 624 426 C 612.67 427.33 597.33 428.33 586 430 C 574.67 431.67 563 426 556 436 C 549 446 547.67 472.67 544 490 C 540.33 507.33 532.67 521.67 534 540 C 535.33 558.33 547.33 585.33 552 600 C 556.67 614.67 559 620.67 562 628 C 565 635.33 567 644.67 570 644 C 573 643.33 576.67 634.33 580 624 C 583.33 613.67 584 597.33 590 582 C 596 566.67 604.33 550.33 616 532 C 627.67 513.67 653.67 490.33 660 472 C 666.33 453.67 660 429.67 654 422 Z"/>
+  </g>
+  <g id="borders" fill="none" stroke-width="3" stroke-linejoin="round">
+    <path id="left-superior" data-edge="superior" data-certainty="visible" stroke="#E6B400" d="M 370 422 C 376 414.33 388.67 424.67 400 426 C 411.33 427.33 427.67 428.33 438 430 C 448.33 431.67 455 426 462 436"/>
+    <path id="left-medial" data-edge="medial" data-certainty="reference" stroke="#285AE6" d="M 462 436 C 469 446 475.67 472.67 480 490 C 484.33 507.33 489.67 521.67 488 540 C 486.33 558.33 474.67 585.33 470 600"/>
+    <path id="left-inferior" data-edge="inferior" data-certainty="pending" stroke="#D22858" stroke-dasharray="8 6" d="M 470 600 C 465.33 614.67 463 620.67 460 628 C 457 635.33 455 644.67 452 644"/>
+    <path id="left-lateral" data-edge="lateral" data-certainty="pending" stroke="#1E9A46" stroke-dasharray="8 6" d="M 452 644 C 449 643.33 445.33 634.33 442 624 C 438.67 613.67 439 597.67 432 582 C 425 566.33 411.33 548.33 400 530 C 388.67 511.67 369 490 364 472 C 359 454 364 429.67 370 422"/>
+    <path id="right-superior" data-edge="superior" data-certainty="visible" stroke="#E6B400" d="M 654 422 C 648 414.33 635.33 424.67 624 426 C 612.67 427.33 597.33 428.33 586 430 C 574.67 431.67 563 426 556 436"/>
+    <path id="right-medial" data-edge="medial" data-certainty="reference" stroke="#285AE6" d="M 556 436 C 549 446 547.67 472.67 544 490 C 540.33 507.33 532.67 521.67 534 540 C 535.33 558.33 547.33 585.33 552 600"/>
+    <path id="right-inferior" data-edge="inferior" data-certainty="pending" stroke="#D22858" stroke-dasharray="8 6" d="M 552 600 C 556.67 614.67 559 620.67 562 628 C 565 635.33 567 644.67 570 644"/>
+    <path id="right-lateral" data-edge="lateral" data-certainty="pending" stroke="#1E9A46" stroke-dasharray="8 6" d="M 570 644 C 573 643.33 576.67 634.33 580 624 C 583.33 613.67 584 597.33 590 582 C 596 566.67 604.33 550.33 616 532 C 627.67 513.67 653.67 490.33 660 472 C 666.33 453.67 660 429.67 654 422"/>
+  </g>
+  <g id="anchors">
+    <!-- 1 superior visible 上缘。肩胛下白线，本版未移动。 -->
+    <circle id="p1" cx="370" cy="422" r="5" data-edge="superior" data-certainty="visible" data-note="上缘。肩胛下白线，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 2 superior visible 上缘。肩胛下白线，本版未移动。 -->
+    <circle id="p2" cx="400" cy="426" r="5" data-edge="superior" data-certainty="visible" data-note="上缘。肩胛下白线，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 3 superior visible 上缘。肩胛下白线，本版未移动。 -->
+    <circle id="p3" cx="438" cy="430" r="5" data-edge="superior" data-certainty="visible" data-note="上缘。肩胛下白线，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 4 superior visible 上缘内侧。白线变淡处，本版未移动。 -->
+    <circle id="p4" cx="462" cy="436" r="5" data-edge="superior" data-certainty="visible" data-note="上缘内侧。白线变淡处，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 5 medial reference 内缘参考，本版按要求保留。 -->
+    <circle id="p5" cx="480" cy="490" r="5" data-edge="medial" data-certainty="reference" data-note="内缘参考，本版按要求保留。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 6 medial reference 内缘参考，本版按要求保留。 -->
+    <circle id="p6" cx="488" cy="540" r="5" data-edge="medial" data-certainty="reference" data-note="内缘参考，本版按要求保留。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 7 medial reference 内缘参考，本版按要求保留。 -->
+    <circle id="p7" cx="470" cy="600" r="5" data-edge="medial" data-certainty="reference" data-note="内缘参考，本版按要求保留。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 8 inferior pending 待人工确认。内缘下延，停在髂嵴白带上方，不沿白带收成圆角。 -->
+    <circle id="p8" cx="460" cy="628" r="5" data-edge="inferior" data-certainty="pending" data-note="待人工确认。内缘下延，停在髂嵴白带上方，不沿白带收成圆角。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 9 inferior pending 待人工确认。斜向浅沟与白带上方纤维区相遇，不在躯干外轮廓上。纤维终点不锐利。 -->
+    <circle id="p9" cx="452" cy="644" r="5" data-edge="inferior" data-certainty="pending" data-note="待人工确认。斜向浅沟与白带上方纤维区相遇，不在躯干外轮廓上。纤维终点不锐利。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 10 lateral pending 待人工确认。腰部斜向浅沟，在身体剪影内侧。不能确定它是肌界还是纤维沟。 -->
+    <circle id="p10" cx="442" cy="624" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。腰部斜向浅沟，在身体剪影内侧。不能确定它是肌界还是纤维沟。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 11 lateral pending 待人工确认。同一条斜向浅沟的上端。 -->
+    <circle id="p11" cx="432" cy="582" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。同一条斜向浅沟的上端。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 12 lateral pending 待人工确认。此段底图没有独立肌界，锚点仍靠近躯干外轮廓，未把它当成背阔肌边界。 -->
+    <circle id="p12" cx="400" cy="530" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。此段底图没有独立肌界，锚点仍靠近躯干外轮廓，未把它当成背阔肌边界。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 13 lateral pending 待人工确认。腋窝旁纤维一直画到体侧，未见更靠内的肌界。 -->
+    <circle id="p13" cx="364" cy="472" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。腋窝旁纤维一直画到体侧，未见更靠内的肌界。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 14 superior visible 上缘。肩胛下白线，本版未移动。 -->
+    <circle id="p14" cx="654" cy="422" r="5" data-edge="superior" data-certainty="visible" data-note="上缘。肩胛下白线，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 15 superior visible 上缘。肩胛下白线，本版未移动。 -->
+    <circle id="p15" cx="624" cy="426" r="5" data-edge="superior" data-certainty="visible" data-note="上缘。肩胛下白线，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 16 superior visible 上缘。肩胛下白线，本版未移动。 -->
+    <circle id="p16" cx="586" cy="430" r="5" data-edge="superior" data-certainty="visible" data-note="上缘。肩胛下白线，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 17 superior visible 上缘内侧。白线变淡处，本版未移动。 -->
+    <circle id="p17" cx="556" cy="436" r="5" data-edge="superior" data-certainty="visible" data-note="上缘内侧。白线变淡处，本版未移动。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 18 medial reference 内缘参考，本版按要求保留。 -->
+    <circle id="p18" cx="544" cy="490" r="5" data-edge="medial" data-certainty="reference" data-note="内缘参考，本版按要求保留。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 19 medial reference 内缘参考，本版按要求保留。 -->
+    <circle id="p19" cx="534" cy="540" r="5" data-edge="medial" data-certainty="reference" data-note="内缘参考，本版按要求保留。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 20 medial reference 内缘参考，本版按要求保留。 -->
+    <circle id="p20" cx="552" cy="600" r="5" data-edge="medial" data-certainty="reference" data-note="内缘参考，本版按要求保留。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 21 inferior pending 待人工确认。内缘下延，停在髂嵴白带上方，不沿白带收成圆角。 -->
+    <circle id="p21" cx="562" cy="628" r="5" data-edge="inferior" data-certainty="pending" data-note="待人工确认。内缘下延，停在髂嵴白带上方，不沿白带收成圆角。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 22 inferior pending 待人工确认。斜向浅沟与白带上方纤维区相遇，不在躯干外轮廓上。纤维终点不锐利。 -->
+    <circle id="p22" cx="570" cy="644" r="5" data-edge="inferior" data-certainty="pending" data-note="待人工确认。斜向浅沟与白带上方纤维区相遇，不在躯干外轮廓上。纤维终点不锐利。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 23 lateral pending 待人工确认。腰部斜向浅沟，在身体剪影内侧。不能确定它是肌界还是纤维沟。 -->
+    <circle id="p23" cx="580" cy="624" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。腰部斜向浅沟，在身体剪影内侧。不能确定它是肌界还是纤维沟。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 24 lateral pending 待人工确认。同一条斜向浅沟的上端。 -->
+    <circle id="p24" cx="590" cy="582" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。同一条斜向浅沟的上端。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 25 lateral pending 待人工确认。此段底图没有独立肌界，锚点仍靠近躯干外轮廓，未把它当成背阔肌边界。 -->
+    <circle id="p25" cx="616" cy="532" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。此段底图没有独立肌界，锚点仍靠近躯干外轮廓，未把它当成背阔肌边界。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+    <!-- 26 lateral pending 待人工确认。腋窝旁纤维一直画到体侧，未见更靠内的肌界。 -->
+    <circle id="p26" cx="660" cy="472" r="5" data-edge="lateral" data-certainty="pending" data-note="待人工确认。腋窝旁纤维一直画到体侧，未见更靠内的肌界。" fill="#ffe14a" stroke="#111" stroke-width="1.5"/>
+  </g>
+</svg>
