@@ -12,6 +12,9 @@ import com.example.gymlog.data.MIGRATION_12_13
 import com.example.gymlog.data.MIGRATION_13_14
 import com.example.gymlog.data.MIGRATION_14_15
 import com.example.gymlog.data.MIGRATION_15_16
+import com.example.gymlog.data.MIGRATION_16_17
+import com.example.gymlog.data.MIGRATION_17_18
+import com.example.gymlog.data.MIGRATION_18_19
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -25,7 +28,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34])
 class GirthSaveTest {
     @Test
-    fun savingGirthsKeepsWeightAndDoesNotReuseTheOldArm() = runBlocking {
+    fun savingGirthsKeepsWeightAndOtherMetrics() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val db = Room.inMemoryDatabaseBuilder(context, GymLogDatabase::class.java)
             .allowMainThreadQueries()
@@ -38,7 +41,6 @@ class GirthSaveTest {
                 weightKg = 74.0,
                 bodyFatPercent = 17.2,
                 waistCm = 80.0,
-                armCm = 31.0,
                 createdAt = 1,
             ),
         )
@@ -50,7 +52,6 @@ class GirthSaveTest {
         assertEquals(74.0, latest.weightKg!!, 0.001)
         assertEquals(17.2, latest.bodyFatPercent!!, 0.001)
         assertEquals(177.0, latest.heightCm!!, 0.001)
-        assertEquals(31.0, latest.armCm!!, 0.001)
         assertEquals(32.5, latest.armLeftCm!!, 0.001)
         assertEquals(33.0, latest.armRightCm!!, 0.001)
         assertEquals(98.0, latest.chestCm!!, 0.001)
@@ -76,7 +77,7 @@ class GirthSaveTest {
         val name = "migrate-girth.db"
         context.deleteDatabase(name)
         val created = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+            .addMigrations(MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
             .build()
         created.bodyRecordDao().insertMeasurement(
             BodyMeasurementEntity(
@@ -86,7 +87,6 @@ class GirthSaveTest {
                 weightKg = 75.0,
                 bodyFatPercent = 17.0,
                 waistCm = 82.0,
-                armCm = 30.0,
                 createdAt = 5,
             ),
         )
@@ -96,13 +96,12 @@ class GirthSaveTest {
         created.close()
 
         val upgraded = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+            .addMigrations(MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
             .build()
         val row = upgraded.bodyRecordDao().listMeasurements().single()
         assertEquals(75.0, row.weightKg!!, 0.001)
         assertEquals(17.0, row.bodyFatPercent!!, 0.001)
         assertEquals(82.0, row.waistCm!!, 0.001)
-        assertEquals(30.0, row.armCm!!, 0.001)
         assertNull(row.armLeftCm)
         assertNull(row.armRightCm)
         assertNull(row.chestCm)

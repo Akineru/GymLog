@@ -26,6 +26,7 @@ data class GymLogSnapshot(
     val exerciseMuscles: List<MuscleLink> = emptyList(),
     val timerRecords: List<TimerRecordEntity>? = null,
     val timerLaps: List<TimerLapEntity>? = null,
+    val exerciseDurations: List<ExerciseDurationEntity> = emptyList(),
     val avatarImage: AvatarImageBackup = AvatarImageBackup.Unspecified,
 )
 
@@ -56,6 +57,13 @@ fun GymLogSnapshot.validate() {
     val gender = profile?.gender
     require(gender == null || Gender.fromStored(gender) != null) { "BAD_GENDER" }
     MuscleMapLogic.validateLinks(exerciseIds.toSet(), exerciseMuscles)
+    val durationIds = exerciseDurations.map { it.id }
+    require(durationIds.size == durationIds.toSet().size) { "DUPLICATE_EXERCISE_DURATION" }
+    exerciseDurations.forEach { duration ->
+        require(duration.sessionId in sessionIdSet) { "MISSING_SESSION" }
+        require(duration.exerciseId in exerciseIdSet) { "MISSING_EXERCISE" }
+        require(duration.durationMillis >= 0L) { "BAD_EXERCISE_DURATION" }
+    }
     validateTimers()
     val avatar = avatarImage
     if (avatar is AvatarImageBackup.Jpeg) validateAvatarBytes(avatar.bytes)

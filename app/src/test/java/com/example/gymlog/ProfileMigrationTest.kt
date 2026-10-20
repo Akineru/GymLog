@@ -12,6 +12,9 @@ import com.example.gymlog.data.MIGRATION_12_13
 import com.example.gymlog.data.MIGRATION_13_14
 import com.example.gymlog.data.MIGRATION_14_15
 import com.example.gymlog.data.MIGRATION_15_16
+import com.example.gymlog.data.MIGRATION_16_17
+import com.example.gymlog.data.MIGRATION_17_18
+import com.example.gymlog.data.MIGRATION_18_19
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -29,7 +32,7 @@ class ProfileMigrationTest {
         val name = "migrate-profile.db"
         context.deleteDatabase(name)
         val created = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+            .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
             .build()
         created.bodyRecordDao().upsertProfile(
             BodyProfileEntity(birthdayEpochDay = 10_000, gender = Gender.MALE.name),
@@ -58,7 +61,7 @@ class ProfileMigrationTest {
         created.close()
 
         val upgraded = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+            .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
             .build()
         val profile = upgraded.bodyRecordDao().getProfile()
         assertEquals(10_000L, profile?.birthdayEpochDay)

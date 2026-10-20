@@ -23,6 +23,9 @@ object BackupCodec {
         root.put("sets", JSONArray().apply {
             snapshot.sets.forEach { put(it.toJson()) }
         })
+        root.put("exerciseDurations", JSONArray().apply {
+            snapshot.exerciseDurations.forEach { put(it.toJson()) }
+        })
         val profileJson = snapshot.profile?.toJson(snapshot.avatarImage)
         if (profileJson != null) {
             root.put("profile", profileJson)
@@ -77,6 +80,10 @@ object BackupCodec {
             exercises = root.getJSONArray("exercises").objects().map { it.toExercise() },
             sessions = root.getJSONArray("sessions").objects().map { it.toSession() },
             sets = root.getJSONArray("sets").objects().map { it.toSet() },
+            exerciseDurations = root.optJSONArray("exerciseDurations")
+                ?.objects()
+                ?.map { it.toExerciseDuration() }
+                .orEmpty(),
             profile = profile,
             measurements = root.getJSONArray("measurements").objects().map { it.toMeasurement() },
             legacyRecords = root.getJSONArray("legacyRecords").objects().map { it.toLegacy() },
@@ -182,6 +189,28 @@ private fun WorkoutSessionEntity.toJson(): JSONObject {
         .put("dateEpochDay", dateEpochDay)
         .putNullable("note", note)
         .put("createdAt", createdAt)
+        .put("durationMillis", durationMillis)
+}
+
+private fun ExerciseDurationEntity.toJson(): JSONObject {
+    return JSONObject()
+        .put("id", id)
+        .put("sessionId", sessionId)
+        .put("exerciseId", exerciseId)
+        .put("exerciseOrder", exerciseOrder)
+        .put("durationMillis", durationMillis)
+        .put("createdAt", createdAt)
+}
+
+private fun JSONObject.toExerciseDuration(): ExerciseDurationEntity {
+    return ExerciseDurationEntity(
+        id = getString("id"),
+        sessionId = getString("sessionId"),
+        exerciseId = getString("exerciseId"),
+        exerciseOrder = getInt("exerciseOrder"),
+        durationMillis = getLong("durationMillis"),
+        createdAt = getLong("createdAt"),
+    )
 }
 
 private fun JSONObject.toSession(): WorkoutSessionEntity {
@@ -190,6 +219,7 @@ private fun JSONObject.toSession(): WorkoutSessionEntity {
         dateEpochDay = getLong("dateEpochDay"),
         note = optStringOrNull("note"),
         createdAt = getLong("createdAt"),
+        durationMillis = optLong("durationMillis", 0L),
     )
 }
 
@@ -249,7 +279,6 @@ private fun BodyMeasurementEntity.toJson(): JSONObject {
         .putNullable("weightKg", weightKg)
         .putNullable("bodyFatPercent", bodyFatPercent)
         .putNullable("waistCm", waistCm)
-        .putNullable("armCm", armCm)
         .putNullable("armLeftCm", armLeftCm)
         .putNullable("armRightCm", armRightCm)
         .putNullable("forearmLeftCm", forearmLeftCm)
@@ -271,7 +300,6 @@ private fun JSONObject.toMeasurement(): BodyMeasurementEntity {
         weightKg = optDoubleOrNull("weightKg"),
         bodyFatPercent = optDoubleOrNull("bodyFatPercent"),
         waistCm = optDoubleOrNull("waistCm"),
-        armCm = optDoubleOrNull("armCm"),
         armLeftCm = optDoubleOrNull("armLeftCm"),
         armRightCm = optDoubleOrNull("armRightCm"),
         forearmLeftCm = optDoubleOrNull("forearmLeftCm"),

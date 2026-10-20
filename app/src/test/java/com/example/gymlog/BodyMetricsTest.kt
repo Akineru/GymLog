@@ -40,23 +40,19 @@ class BodyMetricsTest {
         )
         assertEquals(
             false,
-            BodyMetrics.metricsChanged(previous, 175.0, 70.0, 15.0, null, null),
+            BodyMetrics.metricsChanged(previous, 175.0, 70.0, 15.0, null),
         )
         assertEquals(
             true,
-            BodyMetrics.metricsChanged(previous, 175.0, 71.0, 15.0, null, null),
+            BodyMetrics.metricsChanged(previous, 175.0, 71.0, 15.0, null),
         )
         assertEquals(
             true,
-            BodyMetrics.metricsChanged(previous, 175.0, 70.0, 15.0, 80.0, null),
-        )
-        assertEquals(
-            true,
-            BodyMetrics.metricsChanged(previous, 175.0, 70.0, 15.0, null, 32.0),
+            BodyMetrics.metricsChanged(previous, 175.0, 70.0, 15.0, 80.0),
         )
         assertEquals(
             false,
-            BodyMetrics.metricsChanged(previous, null, null, null, null, null),
+            BodyMetrics.metricsChanged(previous, null, null, null, null),
         )
     }
 }

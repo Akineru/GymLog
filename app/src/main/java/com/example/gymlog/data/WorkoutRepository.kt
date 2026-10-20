@@ -3,6 +3,7 @@ package com.example.gymlog.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transform
 import java.time.LocalDate
@@ -11,16 +12,12 @@ import java.util.UUID
 data class SessionExercise(
     val exercise: ExerciseEntity,
     val sets: List<WorkoutSetEntity>,
+    val durationMillis: Long? = null,
 )
 
 data class SessionDetail(
     val session: WorkoutSessionEntity,
     val exercises: List<SessionExercise>,
-)
-
-data class SessionExerciseDraft(
-    val exercise: ExerciseEntity,
-    val sets: List<SessionSetDraft>,
 )
 
 data class SessionSetDraft(
@@ -31,15 +28,23 @@ data class SessionSetDraft(
     val repsText: String,
 )
 
+data class SessionExerciseDraft(
+    val exercise: ExerciseEntity,
+    val sets: List<SessionSetDraft>,
+    val durationMillis: Long? = null,
+)
+
 class WorkoutRepository(
     private val sessionDao: WorkoutSessionDao,
     private val exerciseDao: ExerciseDao,
     private val bodyRecordDao: BodyRecordDao,
+    private val exerciseDurationDao: ExerciseDurationDao? = null,
 ) {
     fun observeHistory(): Flow<List<SessionDetail>> {
-        return sessionDao.observeAllWithSets().transform { rows ->
-            emit(rows.toDetails())
-        }
+        val durations = exerciseDurationDao?.observeAll() ?: flowOf(emptyList())
+        return combine(sessionDao.observeAllWithSets(), durations) { rows, durationRows ->
+            rows.toDetails(durationRows.groupBy { it.sessionId })
+        }.flowOn(Dispatchers.IO)
     }
 
     fun observeAllSetsForPr(): Flow<List<SetForPrRow>> {
@@ -82,7 +87,10 @@ class WorkoutRepository(
 
     suspend fun loadSession(id: String): SessionDetail? {
         val row = sessionDao.getWithSets(id) ?: return null
-        return listOf(row).toDetails().firstOrNull()
+        val durations = exerciseDurationDao?.forSession(id).orEmpty()
+        return listOf(row)
+            .toDetails(mapOf(id to durations))
+            .firstOrNull()
     }
 
     suspend fun saveSession(
@@ -90,6 +98,7 @@ class WorkoutRepository(
         dateEpochDay: Long,
         note: String,
         exercises: List<SessionExerciseDraft>,
+        durationMillis: Long = 0L,
     ): Result<String> {
         if (exercises.isEmpty()) {
             return Result.failure(IllegalArgumentException("NO_EXERCISES"))
@@ -142,8 +151,21 @@ class WorkoutRepository(
             dateEpochDay = dateEpochDay,
             note = note.trim().ifEmpty { null },
             createdAt = createdAt,
+            durationMillis = durationMillis.coerceAtLeast(0L),
         )
         sessionDao.replaceSession(session, validated.map { it.copy(sessionId = id) })
+        val durationRows = exercises.mapIndexedNotNull { order, draft ->
+            val duration = draft.durationMillis?.takeIf { it > 0L } ?: return@mapIndexedNotNull null
+            ExerciseDurationEntity(
+                id = "$id-$order",
+                sessionId = id,
+                exerciseId = draft.exercise.id,
+                exerciseOrder = order,
+                durationMillis = duration,
+                createdAt = System.currentTimeMillis(),
+            )
+        }
+        exerciseDurationDao?.replaceForSession(id, durationRows)
         refreshPersonalRecords(
             (previousExerciseIds + exercises.map { it.exercise.id }).distinct(),
         )
@@ -208,18 +230,21 @@ class WorkoutRepository(
         )
     }
 
-    private suspend fun List<SessionWithSets>.toDetails(): List<SessionDetail> {
+    private suspend fun List<SessionWithSets>.toDetails(
+        durationsBySession: Map<String, List<ExerciseDurationEntity>> = emptyMap(),
+    ): List<SessionDetail> {
         val ids = flatMap { row -> row.sets.map { it.exerciseId } }.distinct()
         val exercises = if (ids.isEmpty()) {
             emptyMap()
         } else {
             sessionDao.getExercisesByIds(ids).associateBy { it.id }
         }
-        return map { it.toDetail(exercises) }
+        return map { it.toDetail(exercises, durationsBySession[it.session.id].orEmpty()) }
     }
 
     private fun SessionWithSets.toDetail(
         exercises: Map<String, ExerciseEntity>,
+        durations: List<ExerciseDurationEntity>,
     ): SessionDetail {
         val grouped = sets.groupBy { it.exerciseId }
         val order = sets.sortedWith(compareBy({ it.exerciseOrder }, { it.setIndex }))
@@ -227,7 +252,7 @@ class WorkoutRepository(
             .distinct()
         return SessionDetail(
             session = session,
-            exercises = order.map { exerciseId ->
+            exercises = order.mapIndexed { index, exerciseId ->
                 val entity = exercises[exerciseId] ?: ExerciseEntity(
                     id = exerciseId,
                     name = "未知动作",
@@ -241,6 +266,9 @@ class WorkoutRepository(
                 SessionExercise(
                     exercise = entity,
                     sets = grouped[exerciseId].orEmpty().sortedBy { it.setIndex },
+                    durationMillis = durations
+                        .firstOrNull { it.exerciseOrder == index }
+                        ?.durationMillis,
                 )
             }.sortedGroupingBodyPart {
                 ExerciseClassification.exerciseGroupingKey(it.exercise)

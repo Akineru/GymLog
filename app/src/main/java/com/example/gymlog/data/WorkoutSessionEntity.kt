@@ -14,4 +14,5 @@ data class WorkoutSessionEntity(
     val dateEpochDay: Long,
     val note: String?,
     val createdAt: Long,
+    val durationMillis: Long = 0L,
 )

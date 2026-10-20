@@ -23,8 +23,9 @@ import androidx.room.RoomDatabase
         TimerRecordEntity::class,
         TimerLapEntity::class,
         PhotoWallEntity::class,
+        ExerciseDurationEntity::class,
     ],
-    version = 16,
+    version = 19,
     exportSchema = false,
 )
 abstract class GymLogDatabase : RoomDatabase() {
@@ -45,4 +46,6 @@ abstract class GymLogDatabase : RoomDatabase() {
     abstract fun timerRecordDao(): TimerRecordDao
 
     abstract fun photoWallDao(): PhotoWallDao
+
+    abstract fun exerciseDurationDao(): ExerciseDurationDao
 }

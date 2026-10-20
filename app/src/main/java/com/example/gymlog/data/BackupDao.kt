@@ -17,6 +17,9 @@ abstract class BackupDao {
     @Query("SELECT * FROM workout_sets")
     abstract suspend fun allSets(): List<WorkoutSetEntity>
 
+    @Query("SELECT * FROM exercise_durations")
+    abstract suspend fun allExerciseDurations(): List<ExerciseDurationEntity>
+
     @Query("SELECT * FROM body_profile WHERE id = 1 LIMIT 1")
     abstract suspend fun profile(): BodyProfileEntity?
 
@@ -45,6 +48,9 @@ abstract class BackupDao {
     abstract suspend fun insertSets(rows: List<WorkoutSetEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertExerciseDurations(rows: List<ExerciseDurationEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertProfile(profile: BodyProfileEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -64,6 +70,9 @@ abstract class BackupDao {
 
     @Query("DELETE FROM workout_sets")
     abstract suspend fun clearSets()
+
+    @Query("DELETE FROM exercise_durations")
+    abstract suspend fun clearExerciseDurations()
 
     @Query("DELETE FROM workout_sessions")
     abstract suspend fun clearSessions()
@@ -127,6 +136,7 @@ abstract class BackupDao {
 
     @Transaction
     open suspend fun clearAll() {
+        clearExerciseDurations()
         clearSets()
         clearSessions()
         clearExerciseMuscles()
@@ -148,6 +158,7 @@ abstract class BackupDao {
 
     @Transaction
     open suspend fun replaceAll(snapshot: GymLogSnapshot) {
+        clearExerciseDurations()
         clearSets()
         clearSessions()
         clearExerciseMuscles()
@@ -166,6 +177,9 @@ abstract class BackupDao {
         if (snapshot.exercises.isNotEmpty()) insertExercises(snapshot.exercises)
         if (snapshot.sessions.isNotEmpty()) insertSessions(snapshot.sessions)
         if (snapshot.sets.isNotEmpty()) insertSets(snapshot.sets)
+        if (snapshot.exerciseDurations.isNotEmpty()) {
+            insertExerciseDurations(snapshot.exerciseDurations)
+        }
         snapshot.profile?.let { insertProfile(it.copy(id = BodyProfileEntity.PROFILE_ID)) }
         if (snapshot.measurements.isNotEmpty()) insertMeasurements(snapshot.measurements)
         if (snapshot.legacyRecords.isNotEmpty()) insertLegacy(snapshot.legacyRecords)

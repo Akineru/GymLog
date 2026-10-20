@@ -44,6 +44,26 @@ class PersonalRecordUpdateTest {
     }
 
     @Test
+    fun savingSessionPersistsDuration() = runTest {
+        val bench = exercise("bench-duration")
+        db.exerciseDao().insertIgnore(listOf(bench))
+        val saved = repository.saveSession(
+            sessionId = null,
+            dateEpochDay = LocalDate.of(2026, 10, 11).toEpochDay(),
+            note = "计时",
+            exercises = listOf(
+                SessionExerciseDraft(
+                    exercise = bench,
+                    sets = listOf(setDraft("d1", "50", "10")),
+                ),
+            ),
+            durationMillis = 123_456L,
+        )
+        val id = saved.getOrThrow()
+        assertEquals(123_456L, repository.loadSession(id)?.session?.durationMillis)
+    }
+
+    @Test
     fun savingSetsUpdatesExerciseLibraryPrs() = runTest {
         val bench = exercise("bench")
         db.exerciseDao().insertIgnore(listOf(bench))

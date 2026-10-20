@@ -25,7 +25,7 @@ fun rewindMeasurementsToVersion11(sqlite: SupportSQLiteDatabase) {
             `waistCm`, `armCm`, `createdAt`
         )
         SELECT `id`, `recordedEpochDay`, `heightCm`, `weightKg`, `bodyFatPercent`,
-            `waistCm`, `armCm`, `createdAt`
+            `waistCm`, NULL AS `armCm`, `createdAt`
         FROM `body_measurements`
         """.trimIndent(),
     )

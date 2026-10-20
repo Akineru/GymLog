@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymlog.R
 import com.example.gymlog.data.CalendarDayPaint
 import com.example.gymlog.data.CalendarSpecialDay
 import com.example.gymlog.ui.theme.GymLogTheme
@@ -60,13 +63,28 @@ fun TrainingCalendarCard(
     partsByDate: Map<LocalDate, List<String>>,
     dayPaints: Map<Long, CalendarDayPaint> = emptyMap(),
     selectedDate: LocalDate? = null,
+    collapsed: Boolean = false,
+    onToggleCollapse: (() -> Unit)? = null,
     onMonthChange: (YearMonth) -> Unit,
     onDayClick: (LocalDate) -> Unit,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val today = LocalDate.now()
-    val cells = remember(month) { calendarCells(month) }
+    val monthCells = remember(month) { calendarCells(month) }
+    val cells = remember(monthCells, selectedDate, collapsed) {
+        if (!collapsed) {
+            monthCells
+        } else {
+            val selectedIndex = selectedDate?.let(monthCells::indexOf) ?: -1
+            if (selectedIndex >= 0) {
+                val weekStart = (selectedIndex / 7) * 7
+                monthCells.subList(weekStart, weekStart + 7)
+            } else {
+                monthCells.take(7)
+            }
+        }
+    }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -153,6 +171,34 @@ fun TrainingCalendarCard(
                                 modifier = Modifier.weight(1f),
                             )
                         }
+                    }
+                }
+            }
+            onToggleCollapse?.let { toggle ->
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    IconButton(
+                        onClick = toggle,
+                        modifier = Modifier.size(28.dp),
+                    ) {
+                        Icon(
+                            imageVector = if (collapsed) {
+                                Icons.Filled.KeyboardArrowDown
+                            } else {
+                                Icons.Filled.KeyboardArrowUp
+                            },
+                            contentDescription = stringResource(
+                                if (collapsed) {
+                                    R.string.calendar_expand_month
+                                } else {
+                                    R.string.calendar_collapse_week
+                                },
+                            ),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }

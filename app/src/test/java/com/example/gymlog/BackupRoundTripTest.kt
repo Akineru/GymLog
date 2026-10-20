@@ -97,7 +97,6 @@ class BackupRoundTripTest {
                 weightKg = 70.0,
                 bodyFatPercent = 15.0,
                 waistCm = 80.5,
-                armCm = 32.0,
                 createdAt = 4L,
             ),
         )
@@ -134,7 +133,6 @@ class BackupRoundTripTest {
         val after = repository.exportSnapshot()
         val curl = after.exercises.first { it.id == "curl" }
         assertEquals(80.5, after.measurements.single().waistCm!!, 0.001)
-        assertEquals(32.0, after.measurements.single().armCm!!, 0.001)
         assertEquals(10_000L, after.profile?.birthdayEpochDay)
         assertEquals("备注", after.sessions.single().note)
         assertEquals(7L, after.legacyRecords.single().id)
@@ -209,7 +207,6 @@ class BackupRoundTripTest {
                 weightKg = 70.0,
                 bodyFatPercent = null,
                 waistCm = null,
-                armCm = null,
                 createdAt = 4L,
             ),
         )

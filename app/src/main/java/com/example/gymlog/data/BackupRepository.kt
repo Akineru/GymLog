@@ -33,6 +33,7 @@ class BackupRepository(
             exercises = backupDao.allExercises(),
             sessions = backupDao.allSessions(),
             sets = backupDao.allSets(),
+            exerciseDurations = backupDao.allExerciseDurations(),
             profile = if (avatarBytes == null) profile?.copy(avatarFileName = null) else profile,
             measurements = backupDao.allMeasurements(),
             legacyRecords = backupDao.allLegacyRecords(),

@@ -5,6 +5,109 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+val MIGRATION_18_19 = object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `exercise_durations` (
+                `id` TEXT NOT NULL,
+                `sessionId` TEXT NOT NULL,
+                `exerciseId` TEXT NOT NULL,
+                `exerciseOrder` INTEGER NOT NULL,
+                `durationMillis` INTEGER NOT NULL,
+                `createdAt` INTEGER NOT NULL,
+                PRIMARY KEY(`id`),
+                FOREIGN KEY(`sessionId`) REFERENCES `workout_sessions`(`id`)
+                    ON UPDATE NO ACTION ON DELETE CASCADE,
+                FOREIGN KEY(`exerciseId`) REFERENCES `exercises`(`id`)
+                    ON UPDATE NO ACTION ON DELETE RESTRICT
+            )
+            """.trimIndent(),
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_exercise_durations_sessionId` " +
+                "ON `exercise_durations` (`sessionId`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_exercise_durations_exerciseId` " +
+                "ON `exercise_durations` (`exerciseId`)",
+        )
+    }
+}
+
+val MIGRATION_17_18 = object : Migration(17, 18) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        val hasColumn = db.query("PRAGMA table_info(`workout_sessions`)").use { cursor ->
+            var found = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(1) == "durationMillis") {
+                    found = true
+                    break
+                }
+            }
+            found
+        }
+        if (!hasColumn) {
+            db.execSQL(
+                "ALTER TABLE `workout_sessions` ADD COLUMN `durationMillis` INTEGER NOT NULL DEFAULT 0",
+            )
+        }
+    }
+}
+
+val MIGRATION_16_17 = object : Migration(16, 17) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Drop the legacy single-arm measurement entirely, including its data.
+        db.execSQL("DROP TABLE IF EXISTS `body_measurements_new`")
+        db.execSQL(
+            """
+            CREATE TABLE `body_measurements_new` (
+                `id` TEXT NOT NULL,
+                `recordedEpochDay` INTEGER NOT NULL,
+                `heightCm` REAL,
+                `weightKg` REAL,
+                `bodyFatPercent` REAL,
+                `waistCm` REAL,
+                `armLeftCm` REAL,
+                `armRightCm` REAL,
+                `forearmLeftCm` REAL,
+                `forearmRightCm` REAL,
+                `chestCm` REAL,
+                `hipCm` REAL,
+                `thighLeftCm` REAL,
+                `thighRightCm` REAL,
+                `calfLeftCm` REAL,
+                `calfRightCm` REAL,
+                `createdAt` INTEGER NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent(),
+        )
+        db.execSQL(
+            """
+            INSERT INTO `body_measurements_new` (
+                `id`, `recordedEpochDay`, `heightCm`, `weightKg`, `bodyFatPercent`,
+                `waistCm`, `armLeftCm`, `armRightCm`, `forearmLeftCm`, `forearmRightCm`,
+                `chestCm`, `hipCm`, `thighLeftCm`, `thighRightCm`, `calfLeftCm`,
+                `calfRightCm`, `createdAt`
+            )
+            SELECT
+                `id`, `recordedEpochDay`, `heightCm`, `weightKg`, `bodyFatPercent`,
+                `waistCm`, `armLeftCm`, `armRightCm`, `forearmLeftCm`, `forearmRightCm`,
+                `chestCm`, `hipCm`, `thighLeftCm`, `thighRightCm`, `calfLeftCm`,
+                `calfRightCm`, `createdAt`
+            FROM `body_measurements`
+            """.trimIndent(),
+        )
+        db.execSQL("DROP TABLE `body_measurements`")
+        db.execSQL("ALTER TABLE `body_measurements_new` RENAME TO `body_measurements`")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_body_measurements_recordedEpochDay` " +
+                "ON `body_measurements` (`recordedEpochDay`)",
+        )
+    }
+}
+
 val MIGRATION_15_16 = object : Migration(15, 16) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(

@@ -169,17 +169,15 @@ class BodyRecordViewModel(
         }
         viewModelScope.launch {
             val latest = repository.observeMeasurements().first().firstOrNull()
-            // The profile form no longer edits waist or the legacy arm.
-            // Preserve the latest saved values without validating unsubmitted girth text.
+            // The profile form no longer edits waist. Preserve the latest saved
+            // value without validating unsubmitted girth text.
             val waist = latest?.waistCm
-            val arm = latest?.armCm
             val recordMeasurement = BodyMetrics.metricsChanged(
                 previous = latest,
                 heightCm = height,
                 weightKg = weight,
                 bodyFatPercent = bodyFat,
                 waistCm = waist,
-                armCm = arm,
             )
             val result = repository.saveSnapshot(
                 birthdayEpochDay = birthday,
@@ -188,7 +186,6 @@ class BodyRecordViewModel(
                 weightKg = weight,
                 bodyFatPercent = bodyFat,
                 waistCm = waist,
-                armCm = arm,
                 recordMeasurement = recordMeasurement,
             )
             if (result.isSuccess && recordMeasurement) {

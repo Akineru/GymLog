@@ -92,6 +92,7 @@ import com.example.gymlog.data.ExerciseClassification
 import com.example.gymlog.data.TimerPhase
 import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.data.WeightMode
+import com.example.gymlog.data.displayName
 import com.example.gymlog.data.orderedForDay
 import com.example.gymlog.data.partVolumes
 import com.example.gymlog.ui.home.HomeScreen
@@ -111,9 +112,8 @@ import com.example.gymlog.ui.photo.PhotoEditorScreen
 import com.example.gymlog.ui.photo.PhotoWallScreen
 import com.example.gymlog.ui.photo.PhotoWallViewModel
 import com.example.gymlog.ui.progress.ProgressScreen
+import com.example.gymlog.ui.train.ActiveWorkoutUi
 import com.example.gymlog.ui.train.TrainingHomeScreen
-import com.example.gymlog.ui.train.TrainingPlaceholderKind
-import com.example.gymlog.ui.train.TrainingPlaceholderScreen
 import com.example.gymlog.ui.session.SessionEditorScreen
 import com.example.gymlog.ui.session.SessionEditorViewModel
 import com.example.gymlog.ui.settings.AboutScreen
@@ -158,7 +158,6 @@ private sealed interface Screen {
     data object CalendarExpanded : Screen
     data object Train : Screen
     data object ExerciseLibrary : Screen
-    data class TrainingPlaceholder(val kind: TrainingPlaceholderKind) : Screen
     data object Progress : Screen
     data object Mine : Screen
     data class BodyRecord(val returnTab: RootTab = RootTab.Mine) : Screen
@@ -200,7 +199,7 @@ private val Screen.isRoot: Boolean
 private fun Screen.toRootTab(): RootTab = when (this) {
     Screen.Home -> RootTab.Home
     Screen.Calendar, Screen.CalendarExpanded, Screen.TrainingTimer, is Screen.SavedTimer, is Screen.SessionEditor, is Screen.PickExercise -> RootTab.Calendar
-    Screen.Train, Screen.ExerciseLibrary, is Screen.TrainingPlaceholder -> RootTab.Train
+    Screen.Train, Screen.ExerciseLibrary -> RootTab.Train
     Screen.Progress, Screen.TrainingTrend, Screen.BodyTrend -> RootTab.Progress
     Screen.Mine, is Screen.BodyRecord, is Screen.MuscleMap, Screen.PhotoWall, is Screen.PhotoDetail, Screen.PhotoEditor -> RootTab.Mine
     is Screen.Settings -> from
@@ -241,6 +240,31 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
     )
     val timerState by timerViewModel.uiState.collectAsStateWithLifecycle()
     var screen by remember { mutableStateOf<Screen>(Screen.Home) }
+    var activeDraft by remember { mutableStateOf<Screen.SessionEditor?>(null) }
+    val activeEditorViewModel: SessionEditorViewModel? = activeDraft?.let { draft ->
+        viewModel(
+            key = "${draft.draftKey}-$dataEpoch",
+            factory = SessionEditorViewModel.factory(
+                app.workoutRepository,
+                app.bodyRecordRepository,
+                draft.sessionId,
+                draft.dateEpochDay,
+                app.photoWallRepository,
+                app.timerRecordRepository,
+            ),
+        )
+    }
+    val activeEditorState = if (activeEditorViewModel != null) {
+        activeEditorViewModel.state.collectAsStateWithLifecycle().value
+    } else {
+        null
+    }
+    val activeWorkout = activeEditorState?.let { state ->
+        ActiveWorkoutUi(
+            durationMillis = state.totalElapsedMillis,
+            exerciseNames = state.exercises.map { it.exercise.displayName() },
+        )
+    }
     val density = LocalDensity.current
     val navigationBarBottom = with(density) {
         WindowInsets.navigationBars.getBottom(this).toDp()
@@ -309,18 +333,28 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     onSelectDayKind = viewModel::selectDayKind,
                     onOpenCalendar = { screen = Screen.CalendarExpanded },
                     timer = timerState,
-                    onToggleTimer = { timerViewModel.toggle(selectedDate.toEpochDay()) },
-                    onOpenTimer = { screen = Screen.TrainingTimer },
                     onOpenSavedTimer = { screen = Screen.SavedTimer(it) },
                     onOpenAbout = { screen = Screen.About(RootTab.Calendar, openedFromSettings = false) },
                 )
             }
             TabPane(visible = isRoot && screen.toRootTab() == RootTab.Train) {
                 TrainingHomeScreen(
+                    activeWorkout = activeWorkout,
+                    onResumeWorkout = {
+                        activeDraft?.let { screen = it }
+                    },
+                    onDiscardWorkout = {
+                        activeEditorViewModel?.discardTraining()
+                        activeDraft = null
+                    },
+                    onStartTraining = {
+                        val draft = activeDraft ?: Screen.SessionEditor(
+                            sessionId = null,
+                            returnTab = RootTab.Train,
+                        ).also { activeDraft = it }
+                        screen = draft
+                    },
                     onOpenLibrary = { screen = Screen.ExerciseLibrary },
-                    onOpenPlan = { screen = Screen.TrainingPlaceholder(TrainingPlaceholderKind.PLAN) },
-                    onOpenHistory = { screen = Screen.Calendar },
-                    onOpenTools = { screen = Screen.TrainingPlaceholder(TrainingPlaceholderKind.TOOLS) },
                     onOpenSettings = { screen = Screen.Settings(RootTab.Train) },
                 )
             }
@@ -508,12 +542,20 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                 app.bodyRecordRepository,
                                 current.sessionId,
                                 current.dateEpochDay,
+                                app.photoWallRepository,
+                                app.timerRecordRepository,
                             ),
                         )
                         SessionEditorScreen(
                             viewModel = editorViewModel,
                             exerciseMedia = exerciseMedia,
                             onBack = { screen = current.returnTab.toScreen() },
+                            onExitAfterSave = {
+                                if (activeDraft?.draftKey == current.draftKey) {
+                                    activeDraft = null
+                                }
+                                screen = current.returnTab.toScreen()
+                            },
                             onAddExercise = { screen = Screen.PickExercise(current) },
                         )
                     }
@@ -639,13 +681,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                         )
                     }
 
-                    is Screen.TrainingPlaceholder -> {
-                        TrainingPlaceholderScreen(
-                            kind = current.kind,
-                            onBack = { screen = Screen.Train },
-                        )
-                    }
-
                     is Screen.PickExercise -> {
                         val libraryViewModel: ExerciseLibraryViewModel = viewModel(
                             // Scope the picker to the training draft so a previous
@@ -762,8 +797,6 @@ private fun RootTabBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeTopBar(
-    timer: TrainingTimerUiState,
-    onOpenTimer: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenAbout: () -> Unit,
 ) {
@@ -784,34 +817,6 @@ private fun HomeTopBar(
                     .clickable(role = Role.Button, onClick = onOpenAbout)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             )
-            if (timer.showDigits) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .clickable(onClick = onOpenTimer)
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = timer.formatted,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"),
-                        color = if (timer.phase == TimerPhase.PAUSED) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                    )
-                    if (timer.phase == TimerPhase.PAUSED) {
-                        Text(
-                            text = stringResource(R.string.timer_paused_short),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
             Box(modifier = Modifier.align(Alignment.CenterEnd)) {
                 SettingsTopBarAction(onOpenSettings)
             }
@@ -840,8 +845,6 @@ private fun HistoryScreen(
     onSelectDayKind: (LocalDate, DayKind, Boolean) -> Unit,
     onOpenCalendar: () -> Unit,
     timer: TrainingTimerUiState,
-    onToggleTimer: () -> Unit,
-    onOpenTimer: () -> Unit,
     onOpenSavedTimer: (String) -> Unit,
     onOpenAbout: () -> Unit,
 ) {
@@ -860,14 +863,13 @@ private fun HistoryScreen(
     val defaultDayMessage = stringResource(defaultDayNoteRes(storedKind))
     val dayMessage = dayNotes[selectedDate.toEpochDay()] ?: defaultDayMessage
     var editingDayNote by remember { mutableStateOf(false) }
+    var calendarCollapsed by remember { mutableStateOf(true) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             HomeTopBar(
-                timer = timer,
-                onOpenTimer = onOpenTimer,
                 onOpenSettings = onOpenSettings,
                 onOpenAbout = onOpenAbout,
             )
@@ -877,34 +879,6 @@ private fun HistoryScreen(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                FloatingActionButton(
-                    onClick = onToggleTimer,
-                    containerColor = if (timer.phase == TimerPhase.RUNNING) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                    contentColor = if (timer.phase == TimerPhase.RUNNING) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onPrimary
-                    },
-                ) {
-                    Icon(
-                        imageVector = if (timer.phase == TimerPhase.RUNNING) {
-                            Icons.Filled.Pause
-                        } else {
-                            Icons.Filled.Alarm
-                        },
-                        contentDescription = stringResource(
-                            when (timer.phase) {
-                                TimerPhase.IDLE -> R.string.timer_toggle_start
-                                TimerPhase.RUNNING -> R.string.timer_toggle_pause
-                                TimerPhase.PAUSED -> R.string.timer_toggle_resume
-                            },
-                        ),
-                    )
-                }
                 FloatingActionButton(
                     onClick = onAdd,
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -925,16 +899,17 @@ private fun HistoryScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            stickyHeader(key = "training-calendar") {
+            item(key = "training-calendar") {
                 TrainingCalendarCard(
                     month = calendarMonth,
                     partsByDate = partsByDate,
                     selectedDate = selectedDate,
                     dayPaints = dayPaints,
+                    collapsed = calendarCollapsed,
+                    onToggleCollapse = { calendarCollapsed = !calendarCollapsed },
                     onMonthChange = onCalendarMonthChange,
                     onDayClick = onDayClick,
                     onOpen = onOpenCalendar,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
                 )
             }
             item(key = "selected-date-header") {
@@ -1149,17 +1124,28 @@ private fun SessionExerciseRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            item.durationMillis?.let { duration ->
+                Text(
+                    text = stringResource(
+                        R.string.training_action_duration,
+                        TrainingTimerLogic.formatDurationChinese(duration),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
         }
         ExerciseThumbnail(
             exercise = item.exercise,
             media = media,
             modifier = Modifier
-                .padding(horizontal = 2.dp)
+                .padding(horizontal = 0.dp)
                 .size(64.dp),
         )
         SessionSetGrid(
             cells = sessionSetGridCells(setCells),
-            modifier = Modifier.width(176.dp),
+            modifier = Modifier.width(164.dp),
         )
     }
 }

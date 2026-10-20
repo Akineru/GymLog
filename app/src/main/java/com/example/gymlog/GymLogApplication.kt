@@ -25,6 +25,9 @@ import com.example.gymlog.data.DayKindRepository
 import com.example.gymlog.data.MIGRATION_13_14
 import com.example.gymlog.data.MIGRATION_14_15
 import com.example.gymlog.data.MIGRATION_15_16
+import com.example.gymlog.data.MIGRATION_16_17
+import com.example.gymlog.data.MIGRATION_17_18
+import com.example.gymlog.data.MIGRATION_18_19
 import com.example.gymlog.data.PhotoStore
 import com.example.gymlog.data.PhotoWallRepository
 import com.example.gymlog.data.ExerciseCatalogCoordinator
@@ -64,6 +67,9 @@ class GymLogApplication : Application() {
                 MIGRATION_13_14,
                 MIGRATION_14_15,
                 MIGRATION_15_16,
+                MIGRATION_16_17,
+                MIGRATION_17_18,
+                MIGRATION_18_19,
             )
             .build()
     }
@@ -93,7 +99,12 @@ class GymLogApplication : Application() {
     }
 
     val workoutRepository: WorkoutRepository by lazy {
-        WorkoutRepository(database.sessionDao(), database.exerciseDao(), database.bodyRecordDao())
+        WorkoutRepository(
+            database.sessionDao(),
+            database.exerciseDao(),
+            database.bodyRecordDao(),
+            database.exerciseDurationDao(),
+        )
     }
 
     val dayNoteRepository: DayNoteRepository by lazy {

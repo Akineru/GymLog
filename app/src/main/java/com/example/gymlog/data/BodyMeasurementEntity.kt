@@ -15,7 +15,6 @@ data class BodyMeasurementEntity(
     val weightKg: Double?,
     val bodyFatPercent: Double?,
     val waistCm: Double? = null,
-    val armCm: Double? = null,
     val armLeftCm: Double? = null,
     val armRightCm: Double? = null,
     val forearmLeftCm: Double? = null,

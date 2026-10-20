@@ -1,6 +1,7 @@
 package com.example.gymlog.ui.body
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -25,6 +26,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material3.Button
@@ -735,6 +738,7 @@ internal fun BodyRecordHistory(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var expandedId by remember { mutableStateOf<String?>(null) }
     BackHandler(onBack = onBack)
     Scaffold(
         topBar = {
@@ -768,7 +772,13 @@ internal fun BodyRecordHistory(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(state.history, key = { it.id }) { row ->
-                    MeasurementCard(row)
+                    MeasurementCard(
+                        row = row,
+                        expanded = row.id == expandedId,
+                        onToggle = {
+                            expandedId = if (expandedId == row.id) null else row.id
+                        },
+                    )
                 }
             }
         }
@@ -831,9 +841,16 @@ private fun GirthHistoryPair(labelRes: Int, left: Double?, right: Double?) {
 }
 
 @Composable
-private fun MeasurementCard(row: BodyMeasurementEntity) {
+private fun MeasurementCard(
+    row: BodyMeasurementEntity,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+            .clickable(onClick = onToggle),
         shape = dashboardCardShape(),
         colors = dashboardCardColors(),
         elevation = dashboardCardElevation(),
@@ -843,36 +860,50 @@ private fun MeasurementCard(row: BodyMeasurementEntity) {
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text(
-                text = Instant.ofEpochMilli(row.createdAt)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime()
-                    .format(dateTimeFormatter),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            row.heightCm?.let {
-                Text(stringResource(R.string.body_history_height, WeightLogic.formatKg(it)))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = Instant.ofEpochMilli(row.createdAt)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .format(dateTimeFormatter),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Filled.KeyboardArrowUp
+                    } else {
+                        Icons.Filled.KeyboardArrowDown
+                    },
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-            row.weightKg?.let {
-                Text(stringResource(R.string.body_history_weight, WeightLogic.formatKg(it)))
-            }
-            row.waistCm?.let {
-                Text(stringResource(R.string.body_history_waist, WeightLogic.formatKg(it)))
-            }
-            row.armCm?.let {
-                Text(stringResource(R.string.body_history_legacy_arm, WeightLogic.formatKg(it)))
-            }
-            GirthHistoryLine(R.string.girth_chest, row.chestCm)
-            GirthHistoryLine(R.string.girth_hip, row.hipCm)
-            GirthHistoryPair(R.string.body_label_arm, row.armLeftCm, row.armRightCm)
-            GirthHistoryPair(R.string.girth_forearm, row.forearmLeftCm, row.forearmRightCm)
-            GirthHistoryPair(R.string.girth_thigh, row.thighLeftCm, row.thighRightCm)
-            GirthHistoryPair(R.string.girth_calf, row.calfLeftCm, row.calfRightCm)
-            BodyMetrics.bmi(row.heightCm, row.weightKg)?.let { bmi ->
-                Text(stringResource(R.string.body_bmi, BodyMetrics.displayBmi(bmi)))
-            }
-            row.bodyFatPercent?.let {
-                Text(stringResource(R.string.body_history_fat, WeightLogic.formatKg(it)))
+            if (expanded) {
+                row.heightCm?.let {
+                    Text(stringResource(R.string.body_history_height, WeightLogic.formatKg(it)))
+                }
+                row.weightKg?.let {
+                    Text(stringResource(R.string.body_history_weight, WeightLogic.formatKg(it)))
+                }
+                row.waistCm?.let {
+                    Text(stringResource(R.string.body_history_waist, WeightLogic.formatKg(it)))
+                }
+                GirthHistoryLine(R.string.girth_chest, row.chestCm)
+                GirthHistoryLine(R.string.girth_hip, row.hipCm)
+                GirthHistoryPair(R.string.body_label_arm, row.armLeftCm, row.armRightCm)
+                GirthHistoryPair(R.string.girth_forearm, row.forearmLeftCm, row.forearmRightCm)
+                GirthHistoryPair(R.string.girth_thigh, row.thighLeftCm, row.thighRightCm)
+                GirthHistoryPair(R.string.girth_calf, row.calfLeftCm, row.calfRightCm)
+                BodyMetrics.bmi(row.heightCm, row.weightKg)?.let { bmi ->
+                    Text(stringResource(R.string.body_bmi, BodyMetrics.displayBmi(bmi)))
+                }
+                row.bodyFatPercent?.let {
+                    Text(stringResource(R.string.body_history_fat, WeightLogic.formatKg(it)))
+                }
             }
         }
     }

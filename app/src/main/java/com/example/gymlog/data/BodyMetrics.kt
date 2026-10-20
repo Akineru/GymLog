@@ -34,10 +34,9 @@ object BodyMetrics {
         weightKg: Double?,
         bodyFatPercent: Double?,
         waistCm: Double?,
-        armCm: Double?,
     ): Boolean {
         if (heightCm == null && weightKg == null && bodyFatPercent == null &&
-            waistCm == null && armCm == null
+            waistCm == null
         ) {
             return false
         }
@@ -47,8 +46,7 @@ object BodyMetrics {
         return !sameNumber(previous.heightCm, heightCm) ||
             !sameNumber(previous.weightKg, weightKg) ||
             !sameNumber(previous.bodyFatPercent, bodyFatPercent) ||
-            !sameNumber(previous.waistCm, waistCm) ||
-            !sameNumber(previous.armCm, armCm)
+            !sameNumber(previous.waistCm, waistCm)
     }
 
     private fun sameNumber(left: Double?, right: Double?): Boolean {

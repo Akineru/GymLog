@@ -16,6 +16,12 @@ abstract class TimerRecordDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     abstract suspend fun insertRecord(record: TimerRecordEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun upsertRecord(record: TimerRecordEntity)
+
+    @Query("DELETE FROM timer_records WHERE sessionId = :sessionId")
+    abstract suspend fun deleteBySession(sessionId: String)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     abstract suspend fun insertLaps(laps: List<TimerLapEntity>)
 
@@ -31,5 +37,11 @@ abstract class TimerRecordDao {
         if (laps.isNotEmpty()) {
             insertLaps(laps)
         }
+    }
+
+    @Transaction
+    open suspend fun replaceSessionRecord(record: TimerRecordEntity) {
+        record.sessionId?.let { deleteBySession(it) }
+        upsertRecord(record)
     }
 }

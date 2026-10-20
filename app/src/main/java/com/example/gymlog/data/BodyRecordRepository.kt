@@ -48,7 +48,6 @@ class BodyRecordRepository(
         weightKg: Double?,
         bodyFatPercent: Double?,
         waistCm: Double?,
-        armCm: Double?,
         recordMeasurement: Boolean,
     ): Result<Unit> {
         val existing = dao.getProfile()
@@ -74,7 +73,6 @@ class BodyRecordRepository(
                     weightKg = weightKg,
                     bodyFatPercent = bodyFatPercent,
                     waistCm = waistCm,
-                    armCm = armCm,
                     girths = latest?.girths()?.copy(waistCm = waistCm) ?: BodyGirths(waistCm = waistCm),
                 ),
             )
@@ -91,8 +89,20 @@ class BodyRecordRepository(
                 weightKg = latest?.weightKg,
                 bodyFatPercent = latest?.bodyFatPercent,
                 waistCm = girths.waistCm,
-                armCm = latest?.armCm,
                 girths = girths,
+            ),
+        )
+    }
+
+    suspend fun saveWeight(weightKg: Double) {
+        val latest = latestMeasurement()
+        dao.insertMeasurement(
+            measurementFrom(
+                heightCm = latest?.heightCm,
+                weightKg = weightKg,
+                bodyFatPercent = latest?.bodyFatPercent,
+                waistCm = latest?.waistCm,
+                girths = latest?.girths() ?: BodyGirths(),
             ),
         )
     }
@@ -108,7 +118,6 @@ class BodyRecordRepository(
         weightKg: Double?,
         bodyFatPercent: Double?,
         waistCm: Double?,
-        armCm: Double?,
         girths: BodyGirths,
     ): BodyMeasurementEntity {
         return BodyMeasurementEntity(
@@ -118,7 +127,6 @@ class BodyRecordRepository(
             weightKg = weightKg,
             bodyFatPercent = bodyFatPercent,
             waistCm = waistCm,
-            armCm = armCm,
             armLeftCm = girths.armLeftCm,
             armRightCm = girths.armRightCm,
             forearmLeftCm = girths.forearmLeftCm,
