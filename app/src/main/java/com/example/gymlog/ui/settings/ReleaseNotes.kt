@@ -17,6 +17,26 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.4.1",
+            date = "2026年10月19日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "新增功能",
+                    items = listOf(
+                        "日历可以把某一天标成休息日、放纵日或偷懒日。有训练的日子按容量最高的部位上色，特殊标记会盖过部位颜色。这些标记会写入备份。",
+                        "「我的」里增加照片墙。可以从相册或相机添加照片，按日期查看，并修改日期和备注。编辑支持裁剪、旋转、涂鸦、文字、马赛克和模糊。",
+                        "设置里增加历史记录，可以查看计时记录和身体记录。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "体验优化",
+                    items = listOf(
+                        "照片墙不包含在数据备份里。导入或清除训练数据不会删除这里的照片。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.4",
             date = "2026年10月18日",
             sections = listOf(

@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.gymlog"
         minSdk = 24
         targetSdk = 37
-        versionCode = 7
-        versionName = "1.4"
+        versionCode = 8
+        versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
