@@ -2,16 +2,16 @@
 
 本地离线的 Android 力量训练记录应用。单 Activity，Kotlin + Jetpack Compose + Room。没有账号、没有网络同步。界面中文；启动器英文名是 Traivol（`values-en/strings.xml` 的 `app_name`），中文名是「练有所迹」。
 
-当前版本：`versionName` 1.4，`versionCode` 7。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **14**。
+当前版本：`versionName` 1.4.1，`versionCode` 8。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **16**。
 
 下一个实现者先读这份文档，再改代码。用户用简体中文沟通。版本说明写在 `ui/settings/ReleaseNotes.kt` 的 `ReleaseHistory.notes`，新版本插在列表最上面。关于页读安装包的 `versionName`。
 
 ## 硬约束
 
 - 升级数据库只用 Room `Migration`。禁止 `fallbackToDestructiveMigration`，禁止为了改表而卸载或清空用户数据。
-- 用户主动点的「清除本地数据」是唯一允许清空库的路径，而且必须保留现在的两步确认。
+- 用户主动点的「清除本地数据」是唯一允许清空训练库相关表的路径，而且必须保留现在的两步确认。清除**不会**删除照片墙文件与 `photo_wall` 行（见「照片墙」）。
 - 不要引入 Navigation Compose。导航是 `GymLogApp.kt` 里的内存状态 `Screen`。
-- 不要改备份格式的已有字段含义。可以加可选字段，旧文件必须还能导入。当前 `BackupCodec.VERSION` 是 **2**。version 1 没有计时和头像键，仍然要能导入。
+- 不要改备份格式的已有字段含义。可以加可选字段，旧文件必须还能导入。当前 `BackupCodec.VERSION` 是 **2**。version 1 没有计时和头像键，仍然要能导入。`dayKinds` 是可选数组，旧文件没有该键当成空列表。照片墙**不进**备份 JSON。
 - 数据集动作缩略图/GIF 版权归 Gym visual，按 180×180 授权随 APK 打包；备用示意图是 Bryl Lim / Everkinetic，CC BY-SA 4.0。不要重新生成，不要删掉动作库和关于页的署名字符串 `exercise_art_credit`。人体底图和肌肉遮罩是另一套素材，同样不要重画、不要改 `muscleId` 去凑文件名。
 - 页面里的业务文案（训练记录、容量、PR 等）不要随启动器改名一起改掉。
 - 明确没做、先不要做的：记组复制、组间休息计时、估算 1RM、热身组。已经做的「训练计时器」是整段训练的秒表，不是组间休息。训练计划和训练工具仍是占位页。
@@ -31,33 +31,38 @@
 app/src/main/java/com/example/gymlog/
   MainActivity.kt              主题入口
   GymLogApplication.kt         Room、各 Repository、启动时导入数据集并重算 PR（不再补旧预置）
-  data/                        Entity、Dao、Migration、纯逻辑
-  ui/GymLogApp.kt              导航、五个根页面、日历上的训练卡片
+  data/                        Entity、Dao、Migration、纯逻辑（含 CalendarDayColor、DayKind）
+  ui/GymLogApp.kt              导航、五个根页面、日历上的训练卡片与日类型
   ui/home/                     首页：周/月汇总、当天足迹
   ui/train/                    训练入口和占位页
   ui/session/                  编辑一次训练
   ui/exercise/                 动作库与示意图
-  ui/body/                     身体记录
+  ui/body/                     身体数据（展示/编辑/历史）
   ui/muscle/                   人体底图、遮罩高亮、围度标注
+  ui/photo/                    照片墙、详情、编辑器
   ui/stats/                    趋势图
   ui/progress/                 「趋势」入口
   ui/timer/                    训练计时器
   ui/settings/                 「我的」、设置、数据备份、历史记录、关于、头像裁剪
-  ui/calendar/                 月历展开
+  ui/calendar/                 月历展开、日类型选择器
   ui/theme/                    主题、部位颜色、卡片样式
 app/src/main/res/drawable-nodpi/   diagram_<preset_key>.png，以及 muscle_*_base
+app/src/main/res/xml/photo_file_paths.xml   照片墙 FileProvider 路径
 app/src/main/assets/muscle_masks/  front|back/<muscle_id>.png，1024×1536
 app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 ```
 
-1.4 新增的设置/历史相关文件：
+1.4 / 1.4.1 相关界面文件：
 
-- `ui/settings/BackupDataScreen.kt`：导出/导入和导入确认、结果提示。
+- `ui/settings/BackupDataScreen.kt`：导出/导入和导入确认、结果提示；文案说明照片墙不进备份。
 - `ui/settings/SettingsHistoryScreen.kt`：设置 → 历史记录菜单（计时记录、身体记录）。
 - `ui/timer/TimerHistoryScreen.kt`：已保存计时列表，点条目进入 `SavedTimerScreen`。
-- `ui/body/BodyRecordScreen.kt` 的 `BodyRecordHistory` 现在是 `internal`，供设置里的身体记录复用。
+- `ui/body/BodyRecordScreen.kt` 的 `BodyRecordHistory` 是 `internal`，供设置里的身体记录复用。
+- `ui/photo/PhotoWallScreen.kt`、`PhotoEditor` 相关、`PhotoWallViewModel.kt`：照片墙。
+- `ui/calendar/DayKindSelector.kt`：休息日 / 放纵日 / 偷懒日选择。
+- `data/CalendarDayColor.kt`：小日历与展开月历共用的上色逻辑。
 
-依赖方向：界面 ViewModel → Repository → Dao。重量、PR、趋势、日历排序、首页汇总、计时纯逻辑放在 `data/` 里，测试打这些函数。
+依赖方向：界面 ViewModel → Repository → Dao。重量、PR、趋势、日历排序/上色、首页汇总、计时、日类型纯逻辑放在 `data/` 里，测试打这些函数。
 
 ## 信息架构（当前）
 
@@ -65,11 +70,11 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 
 | 根页面 | 内容 | 再进去 |
 | --- | --- | --- |
-| 首页 | 按周或按月看训练时长、训练天数、总组数、容量；本周训练日；选中日按部位的足迹和已保存计时。顶栏是「首页」，齿轮进设置 | 开始训练会把日历选到今天并切到日历；也能打开当天训练、已保存计时、身体记录、趋势、日历 |
-| 日历 | 月历、选中日期的训练卡片、右下角加号、训练计时入口。顶栏标题用 `home_title`，跟界面语言走，现在是「练有所迹」。点标题直接进关于。桌面图标仍用 `app_name`，系统语言为英文时是 Traivol | 展开整月、编辑训练、选动作、计时器、已保存计时 |
+| 首页 | 按周或按月看训练时长、训练天数、总组数、容量；本周训练日；选中日按部位的足迹和已保存计时。顶栏是「首页」，齿轮进设置 | 开始训练会把日历选到今天并切到日历；也能打开当天训练、已保存计时、身体数据、趋势、日历 |
+| 日历 | 月历（按部位容量或特殊日上色）、选中日期的训练卡片、日类型（休息/放纵/偷懒）、右下角加号、训练计时入口。顶栏标题用 `home_title`，跟界面语言走，现在是「练有所迹」。点标题直接进关于。桌面图标仍用 `app_name`，系统语言为英文时是 Traivol | 展开整月、编辑训练、选动作、计时器、已保存计时 |
 | 训练 | 四个入口：动作库、训练计划（占位）、训练记录（切到日历）、训练工具（占位） | 动作库是子页面，有返回 |
 | 趋势 | 「训练足迹」「身体数据」 | 对应趋势页 |
-| 我的 | 用户名、头像、可切换的统计、身体记录入口 | 身体记录。头像在这一页裁剪 |
+| 我的 | 用户名、头像、可切换的统计、「身体数据」与「照片墙」入口；资料表单可改性别 | 身体数据、照片墙（网格→详情→编辑）。头像在这一页裁剪 |
 
 五个根页面的齿轮都进同一套设置。设置里是外观、数据、关于、清除本地数据；数据下有两个子页面：「数据备份」（导出/导入）和「历史记录」（计时记录、身体记录）。关于再进版本更新。从日历标题打开的关于，返回回日历，不经过设置。
 
@@ -83,16 +88,17 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 - `CalendarExpanded` 返回日历。点某一天会选中它并回到日历。
 - `Settings` / `BackupData` / `SettingsHistory` / `TimerHistory` / `BodyHistory` / `About` / `ReleaseNotes` 带 `from: RootTab`。返回回到打开设置时的那个根页面，不在五个 tab 之间做返回栈。`About` 和 `ReleaseNotes` 还有 `openedFromSettings`。
 - `TimerHistory` 进入 `SavedTimer` 时带 `returnToTimerHistory = true`，详情返回计时记录列表；普通 `SavedTimer` 仍返回日历/原根页面。
-- `BodyRecord` 和 `MuscleMap` 带 `returnTab`。首页和「我的」都能进身体记录。肌群图返回身体记录展示，再返回原来的根页面。
+- `BodyRecord` 和 `MuscleMap` 带 `returnTab`。首页和「我的」都能进身体数据。肌群图返回身体数据展示，再返回原来的根页面。
+- `PhotoWall` → `PhotoDetail(id)` → `PhotoEditor`。详情/编辑返回照片墙；照片墙返回「我的」。归在 `RootTab.Mine`。
 - `SavedTimer` 带 `returnTab` 和可选的 `returnToTimerHistory`。计时器页本身返回日历。
 - 根页面上系统返回直接退出应用。子页面的系统返回与该页顶栏返回一致。
 - 对话框、日期选择、下拉菜单、头像裁剪打开时，第一次返回只关这一层。页面级 `BackHandler` 在浮层打开时必须 `enabled = false`。导入确认在「数据备份」页里，打开时先关对话框。
 
-导入或清除数据后 `BackupRepository.dataEpoch` 加一。身体记录、两条趋势、动作库、训练编辑、「我的」的 ViewModel 都把 `dataEpoch` 放进 key，从而丢掉过期草稿。「我的」的 key 是 `mine-$dataEpoch`。`DataTransferViewModel` 现在在数据备份页用固定 key `data-transfer`，不要加 `dataEpoch`，否则导入成功提示会丢。首页 ViewModel 只记周/月和选中日，不放 `dataEpoch`。计时器 ViewModel 是进程内单例，进行中的秒表不跟 `dataEpoch` 走；计时记录页和设置历史页共用它。
+导入或清除数据后 `BackupRepository.dataEpoch` 加一。身体数据、两条趋势、动作库、训练编辑、「我的」的 ViewModel 都把 `dataEpoch` 放进 key，从而丢掉过期草稿。「我的」的 key 是 `mine-$dataEpoch`。`DataTransferViewModel` 现在在数据备份页用固定 key `data-transfer`，不要加 `dataEpoch`，否则导入成功提示会丢。首页 ViewModel 只记周/月和选中日，不放 `dataEpoch`。计时器 ViewModel 是进程内单例，进行中的秒表不跟 `dataEpoch` 走；计时记录页和设置历史页共用它。照片墙 ViewModel 当前不绑 `dataEpoch`（清除/导入也不动照片墙）。
 
 ## 数据模型
 
-`GymLogDatabase` version 14。迁移链：1→2→3→4→5→6→7→8→9→10→11→12→13→14，全部在 `GymLogMigrations.kt`。
+`GymLogDatabase` version 16。迁移链：1→…→14→15→16，全部在 `GymLogMigrations.kt`，在 `GymLogApplication` 注册。
 
 | 版本 | 变化 |
 | --- | --- |
@@ -109,6 +115,8 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 | 11→12 | 围度列：左右臂、左右小臂、胸围、臀围、左右腿围、左右小腿。`waistCm` 和旧的 `armCm` 不动 |
 | 12→13 | 动作库数据层：`exercises` 增加 `nameEn`、`source`、`sourceId`、`equipmentDetail`、`bodyPartDetail`；新增内容、媒体、外部来源映射、原始肌群词元、旧预置匹配候选和导入状态表 |
 | 13→14 | 分类体系：`exercises` 增加 `bodyCategoryId`、`equipmentCategoryId`、`classificationStatus`、`classificationVersion` 和两个索引；旧数据由运行时 `ExerciseClassificationMigrator` 逐行补齐 |
+| 14→15 | `day_kinds`：主键 `dateEpochDay`，`kind` 存枚举名（`REST` / `INDULGE` / `LAZY` 等） |
+| 15→16 | `photo_wall`：照片墙元数据；原图/编辑图在应用私有目录，不在此表存 BLOB |
 
 表：
 
@@ -124,14 +132,16 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 - `workout_sets`：一组。`weightMode` 存枚举名。`BODYWEIGHT` 的 `weightKg` 存 null。`BODYWEIGHT_PLUS` 只存增减量，可以是负数。
 - `body_profile`：固定一行。生日、性别（`MALE` / `FEMALE` / `OTHER`）、用户名（去空白后最多 24 字）、头像文件名。年龄由生日现算，不存时间戳。头像文件名只指向 `filesDir/profile/avatar.jpg`，字节不在库里。
 - `body_measurements`：一条快照。身高、体重、体脂、腰围、旧臂围 `armCm`，以及 11→12 的左右围度都可空。任一变化就插入新行；全空不插入。新界面写左右臂围，不再把新数据写进 `armCm`；资料表单不再提供旧臂围输入，历史里把它标为旧数据。旧列保留给已有记录和旧备份，保存其他资料时原样保留，不要清空。
-- `day_notes`：没训练的日期上的一句话。空白保存即删除该行。
+- `day_notes`：没训练的日期上的一句话。空白保存即删除该行。选特殊日类型时可带默认文案（见「日历日类型」）。
+- `day_kinds`：用户对某一天的显式标记。主键 `dateEpochDay`，`kind` 为 `DayKind` 枚举名。有训练的日子未存行时解析为训练日；库里一天最多一条。再点同一特殊标记可清除显式选择。
+- `photo_wall`：照片墙元数据。`id`、`originalRelativePath`、`editedRelativePath`（可空）、`dateEpochDay`（用户确认的日历日，不是 UTC 瞬时）、`createdAt` / `updatedAt`、`note`、`width` / `height`。文件在 `filesDir/photo_wall/originals|edited/`，缩略图缓存在 `cacheDir/photo_wall_thumbs/`。路径必须经 `PhotoPaths.isSafe` 校验。
 - `exercise_muscles`：自定义动作的主要/次要肌群；数据集动作只写入 `DatasetMuscleMapping` 中明确、非歧义的映射，泛化/未映射词元只进 `exercise_muscle_tokens`。旧 89 个预设仍以 `PresetMuscleMappings` 为准，不批量写入这张表。
 - `timer_records`：已保存的训练计时。`durationMillis`、`dateEpochDay`、可空 `sessionId`（新记录为 null，旧记录可能仍指向训练）。删计时不改训练内容。
 - `timer_laps`：该条计时的计次。`intervalMillis` 是这一段，`elapsedMillis` 是累计。
 
 进行中的秒表不在 Room 里。它在 SharedPreferences `gymlog_timer`，由 `TrainingTimerStore` 读写。开机次数用 `Settings.Global.BOOT_COUNT`：次数变了，或 `elapsedRealtime` 倒退，就把 `RUNNING` 收成 `PAUSED`，并标 `recoveredAfterReboot`。这段状态不进备份，清除本地数据也不会擦掉它。
 
-肌群目录在 `MuscleCatalog`（稳定 `muscleId`）。图用 `drawable-nodpi` 里的 `muscle_front_base` / `muscle_back_base`，再叠 `assets/muscle_masks/{front|back}/<muscle_id>.png`。底图和遮罩都是 1024×1536，必须画在同一个目标矩形里。坐标换算、frame 和点击反算统一在 `MuscleFigureGeometry`。遮罩按透明度命中；命中优先使用当前实际绘制的层，`quadriceps` 合并遮罩被绘制时整块命中 `quadriceps`，只绘制子头时命中子头，不再出现“画合并、点中某个子头”的错位。未训练的空白区域按最小遮罩命中，用于选中查看。深层肌（菱形肌、肱肌、腹内斜肌、腹横肌）对应遮罩是空的，不拿邻近肌肉代替；缝匠肌正面有独立遮罩。高亮只表示「这段时间的训练记录涉及」，不表示刺激量或恢复。训练主要/次要仍用红色系；用户选中用当前主题的 `primary`（蓝色）叠加，未训练的选中不会看成已训练。同一肌群当天只高亮一次；任一动作为主要则显示主要色。`MuscleAssetCache` 按面懒加载：身体记录只加载正面，肌群图切到背面再加载背面；加载失败时保留底图并显示重试，身体记录和肌群图共用进程缓存。
+肌群目录在 `MuscleCatalog`（稳定 `muscleId`）。图用 `drawable-nodpi` 里的 `muscle_front_base` / `muscle_back_base`，再叠 `assets/muscle_masks/{front|back}/<muscle_id>.png`。底图和遮罩都是 1024×1536，必须画在同一个目标矩形里。坐标换算、frame 和点击反算统一在 `MuscleFigureGeometry`。遮罩按透明度命中；命中优先使用当前实际绘制的层，`quadriceps` 合并遮罩被绘制时整块命中 `quadriceps`，只绘制子头时命中子头，不再出现“画合并、点中某个子头”的错位。未训练的空白区域按最小遮罩命中，用于选中查看。深层肌（菱形肌、肱肌、腹内斜肌、腹横肌）对应遮罩是空的，不拿邻近肌肉代替；缝匠肌正面有独立遮罩。高亮只表示「这段时间的训练记录涉及」，不表示刺激量或恢复。训练主要/次要仍用红色系；用户选中用当前主题的 `primary`（蓝色）叠加，未训练的选中不会看成已训练。同一肌群当天只高亮一次；任一动作为主要则显示主要色。`MuscleAssetCache` 按面懒加载：身体数据页只加载正面，肌群图切到背面再加载背面；加载失败时保留底图并显示重试，身体数据与肌群图共用进程缓存。
 
 预设动作 id 仍是 `preset_<key>`，旧 id 没有改。阶段 D 起不再自动补种旧预置；新安装只有数据集和用户自定义动作。旧预置行如已存在，仅保留给历史训练、PR、备份解析，不进入活动目录；不物理删除，避免破坏外键/历史。数据集动作是 `ds_<原始数字 ID>`，例如 `ds_0001`；`sourceId` 仍是 `0001`。数据集导入不自动关联旧预置，也不覆盖旧动作的分类、PR、归档状态或训练组。动作库和训练动作选择器只显示 `archived = 0`、非 `preset_*`、且 `source = EXERCISES_DATASET_ZH` 或 `isCustom = 1` 的动作。历史详情、PR、趋势和备份仍走全量查询。
 
@@ -167,9 +177,25 @@ PR 在写入前先把每组换成当天的有效重量。
 - 趋势里的 PR 曲线仍只在成绩提高时出现新点，相同成绩换到更晚日期不会新增点。
 - 删除训练后，用剩下的组重算受影响动作的 PR。保存身体记录后重算全部 PR，因为自重有效重量变了。
 
-日历：某一天的颜色是当天容量最大的部位。并列时用 `BodyPart.rank`。点可以同时表示多个部位。容量在 Kotlin 里用有效重量算，不是 SQL 的 `SUM`。同一天的训练卡片，以及卡片里的动作，按部位分组后按容量从大到小排。部位组的顺序也是该部位当天容量大的在上面。容量相同则保持原来的先后。
+日历上色在 `CalendarDayColorLogic`（`data/CalendarDayColor.kt`），小日历与展开月历共用同一套 `paintsFor`，不要各写一套。规则：
+
+- 普通训练日：按**合并后的部位大类**容量最高者上色。大类六种：胸、背、肩、腿（上腿+下腿+旧 LEGS）、臂（上臂+前臂+旧 ARMS）、其他（腰/有氧/颈/旧 ABS/OTHER/未知等，色 `#90A4AE`）。并列时按枚举顺序：胸 → 背 → 肩 → 腿 → 臂 → 其他（与查询顺序无关）。
+- 特殊日（`REST` / `INDULGE` / `LAZY`）盖过部位色：偷懒 `#FFEB3B`、放纵 `#EC407A`、休息 `#D8DDE3`。库中一天只有一种标记；若逻辑上同时出现多种，优先懒 → 放纵 → 休息。
+- 没有组、也没有特殊标记的日子不上色。仅存 `TRAINING` 标记但无组，也不发明颜色。
+- 容量在 Kotlin 里用有效重量算，不是 SQL 的 `SUM`。零容量但仍有组的类别仍占位，避免训练日无色。
+
+同一天的训练卡片，以及卡片里的动作，按部位分组后按容量从大到小排。部位组的顺序也是该部位当天容量大的在上面。容量相同则保持原来的先后。
 
 「点击添加计划」用日历选中的日期，不是今天。首页的「开始训练」会先把日历选到今天，再切到日历，不直接打开编辑页。
+
+## 日历日类型
+
+枚举 `DayKind`：`TRAINING`、`REST`、`INDULGE`、`LAZY`。解析与点击切换在 `DayKindLogic`。
+
+- 界面选择器（`DayKindSelector`）只提供休息日 / 放纵日 / 偷懒日；有组时训练日由数据推断，不必单独点「训练日」入库。
+- 小日历不画图例；展开月历可有图例（两行）。格子上的短标记：休息 `Zzz`、放纵 `吃吃吃`、偷懒 `躺平`。
+- 选中特殊日时，若当天备注为空，可用对应默认备注文案（`day_note_rest` / `day_note_indulge` / `day_note_lazy`）。
+- `day_kinds` 进入备份 JSON 键 `dayKinds`（可选）；导入校验重复日与非法 `kind`。清除本地数据会清这张表。
 
 趋势页可以点选某一天，看当天的点。纵轴公斤最小刻度 2.5，体脂和 BMI 是 0.5。
 
@@ -180,15 +206,23 @@ PR 在写入前先把每组换成当天的有效重量。
 
 「我的」里的三个数可以分别切换，状态只在当次组合里：训练天数 / 训练年限，累计时长的自动单位 / 固定分钟，体脂率 / 体重。训练天数在这里不是「练过几天」，而是从第一次有组的训练日到今天的跨度（含两端）。年限是这个跨度除以 365、向上取到一位小数。时长不到 1 分钟显示秒，不到 1 小时显示分钟，否则显示一位小数的小时。
 
-## 身体记录
+## 身体数据
 
-展示页在下。底部「修改」进资料表单（生日、性别、身高、体重、体脂）。人体图上的围度另有编辑页：胸围、腰围、臀围，以及左右臂围、小臂、腿围、小腿。旧臂围 `armCm` 不再提供输入，只在历史记录里显示为旧数据；腰围只在围度页维护。保存其他资料时，表单会原样保留已有的 `armCm` 和 `waistCm`，不清空。保存后回到展示，不直接回设置或首页。系统返回与顶栏一致：编辑中的表单或围度页先回展示，历史列表也先回展示，展示再回打开它的那个根页面。
+「我的」入口文案是「身体数据」（`mine_body_title`）。展示页在下。底部「修改」进资料表单（生日、性别、身高、体重、体脂）。「我的」里的资料编辑（用户名/头像）也可改性别，经 `saveIdentity`。人体图上的围度另有编辑页：胸围、腰围、臀围，以及左右臂围、小臂、腿围、小腿。旧臂围 `armCm` 不再提供输入，只在历史记录里显示为旧数据；腰围只在围度页维护。保存其他资料时，表单会原样保留已有的 `armCm` 和 `waistCm`，不清空。保存后回到展示，不直接回设置或首页。系统返回与顶栏一致：编辑中的表单或围度页先回展示，历史列表也先回展示，展示再回打开它的那个根页面。
 
 设置 → 数据 → 历史记录 → 身体记录复用 `BodyRecordHistory`，显示同一份 `body_measurements`；从设置进入时返回历史记录菜单。
 
-展示页上的人体图可在「身体数据」和「训练肌群」之间切换：「身体数据」画围度，「训练肌群」画当前选中日的肌群高亮。也可以从「训练肌群图」入口进入。图按已保存的训练会话计算，可切当天、本周（周一起）、本月，以及只看主要或次要。宽屏下「身体数据」仍只显示单张正面图，围度标注和人体图共用同一个 `MuscleFigureGeometry` frame，不能各算一套矩形。返回回到身体记录展示页。
+展示页上的人体图可在「身体数据」和「训练肌群」之间切换：「身体数据」画围度，「训练肌群」画当前选中日的肌群高亮。也可以从「训练肌群图」入口进入。图按已保存的训练会话计算，可切当天、本周（周一起）、本月，以及只看主要或次要。宽屏下「身体数据」仍只显示单张正面图，围度标注和人体图共用同一个 `MuscleFigureGeometry` frame，不能各算一套矩形。返回回到身体数据展示页。
 
 字段还有年龄和 BMI。BMI 由身高体重现算。围度没有单独趋势图。
+
+## 照片墙
+
+入口在「我的」。网格按日期浏览，可按月筛选；相册或相机添加（相机经 `FileProvider`，路径见 `@xml/photo_file_paths`）。详情可改日期、备注、删除；编辑支持裁剪、旋转、涂鸦、文字、马赛克、模糊（`PhotoStore` + `PhotoWallRepository`）。
+
+- **不进** `BackupCodec` / 导出 JSON。数据备份页有说明（`photo_wall_backup_note`）。
+- 导入训练备份、清除本地数据**都不会**删除 `photo_wall` 行或 `filesDir/photo_wall` 下的文件。
+- 相对路径必须安全；展示优先 edited，否则 original。不要把用户照片扫进日志或交接输出。
 
 ## 动作库
 
@@ -218,7 +252,7 @@ PR 在写入前先把每组换成当天的有效重量。
 
 ## 备份与清除
 
-`BackupCodec`：`format = gymlog`，`VERSION = 2`。JSON 含 exercises、sessions、sets、profile、measurements、legacyRecords、dayNotes、exerciseMuscles、timerRecords、timerLaps，以及头像 JPEG。`dayNotes` 和 `exerciseMuscles` 用 `optJSONArray`，没有这个键的旧文件当成空列表。围度、性别、用户名同样缺键则为空。动作的可选 `nameEn` / `source` / `sourceId` / `equipmentDetail` / `bodyPartDetail` 只在有值时写入；旧备份缺这些键时 `source` 回退为 `LEGACY`。分类字段 `bodyCategoryId` / `equipmentCategoryId` / `classificationStatus` / `classificationVersion` 也是可选键，旧备份缺省为 `UNMIGRATED` / 0，恢复后由分类迁移补齐。内容、媒体、来源映射和原始肌群词元不进备份，恢复后由导入器按本地数据集补种；自定义动作和其肌群映射仍按原规则恢复。
+`BackupCodec`：`format = gymlog`，`VERSION = 2`。JSON 含 exercises、sessions、sets、profile、measurements、legacyRecords、dayNotes、**dayKinds**、exerciseMuscles、timerRecords、timerLaps，以及头像 JPEG。**不含**照片墙。`dayNotes`、`dayKinds`、`exerciseMuscles` 用 `optJSONArray`，没有这个键的旧文件当成空列表。围度、性别、用户名同样缺键则为空。动作的可选 `nameEn` / `source` / `sourceId` / `equipmentDetail` / `bodyPartDetail` 只在有值时写入；旧备份缺这些键时 `source` 回退为 `LEGACY`。分类字段 `bodyCategoryId` / `equipmentCategoryId` / `classificationStatus` / `classificationVersion` 也是可选键，旧备份缺省为 `UNMIGRATED` / 0，恢复后由分类迁移补齐。内容、媒体、来源映射和原始肌群词元不进备份，恢复后由导入器按本地数据集补种；自定义动作和其肌群映射仍按原规则恢复。
 
 设置里导入/导出的界面现在是 **设置 → 数据 → 数据备份**（`BackupDataScreen`），不再直接放在设置首页。确认对话框和失败提示都在这个子页面内。
 
@@ -226,7 +260,9 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 头像是 Base64 JPEG。校验：2MB 以内，宽高 1–4096，文件头是 JPEG。裁剪输出 512×512。文件只存在 `filesDir/profile/avatar.jpg`。
 
-导入前 `validate()`：重复 id、组的外键、重复肌群关系、未知肌群、指向不存在的动作、非法性别、计时和计次对不上，必须先失败，失败则不替换。
+导入前 `validate()`：重复 id、组的外键、重复肌群关系、未知肌群、指向不存在的动作、非法性别、重复或非法日类型、计时和计次对不上，必须先失败，失败则不替换。
+
+导入整库替换会清掉并重写 `day_kinds`（快照里没有则为空）。照片墙仍不受导入影响。
 
 导出时，库里的自定义映射会写进 JSON；当前库里存在的预设动作，其映射也从代码写入 JSON。导入时只把 `isCustom` 动作的映射写回 `exercise_muscles`，预设继续以代码为准。
 
@@ -234,7 +270,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 外观存在 SharedPreferences `gymlog_appearance`（主题、是否用壁纸配色），不进备份。进行中的秒表在 `gymlog_timer`，也不进备份。Android 12 以下没有壁纸配色开关。
 
-清除本地数据：设置里两步确认，然后在协调器锁内 `clearAll`、补数据集种子、重算 PR、`dataEpoch++`；不再补旧预设。清除前会保留旧快照和完整数据集状态；补种/重算失败时按同一恢复路径还原，再向调用方抛出，不再静默报告成功。清表顺序是组、会话、肌群映射、动作、动作内容/媒体/来源映射/原始肌群词元、身体记录、资料、遗留记录、日期备注、计次、计时记录。自定义动作和它们的肌群映射不会回来。已保存计时会删掉。头像文件和进行中的秒表偏好不会被这条路径删掉；资料行没了，界面就不再引用那张 jpg。
+清除本地数据：设置里两步确认，然后在协调器锁内 `clearAll`、补数据集种子、重算 PR、`dataEpoch++`；不再补旧预设。清除前会保留旧快照和完整数据集状态；补种/重算失败时按同一恢复路径还原，再向调用方抛出，不再静默报告成功。清表顺序是组、会话、肌群映射、动作、动作内容/媒体/来源映射/原始肌群词元、匹配候选、导入状态、身体记录、资料、遗留记录、日期备注、**日类型**、计次、计时记录。**不清** `photo_wall`。自定义动作和它们的肌群映射不会回来。已保存计时会删掉。头像文件、照片墙文件和进行中的秒表偏好不会被这条路径删掉；资料行没了，界面就不再引用那张头像 jpg。
 
 ## 外观与图标
 
@@ -266,6 +302,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 18. 1.3：「我的」有用户名和头像（迁移 10→11）。身体记录在人体图上记左右围度（迁移 11→12）。用户名、围度和头像进入备份，备份版本升到 2。趋势入口改名为「训练足迹」「身体数据」，训练足迹可按部位看。趋势图可点选某一天。计时器用开机次数判断重启。
 19. 1.3.1：底部增加「首页」，冷启动改到首页。头像可以拖动、双指缩放后裁剪。「我的」的三项统计可以切换。训练卡片最多 9 格（1.4 起改为 2×3、最多 6 格）。人体图素材按进程缓存。
 20. 1.4：动作库切换为 1,324 个数据集动作和 10/28 分类；旧预置退出活动目录；接入 1,324 张缩略图和 1,324 个 GIF；动作详情改为「动作演示 / 正面 / 反面」；训练记录改三栏并显示每组重量 × 次数。计时器页不再显示已保存计时，改由设置 → 数据 → 历史记录进入；数据下新增「数据备份」和「历史记录」两个子页面。计时操作改为图标并与训练结束同排。媒体按 Gym visual 授权打包。
+21. 1.4.1：日历日类型（休息/放纵/偷懒，迁移 14→15，进备份 `dayKinds`）；日历上色改为六大类 + 特殊日盖过（`CalendarDayColorLogic`）；「我的」增加照片墙（迁移 15→16，私有存储，不进备份、清除训练数据不删）；「我的」身体入口改称「身体数据」；资料编辑可改性别；设置历史记录（计时/身体）在 1.4 已有，1.4.1 版本说明再次列出。
 
 ## 改代码时容易踩的点
 
@@ -278,6 +315,10 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 英文资源目前只有 `app_name`。不要把整份中文 `strings.xml` 翻成英文，除非用户要求。
 - 清除数据和导入 version 1 都不会删除 `filesDir/profile/avatar.jpg`，也不会重置 `gymlog_timer`。已保存计时只在 version 2 或清除数据时整表替换。
 - 人体图的底图和遮罩必须同一矩形绘制。不要单独缩放遮罩，不要把 `quadriceps` 和它的三块成分一起涂亮。
-- `armCm` 是旧的单侧臂围。新围度写左右列，读旧备份时不要把 `armCm` 填进左臂或右臂。资料表单不编辑 `armCm`，但保存其他资料时不要把它清空。
+- `armCm` 是旧的单侧臂围。新围度写左右列，读旧备份时不要把 `armCm` 填进左臂或右臂。资料表单不编辑 `armCm`，但保存其他资料时不要把它清空。历史里仍可显示为「旧臂围」。
+- 日历格子颜色必须走 `CalendarDayColorLogic`；特殊日盖过部位色。不要再按旧的单 `BodyPart.rank` 独自算一套颜色给小日历或展开月历。
+- `dayKinds` 是可选备份字段；缺键=空。不要把照片墙塞进备份，也不要在清除/导入训练数据时删照片文件。
+- 照片墙相对路径必须经 `PhotoPaths.isSafe`；FileProvider 只用于相机临时文件。不要把用户照片内容写进日志或交接文档。
 - 肌群训练高亮用红色系，用户选中用主题 `primary`；不要把选中画成训练色。点击命中优先使用 `MuscleMaskCatalog.layers` 的绘制顺序；`quadriceps` 合并层和子头不能各用一套优先级。
 - `MuscleAssetCache` 按面懒加载，失败时保留底图并提供重试；遮罩解码、BitSet 和锚点计算必须继续在 `Dispatchers.Default`，不要移回主线程。
+- 与 1.4.1 相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`ReleaseHistoryTest`（最新版应为 1.4.1）。
