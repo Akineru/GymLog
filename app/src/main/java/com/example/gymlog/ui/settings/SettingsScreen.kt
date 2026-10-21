@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -180,7 +181,11 @@ private fun ProfileCard(
                         Icon(
                             imageVector = genderIcon(it),
                             contentDescription = genderLabel(it),
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = if (it == Gender.FEMALE) {
+                                Color(0xFFE91E63)
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            },
                             modifier = Modifier
                                 .padding(start = 6.dp)
                                 .size(18.dp),

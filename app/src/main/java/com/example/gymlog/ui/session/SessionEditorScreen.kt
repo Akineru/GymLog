@@ -930,7 +930,6 @@ private fun SetRow(
                     WeightMode.WEIGHTED -> R.string.field_weight
                 },
             ),
-            keyboardType = KeyboardType.Decimal,
             increase = {
                 if (set.mode == WeightMode.WEIGHTED) {
                     onUpdate { it.copy(normalKgText = WeightLogic.stepKg(it.normalKgText, true)) }
@@ -945,27 +944,18 @@ private fun SetRow(
                     onUpdate { it.copy(extraKgText = WeightLogic.stepSignedKg(it.extraKgText, false)) }
                 }
             },
-            onValueChange = { text ->
-                if (set.mode == WeightMode.WEIGHTED) {
-                    onUpdate { it.copy(normalKgText = text) }
-                } else if (set.mode == WeightMode.BODYWEIGHT_PLUS) {
-                    onUpdate { it.copy(extraKgText = text) }
-                }
-            },
             modifier = Modifier.weight(1f).padding(horizontal = 3.dp),
         )
         VerticalNumberControl(
             value = set.repsText,
             enabled = true,
             placeholder = stringResource(R.string.field_reps),
-            keyboardType = KeyboardType.Number,
             increase = {
                 onUpdate { it.copy(repsText = WeightLogic.stepReps(it.repsText, true)) }
             },
             decrease = {
                 onUpdate { it.copy(repsText = WeightLogic.stepReps(it.repsText, false)) }
             },
-            onValueChange = { text -> onUpdate { it.copy(repsText = text) } },
             modifier = Modifier.weight(1f).padding(horizontal = 3.dp),
         )
         Box(
@@ -1002,10 +992,8 @@ private fun VerticalNumberControl(
     value: String,
     enabled: Boolean,
     placeholder: String,
-    keyboardType: KeyboardType,
     increase: () -> Unit,
     decrease: () -> Unit,
-    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -1023,24 +1011,44 @@ private fun VerticalNumberControl(
                 modifier = Modifier.size(18.dp),
             )
         }
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            enabled = enabled,
-            singleLine = true,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1,
-                )
-            },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(46.dp),
-        )
+                .height(46.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                    if (enabled) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                )
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(8.dp),
+                )
+                .padding(horizontal = 4.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = value.ifBlank { placeholder },
+                style = if (value.isBlank()) {
+                    MaterialTheme.typography.labelSmall
+                } else {
+                    MaterialTheme.typography.bodyLarge
+                },
+                color = if (value.isBlank()) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
         IconButton(
             onClick = decrease,
             enabled = enabled,
