@@ -391,7 +391,7 @@ private fun SwitchSegment(text: String, selected: Boolean, onClick: () -> Unit) 
         Text(
             text = text,
             color = foreground,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            fontWeight = if (selected) FontWeight.Normal else FontWeight.Normal,
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp),
         )
     }

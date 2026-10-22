@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -53,6 +55,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
 import com.example.gymlog.data.PhotoWallEntity
+import com.example.gymlog.ui.theme.ActionOrange
+import com.example.gymlog.ui.theme.GymLogActionButton
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -105,7 +111,11 @@ fun PhotoWallScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { adding = true }) {
+            FloatingActionButton(
+                onClick = { adding = true },
+                containerColor = ActionOrange,
+                contentColor = androidx.compose.ui.graphics.Color.White,
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.photo_wall_add))
             }
         },
@@ -115,16 +125,32 @@ fun PhotoWallScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(stringResource(R.string.photo_wall_empty_title), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    stringResource(R.string.photo_wall_empty_body),
-                    modifier = Modifier.padding(top = 8.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(GymLogSpacing.lg),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhotoLibrary,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                        Text(
+                            stringResource(R.string.photo_wall_empty_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            stringResource(R.string.photo_wall_empty_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         } else {
             val rows = remember(state.photos) { groupByMonth(state.photos) }
@@ -140,9 +166,10 @@ fun PhotoWallScreen(
                 rows.forEach { (month, photos) ->
                     item(key = "m-$month", span = { GridItemSpan(3) }) {
                         Text(
-                            month.format(monthFormatter),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                            "${month.format(monthFormatter)} · ${photos.size} 张",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 10.dp, bottom = 4.dp),
                         )
                     }
                     items(photos, key = { it.id }) { photo ->
@@ -222,7 +249,7 @@ private fun PhotoTile(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
@@ -308,7 +335,7 @@ fun PhotoDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
@@ -324,12 +351,48 @@ fun PhotoDetailScreen(
                     Text(stringResource(R.string.photo_wall_missing))
                 }
             }
-            Text(LocalDate.ofEpochDay(photo.dateEpochDay).format(dayFormatter))
-            Text(photo.note.ifBlank { stringResource(R.string.photo_wall_no_note) })
-            TextButton(onClick = onEdit) { Text(stringResource(R.string.photo_wall_edit)) }
-            TextButton(onClick = { pickingDate = true }) { Text(stringResource(R.string.photo_wall_change_date)) }
-            TextButton(onClick = { editingNote = true }) { Text(stringResource(R.string.photo_wall_change_note)) }
-            TextButton(onClick = { confirmDelete = true }) { Text(stringResource(R.string.photo_wall_delete)) }
+            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(GymLogSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    Text(
+                        text = LocalDate.ofEpochDay(photo.dateEpochDay).format(dayFormatter),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = photo.note.ifBlank { stringResource(R.string.photo_wall_no_note) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            GymLogActionButton(
+                text = stringResource(R.string.photo_wall_edit),
+                onClick = onEdit,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                TextButton(onClick = { pickingDate = true }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.photo_wall_change_date))
+                }
+                TextButton(onClick = { editingNote = true }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.photo_wall_change_note))
+                }
+            }
+            TextButton(
+                onClick = { confirmDelete = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.photo_wall_delete),
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
         }
     }
     if (confirmDelete) {

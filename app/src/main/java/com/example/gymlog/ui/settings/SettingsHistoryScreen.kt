@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,7 +25,6 @@ import com.example.gymlog.R
 @Composable
 fun SettingsHistoryScreen(
     onBack: () -> Unit,
-    onOpenTimers: () -> Unit,
     onOpenBody: () -> Unit,
 ) {
     BackHandler(onBack = onBack)
@@ -53,13 +53,9 @@ fun SettingsHistoryScreen(
         ) {
             item {
                 SettingsLinkRow(
-                    title = stringResource(R.string.timer_history),
-                    onClick = onOpenTimers,
-                )
-            }
-            item {
-                SettingsLinkRow(
                     title = stringResource(R.string.body_history),
+                    subtitle = "查看身体数据变化记录",
+                    icon = Icons.Filled.MonitorWeight,
                     onClick = onOpenBody,
                 )
             }

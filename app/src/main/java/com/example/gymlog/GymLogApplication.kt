@@ -34,6 +34,7 @@ import com.example.gymlog.data.ExerciseCatalogCoordinator
 import com.example.gymlog.data.ExerciseCatalogImporter
 import com.example.gymlog.data.ExerciseMediaRepository
 import com.example.gymlog.data.ProfileAvatarStore
+import com.example.gymlog.data.SessionDraftStore
 import com.example.gymlog.data.TimerRecordRepository
 import com.example.gymlog.data.TrainingTimerStore
 import com.example.gymlog.data.WorkoutRepository
@@ -127,6 +128,10 @@ class GymLogApplication : Application() {
 
     val trainingTimerStore: TrainingTimerStore by lazy {
         TrainingTimerStore(this)
+    }
+
+    val sessionDraftStore: SessionDraftStore by lazy {
+        SessionDraftStore(filesDir)
     }
 
     val timerRecordRepository: TimerRecordRepository by lazy {

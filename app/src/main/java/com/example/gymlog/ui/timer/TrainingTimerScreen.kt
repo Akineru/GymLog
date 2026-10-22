@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,12 +28,6 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,6 +49,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -61,6 +60,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
 import com.example.gymlog.data.TimerPhase
 import com.example.gymlog.data.TrainingTimerLogic
+import com.example.gymlog.ui.theme.GymLogActionButton
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 import kotlin.math.abs
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -123,67 +125,87 @@ fun TrainingTimerScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                Text(
-                    text = phaseLabel(state.phase),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                if (state.recoveredAfterReboot) {
-                    Text(
-                        text = stringResource(R.string.timer_recovered),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(
-                    text = state.formatted,
-                    style = MaterialTheme.typography.displayLarge.copy(fontFeatureSettings = "tnum"),
-                    color = MaterialTheme.colorScheme.primary,
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(role = Role.Button, onClick = { editing = true })
-                        .padding(vertical = 12.dp),
-                    textAlign = TextAlign.Center,
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                            ),
+                        )
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    IconButton(onClick = { viewModel.toggle(selectedDateEpochDay) }) {
-                        Icon(
-                            imageVector = if (state.phase == TimerPhase.RUNNING) {
-                                Icons.Filled.Pause
-                            } else {
-                                Icons.Filled.PlayArrow
+                    Text(
+                        text = phaseLabel(state.phase),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color(0xFFBBD0EC),
+                    )
+                    if (state.recoveredAfterReboot) {
+                        Text(
+                            text = stringResource(R.string.timer_recovered),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFFBBD0EC),
+                        )
+                    }
+                    Text(
+                        text = state.formatted,
+                        style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum"),
+                        color = Color.White,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(role = Role.Button, onClick = { editing = true })
+                            .padding(vertical = 4.dp),
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.toggle(selectedDateEpochDay) },
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                        ) {
+                            Icon(
+                                imageVector = if (state.phase == TimerPhase.RUNNING) {
+                                    Icons.Filled.Pause
+                                } else {
+                                    Icons.Filled.PlayArrow
+                                },
+                                contentDescription = primaryActionLabel(state.phase),
+                                tint = Color.White,
+                            )
+                        }
+                        IconButton(
+                            onClick = viewModel::lap,
+                            enabled = state.phase != TimerPhase.IDLE,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Flag,
+                                contentDescription = stringResource(R.string.timer_lap),
+                                tint = Color(0xFFD6E4F5),
+                            )
+                        }
+                        IconButton(onClick = { confirmingReset = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = stringResource(R.string.timer_reset),
+                                tint = Color(0xFFD6E4F5),
+                            )
+                        }
+                        GymLogActionButton(
+                            text = stringResource(R.string.timer_finish),
+                            onClick = {
+                                val date = state.recordDateEpochDay ?: selectedDateEpochDay
+                                viewModel.finish(date)
                             },
-                            contentDescription = primaryActionLabel(state.phase),
-                            tint = MaterialTheme.colorScheme.primary,
+                            enabled = !state.saving,
+                            modifier = Modifier.weight(1f),
                         )
-                    }
-                    IconButton(
-                        onClick = viewModel::lap,
-                        enabled = state.phase != TimerPhase.IDLE,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Flag,
-                            contentDescription = stringResource(R.string.timer_lap),
-                        )
-                    }
-                    IconButton(onClick = { confirmingReset = true }) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = stringResource(R.string.timer_reset),
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            val date = state.recordDateEpochDay ?: selectedDateEpochDay
-                            viewModel.finish(date)
-                        },
-                        enabled = !state.saving,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(stringResource(R.string.timer_finish))
                     }
                 }
             }
@@ -191,26 +213,29 @@ fun TrainingTimerScreen(
                 Text(
                     text = stringResource(R.string.timer_laps),
                     style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             if (state.laps.isEmpty()) {
                 item {
-                    Text(
-                        text = stringResource(R.string.timer_laps_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
+                    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = stringResource(R.string.timer_laps_empty),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(GymLogSpacing.md),
+                        )
+                    }
                 }
             } else {
                 val newestIndex = state.laps.maxOf { it.index }
                 items(state.laps.asReversed(), key = { it.index }) { lap ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = dashboardCardShape(),
-                        colors = dashboardCardColors(),
-                        elevation = dashboardCardElevation(),
-                        border = dashboardCardBorder(),
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.padding(GymLogSpacing.md),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
                             Text(
                                 text = stringResource(R.string.timer_lap_index, lap.index) +
                                     if (lap.index == newestIndex) {
@@ -219,6 +244,7 @@ fun TrainingTimerScreen(
                                         ""
                                     },
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = stringResource(
@@ -226,13 +252,15 @@ fun TrainingTimerScreen(
                                     TrainingTimerLogic.formatDuration(lap.intervalMillis),
                                 ),
                                 style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"),
+                                color = MaterialTheme.colorScheme.primary,
                             )
                             Text(
                                 text = stringResource(
                                     R.string.timer_lap_elapsed,
                                     TrainingTimerLogic.formatDuration(lap.elapsedMillis),
                                 ),
-                                style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }

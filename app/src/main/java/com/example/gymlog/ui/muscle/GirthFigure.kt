@@ -120,6 +120,8 @@ fun GirthCalloutOverlay(
                     center = Offset(label.anchorX, label.anchorY),
                 )
                 label.lines.forEachIndexed { index, line ->
+                    paint.color = if (index == 0) lineColor.toArgb() else textColor.toArgb()
+                    paint.isFakeBoldText = index > 0
                     val baseline = label.textTop + textSize * (1f + index * 1.45f)
                     drawContext.canvas.nativeCanvas.drawText(line, label.textLeft, baseline, paint)
                 }

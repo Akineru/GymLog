@@ -30,11 +30,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -77,6 +72,8 @@ import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.PersonalRecordLogic
 import com.example.gymlog.data.displayName
 import com.example.gymlog.ui.muscle.MuscleFigure
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -367,16 +364,12 @@ private fun ExerciseGridCard(
             append(classificationLabel)
         }
     }
-    Card(
+    GymLogCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(role = Role.Button, onClick = onOpen),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = Modifier.padding(GymLogSpacing.sm)) {
             ExerciseThumbnail(
                 exercise = exercise,
                 media = media,
@@ -386,7 +379,7 @@ private fun ExerciseGridCard(
             )
             Text(
                 text = exercise.name,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleSmall,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 8.dp),

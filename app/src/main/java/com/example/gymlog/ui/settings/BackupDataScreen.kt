@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -81,6 +83,8 @@ fun BackupDataScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.data_export),
+                    subtitle = "导出全部训练和身体数据",
+                    icon = Icons.Filled.FileUpload,
                     enabled = !state.busy,
                     onClick = { exportLauncher.launch("gymlog-${today}.json") },
                 )
@@ -88,6 +92,8 @@ fun BackupDataScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.data_import),
+                    subtitle = "从 JSON 备份恢复数据",
+                    icon = Icons.Filled.FileDownload,
                     enabled = !state.busy,
                     onClick = {
                         importLauncher.launch(

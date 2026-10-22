@@ -111,7 +111,7 @@ fun TrainingCalendarCard(
                 Text(
                     text = month.format(monthFormatter),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .weight(1f)
@@ -261,7 +261,7 @@ private fun DayCell(
                 text = date.dayOfMonth.toString(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = ink,
-                fontWeight = if (isSelected && inMonth) FontWeight.SemiBold else FontWeight.Normal,
+                fontWeight = if (isSelected && inMonth) FontWeight.Normal else FontWeight.Normal,
             )
         }
         Spacer(Modifier.height(1.dp))
@@ -279,7 +279,7 @@ private fun SpecialDayMark(paint: CalendarDayPaint, inMonth: Boolean) {
         color = if (label.isEmpty()) Color.Transparent else CalendarDayInk,
         fontSize = 8.sp,
         lineHeight = 10.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Normal,
         textAlign = TextAlign.Center,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,

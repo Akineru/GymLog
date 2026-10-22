@@ -4,6 +4,8 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
@@ -25,7 +27,7 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = Color.White,
     primaryContainer = BrandBlueSoft,
     onPrimaryContainer = BrandBlueInk,
-    secondary = Color(0xFF4C6285),
+    secondary = Color(0xFF44546A),
     onSecondary = Color.White,
     secondaryContainer = BrandBlueSoft,
     onSecondaryContainer = BrandBlueInk,
@@ -41,7 +43,7 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Ink,
     surface = PageBackground,
     onSurface = Ink,
-    surfaceVariant = Color(0xFFEEF2F8),
+    surfaceVariant = MutedSurface,
     onSurfaceVariant = InkSecondary,
     outline = Line,
     outlineVariant = Line,
@@ -58,35 +60,42 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF8EADFF),
-    onPrimary = Color(0xFF08245C),
-    primaryContainer = Color(0xFF1C3F86),
-    onPrimaryContainer = Color(0xFFDCE6FF),
+    primary = Color(0xFF8AB4FF),
+    onPrimary = Color(0xFF0B1B33),
+    primaryContainer = Color(0xFF1C3A63),
+    onPrimaryContainer = Color(0xFFDCE9FF),
     secondary = Color(0xFFB7C4DA),
     onSecondary = Color(0xFF1C2838),
     secondaryContainer = Color(0xFF24344C),
-    onSecondaryContainer = Color(0xFFDCE6FF),
+    onSecondaryContainer = Color(0xFFDCE9FF),
     tertiary = Color(0xFF8ED4AE),
+    onTertiary = Color(0xFF082018),
     error = Color(0xFFFFB4AB),
+    onError = Color(0xFF3B0908),
     background = DashboardDark,
     onBackground = DashboardDarkInk,
     surface = DashboardDark,
     onSurface = DashboardDarkInk,
-    surfaceVariant = Color(0xFF242B38),
+    surfaceVariant = DashboardDarkCardHigh,
     onSurfaceVariant = DashboardDarkMuted,
-    outline = Color(0xFF2C3444),
-    outlineVariant = Color(0xFF2C3444),
-    surfaceContainerLowest = Color(0xFF0C1016),
+    outline = DashboardDarkLine,
+    outlineVariant = DashboardDarkLine,
+    surfaceTint = Color(0xFF8AB4FF),
+    surfaceContainerLowest = DashboardDarkCard,
     surfaceContainerLow = DashboardDarkCard,
     surfaceContainer = DashboardDarkCard,
-    surfaceContainerHigh = Color(0xFF1E2531),
-    surfaceContainerHighest = Color(0xFF242B38),
+    surfaceContainerHigh = DashboardDarkCardHigh,
+    surfaceContainerHighest = DashboardDarkCardHigh,
+    inverseSurface = DashboardDarkInk,
+    inverseOnSurface = DashboardDark,
+    inversePrimary = BrandBlue,
+    scrim = Color(0x99000000),
 )
 
 val LocalGymLogDarkTheme = staticCompositionLocalOf { false }
 
 val DashboardShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
+    extraSmall = RoundedCornerShape(10.dp),
     small = RoundedCornerShape(12.dp),
     medium = RoundedCornerShape(16.dp),
     large = RoundedCornerShape(20.dp),
@@ -96,7 +105,7 @@ val DashboardShapes = Shapes(
 @Composable
 fun GymLogTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -119,7 +128,14 @@ fun GymLogTheme(
         }
     }
 
-    CompositionLocalProvider(LocalGymLogDarkTheme provides darkTheme) {
+    val selectionColors = TextSelectionColors(
+        handleColor = colorScheme.primary,
+        backgroundColor = colorScheme.primary.copy(alpha = 0.24f),
+    )
+    CompositionLocalProvider(
+        LocalGymLogDarkTheme provides darkTheme,
+        LocalTextSelectionColors provides selectionColors,
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,

@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.gymlog"
         minSdk = 24
         targetSdk = 37
-        versionCode = 10
-        versionName = "1.5"
+        versionCode = 11
+        versionName = "1.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -23,8 +23,7 @@ android {
     buildTypes {
         release {
             optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                enable = false
             }
         }
     }

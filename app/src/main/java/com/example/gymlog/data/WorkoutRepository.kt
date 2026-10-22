@@ -85,6 +85,8 @@ class WorkoutRepository(
         return sessionDao.latestSetForExercise(exerciseId)
     }
 
+    suspend fun findExercise(id: String): ExerciseEntity? = exerciseDao.getById(id)
+
     suspend fun loadSession(id: String): SessionDetail? {
         val row = sessionDao.getWithSets(id) ?: return null
         val durations = exerciseDurationDao?.forSession(id).orEmpty()

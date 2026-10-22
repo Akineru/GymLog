@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -52,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -153,11 +155,20 @@ private fun ProfileCard(
     ageYears: Int?,
     onClick: () -> Unit,
 ) {
-    DashboardCard(onClick = onClick) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                ),
+            )
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AvatarImage(
@@ -174,6 +185,7 @@ private fun ProfileCard(
                     Text(
                         text = name ?: stringResource(R.string.mine_profile_title),
                         style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -182,9 +194,9 @@ private fun ProfileCard(
                             imageVector = genderIcon(it),
                             contentDescription = genderLabel(it),
                             tint = if (it == Gender.FEMALE) {
-                                Color(0xFFE91E63)
+                                Color(0xFFFFA9C8)
                             } else {
-                                MaterialTheme.colorScheme.primary
+                                Color(0xFFBBD0EC)
                             },
                             modifier = Modifier
                                 .padding(start = 6.dp)
@@ -199,7 +211,7 @@ private fun ProfileCard(
                         else -> genderLabel(gender)
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color(0xFFBBD0EC),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 2.dp),
@@ -208,7 +220,7 @@ private fun ProfileCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = Color(0xFFBBD0EC),
             )
         }
     }

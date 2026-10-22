@@ -10,6 +10,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -38,10 +40,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -50,7 +53,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -80,6 +82,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -100,10 +103,10 @@ import com.example.gymlog.data.WorkoutClockLogic
 import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.displayName
 import com.example.gymlog.ui.exercise.ExerciseThumbnail
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
+import com.example.gymlog.ui.theme.GymLogActionButton
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSecondaryButton
+import com.example.gymlog.ui.theme.GymLogSpacing
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -322,7 +325,7 @@ fun SessionEditorScreen(
             },
             dismissButton = {
                 TextButton(onClick = { confirmDelete = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.training_resume))
                 }
             },
         )
@@ -391,16 +394,11 @@ private fun TrainingSessionPage(
                 }
                 if (state.exercises.isNotEmpty()) {
                     item {
-                        OutlinedButton(
+                        GymLogSecondaryButton(
+                            text = stringResource(R.string.training_add_exercise),
                             onClick = onAddExercise,
                             modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Icon(Icons.Filled.Add, contentDescription = null)
-                            Text(
-                                stringResource(R.string.training_add_exercise),
-                                modifier = Modifier.padding(start = 8.dp),
-                            )
-                        }
+                        )
                     }
                 }
                 state.errorMessage?.let { message ->
@@ -448,10 +446,10 @@ private fun TrainingTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onBack) {
+        IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
             Icon(
                 imageVector = Icons.Filled.KeyboardArrowDown,
                 contentDescription = stringResource(R.string.cancel),
@@ -467,7 +465,7 @@ private fun TrainingTopBar(
                 text = stringResource(R.string.training_duration),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Normal,
             )
             Text(
                 text = TrainingTimerLogic.formatDuration(elapsedMillis),
@@ -477,19 +475,18 @@ private fun TrainingTopBar(
                 ),
             )
         }
-        IconButton(onClick = onOpenClock) {
+        IconButton(onClick = onOpenClock, modifier = Modifier.size(48.dp)) {
             Icon(
                 imageVector = Icons.Filled.Alarm,
                 contentDescription = stringResource(R.string.training_timer),
             )
         }
-        Button(
+        GymLogActionButton(
+            text = stringResource(R.string.training_complete),
             onClick = onFinish,
             enabled = enabled,
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        ) {
-            Text(stringResource(R.string.training_complete))
-        }
+            modifier = Modifier.heightIn(min = 48.dp),
+        )
     }
 }
 
@@ -500,39 +497,31 @@ private fun TrainingSummary(state: SessionEditorUiState) {
         completedSets.map { set -> draftWeightKg(set, state.bodyWeightKg) to set.repsText.trim().toIntOrNull() },
     )
     val completedExercises = state.exercises.size
-    Row(
+    GymLogCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = GymLogSpacing.md, vertical = GymLogSpacing.xs),
     ) {
-        SummaryMetric(
-            label = stringResource(R.string.training_volume),
-            value = WeightLogic.displayVolume(volume),
-            modifier = Modifier.weight(1f),
-        )
-        SummaryMetric(
-            label = stringResource(R.string.training_exercises),
-            value = completedExercises.toString(),
-            modifier = Modifier.weight(1f),
-        )
-        SummaryMetric(
-            label = stringResource(R.string.training_sets),
-            value = completedSets.size.toString(),
-            modifier = Modifier.weight(1f),
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Filled.Accessibility,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
-                modifier = Modifier.size(30.dp),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = GymLogSpacing.md, vertical = GymLogSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SummaryMetric(
+                label = stringResource(R.string.training_volume),
+                value = WeightLogic.displayVolume(volume),
+                modifier = Modifier.weight(1.3f),
             )
-            Icon(
-                imageVector = Icons.Filled.Accessibility,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
-                modifier = Modifier.size(30.dp),
+            SummaryMetric(
+                label = stringResource(R.string.training_exercises),
+                value = completedExercises.toString(),
+                modifier = Modifier.weight(1f),
+            )
+            SummaryMetric(
+                label = stringResource(R.string.training_sets),
+                value = completedSets.size.toString(),
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -540,12 +529,17 @@ private fun TrainingSummary(state: SessionEditorUiState) {
 
 @Composable
 private fun SummaryMetric(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Normal,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = value,
@@ -553,7 +547,60 @@ private fun SummaryMetric(label: String, value: String, modifier: Modifier = Mod
                 fontFeatureSettings = "tnum",
                 fontWeight = FontWeight.Normal,
             ),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
         )
+    }
+}
+
+@Composable
+private fun SaveSummaryStat(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color(0xFFBBD0EC),
+            maxLines = 1,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontFeatureSettings = "tnum",
+            ),
+            color = Color.White,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 3.dp),
+        )
+    }
+}
+
+@Composable
+private fun SaveSectionHeader(title: String, optional: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 2.dp, start = 2.dp, end = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        if (optional) {
+            Text(
+                text = stringResource(R.string.training_save_optional),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
     }
 }
 
@@ -582,13 +629,12 @@ private fun EmptyTrainingState(onAddExercise: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
         )
-        Button(onClick = onAddExercise, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Add, contentDescription = null)
-            Text(
-                stringResource(R.string.training_add_exercise),
-                modifier = Modifier.padding(start = 8.dp),
-            )
-        }
+        GymLogActionButton(
+            text = stringResource(R.string.training_add_exercise),
+            onClick = onAddExercise,
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = Icons.Filled.Add,
+        )
     }
 }
 
@@ -607,18 +653,29 @@ private fun CollapsedExerciseCard(
             "${WeightLogic.displaySet(draftWeightKg(set, bodyWeightKg))}×${set.repsText}"
         }
     val hidden = item.sets.count { it.completed } > 6
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
+    val finished = item.completedAtMillis != null || item.durationMillis != null
+    val dark = isSystemInDarkTheme()
+    val finishedBackground = if (dark) Color(0xFF1B3A2A) else Color(0xFFE6F4EA)
+    val finishedBorder = Color(0xFF81C784)
+    val finishedInk = if (dark) Color(0xFFA5D6A7) else Color(0xFF2E7D32)
+    GymLogCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        containerColor = if (finished) {
+            finishedBackground
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLowest
+        },
+        border = BorderStroke(
+            1.dp,
+            if (finished) finishedBorder else MaterialTheme.colorScheme.outlineVariant,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(GymLogSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -627,11 +684,11 @@ private fun CollapsedExerciseCard(
                         ExerciseClassification.exerciseGroupingKey(item.exercise),
                     ),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (finished) finishedInk else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     text = item.exercise.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -723,16 +780,10 @@ private fun ExerciseBlock(
         )
         return
     }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
-    ) {
+    GymLogCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(GymLogSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.xs),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ExerciseThumbnail(
@@ -750,7 +801,7 @@ private fun ExerciseBlock(
                     )
                     Text(
                         text = item.exercise.name,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                     )
                     Text(
                         text = stringResource(
@@ -1107,48 +1158,69 @@ private fun TrainingSavePage(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
-                    Card(
-                        colors = dashboardCardColors(),
-                        border = dashboardCardBorder(),
-                        shape = dashboardCardShape(),
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                                ),
+                            )
+                            .padding(horizontal = 16.dp, vertical = 15.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            SummaryMetric(
-                                label = stringResource(R.string.training_duration),
-                                value = TrainingTimerLogic.formatDuration(
-                                    state.finishedDurationMillis,
-                                ),
-                                modifier = Modifier.weight(1.25f),
+                            Text(
+                                text = "本次训练",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color(0xFFBBD0EC),
+                                modifier = Modifier.weight(1f),
                             )
-                            SummaryMetric(
+                            Text(
+                                text = LocalDate.ofEpochDay(state.dateEpochDay).format(dateFormatter),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFFBBD0EC),
+                            )
+                        }
+                        Text(
+                            text = TrainingTimerLogic.formatDuration(state.finishedDurationMillis),
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontFeatureSettings = "tnum",
+                            ),
+                            color = Color.White,
+                        )
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.16f))
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            SaveSummaryStat(
                                 label = stringResource(R.string.training_volume),
                                 value = WeightLogic.displayVolume(volume),
                                 modifier = Modifier.weight(1f),
                             )
-                            SummaryMetric(
+                            SaveSummaryStat(
                                 label = stringResource(R.string.training_sets),
                                 value = completedSets.size.toString(),
-                                modifier = Modifier.weight(0.75f),
+                                modifier = Modifier.weight(1f),
                             )
-                            SummaryMetric(
+                            SaveSummaryStat(
                                 label = stringResource(R.string.training_parts),
                                 value = parts.joinToString("、").ifEmpty { "—" },
-                                modifier = Modifier.weight(1.4f),
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }
                 }
                 item {
-                    Card(
-                        colors = dashboardCardColors(),
-                        border = dashboardCardBorder(),
-                        shape = dashboardCardShape(),
-                    ) {
+                    SaveSectionHeader(
+                        title = stringResource(R.string.training_photo_section),
+                        optional = true,
+                    )
+                }
+                item {
+                    GymLogCard(modifier = Modifier.fillMaxWidth()) {
                         Column(
                             modifier = Modifier.fillMaxWidth().padding(12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -1160,26 +1232,46 @@ private fun TrainingSavePage(
                                     contentDescription = null,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(180.dp)
-                                        .clip(RoundedCornerShape(12.dp)),
+                                        .height(160.dp)
+                                        .clip(RoundedCornerShape(14.dp)),
                                     contentScale = ContentScale.Crop,
                                 )
                             } else {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(160.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                        .height(108.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(Color(0xFFFAFCFF))
+                                        .border(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.outlineVariant,
+                                            RoundedCornerShape(14.dp),
+                                        )
                                         .clickable(onClick = onPickPhoto),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.AddPhotoAlternate,
-                                        contentDescription = stringResource(R.string.training_add_photo),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(40.dp),
-                                    )
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.AddPhotoAlternate,
+                                            contentDescription = stringResource(R.string.training_add_photo),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(26.dp),
+                                        )
+                                        Text(
+                                            text = "添加训练照片",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.training_photo_hint),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
                                 }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1210,40 +1302,82 @@ private fun TrainingSavePage(
                     }
                 }
                 item {
+                    SaveSectionHeader(
+                        title = stringResource(R.string.field_note),
+                        optional = true,
+                    )
+                }
+                item {
                     OutlinedTextField(
                         value = state.note,
                         onValueChange = onNoteChange,
-                        label = { Text(stringResource(R.string.field_note)) },
+                        label = { Text(stringResource(R.string.training_note_prompt)) },
+                        placeholder = { Text(stringResource(R.string.training_note_hint)) },
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         minLines = 3,
                     )
                 }
                 item {
-                    OutlinedButton(
-                        onClick = onDateClick,
-                        modifier = Modifier.fillMaxWidth(),
+                    GymLogCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onDateClick),
                     ) {
-                        Text(
-                            stringResource(R.string.field_date) + " " +
-                                LocalDate.ofEpochDay(state.dateEpochDay).format(dateFormatter),
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.CalendarMonth,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.field_date),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 10.dp),
+                            )
+                            Text(
+                                text = LocalDate.ofEpochDay(state.dateEpochDay).format(dateFormatter),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 3.dp),
+                            )
+                        }
                     }
                 }
                 state.errorMessage?.let { message ->
                     item { Text(message, color = MaterialTheme.colorScheme.error) }
                 }
                 item {
-                    Button(
+                    GymLogActionButton(
+                        text = stringResource(
+                            if (state.saving) R.string.data_busy else R.string.training_save_action,
+                        ),
                         onClick = onSave,
                         enabled = !state.saving,
                         modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            stringResource(
-                                if (state.saving) R.string.data_busy else R.string.training_save,
-                            ),
-                        )
-                    }
+                    )
                 }
                 item {
                     TextButton(

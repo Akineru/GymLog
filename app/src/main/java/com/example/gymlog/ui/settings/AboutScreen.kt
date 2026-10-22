@@ -3,7 +3,7 @@ package com.example.gymlog.ui.settings
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,15 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Card
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
-import androidx.compose.material3.ListItem
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +25,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -65,55 +63,46 @@ fun AboutScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = dashboardCardShape(),
-                    colors = dashboardCardColors(),
-                    elevation = dashboardCardElevation(),
-                    border = dashboardCardBorder(),
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                            ),
+                        )
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.app_name),
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-                        Text(
-                            text = stringResource(R.string.about_version, versionName),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Text(
-                            text = stringResource(R.string.exercise_art_credit),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                    )
+                    Text(
+                        text = stringResource(R.string.about_version, versionName),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFBBD0EC),
+                    )
+                    Text(
+                        text = stringResource(R.string.exercise_art_credit),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFBBD0EC),
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
                 }
             }
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = onOpenReleaseNotes),
-                    shape = dashboardCardShape(),
-                    colors = dashboardCardColors(),
-                    elevation = dashboardCardElevation(),
-                    border = dashboardCardBorder(),
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.release_notes_title)) },
-                        trailingContent = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = null,
-                            )
-                        },
-                    )
-                }
+                SettingsLinkRow(
+                    title = stringResource(R.string.release_notes_title),
+                    subtitle = "查看每个版本的更新内容",
+                    icon = Icons.Filled.Description,
+                    onClick = onOpenReleaseNotes,
+                )
             }
         }
     }

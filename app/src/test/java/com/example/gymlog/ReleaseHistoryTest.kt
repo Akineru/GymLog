@@ -7,9 +7,9 @@ import org.junit.Test
 
 class ReleaseHistoryTest {
     @Test
-    fun newestNoteIsVersionOnePointFive() {
+    fun newestNoteIsVersionOnePointFiveOne() {
         val notes = ReleaseHistory.notes
-        assertEquals("1.5", notes.first().versionName)
+        assertEquals("1.5.1", notes.first().versionName)
         assertTrue(notes.first().sections.all { it.items.isNotEmpty() })
         val versions = notes.map { note ->
             val parts = note.versionName.split('.').map { it.toInt() }

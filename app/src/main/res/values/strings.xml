@@ -44,6 +44,11 @@
     <string name="tab_calendar">日历</string>
     <string name="calendar_collapse_week">收起，只显示本周</string>
     <string name="calendar_expand_month">展开整月</string>
+    <string name="calendar_today">今天</string>
+    <string name="calendar_untrained">未训练</string>
+    <string name="calendar_training">已训练</string>
+    <string name="calendar_mark_day">标记这一天</string>
+    <string name="calendar_edit_day_note">写一句</string>
     <string name="tab_train">训练</string>
     <string name="tab_progress">趋势</string>
     <string name="tab_mine">我的</string>
@@ -63,6 +68,8 @@
     <string name="home_stat_volume">训练容量</string>
     <string name="home_unit_day">天</string>
     <string name="home_unit_set">组</string>
+    <string name="home_unit_kg">kg</string>
+    <string name="home_unit_t">t</string>
     <string name="home_week_footprint">本周训练足迹</string>
     <string name="home_open_calendar">查看日历</string>
     <string name="home_part_training">%1$s训练</string>
@@ -73,6 +80,10 @@
     <string name="home_start_training">开始训练</string>
     <string name="home_record_body">记录身体</string>
     <string name="home_open_trends">查看趋势</string>
+    <string name="home_empty_title_today">今天还没有训练记录</string>
+    <string name="home_empty_title_other">这一天还没有训练记录</string>
+    <string name="home_empty_message">练完一组也算进步，先动起来。</string>
+    <string name="home_view_all">全部</string>
     <string-array name="home_weekdays">
         <item>一</item>
         <item>二</item>
@@ -123,7 +134,10 @@
     <string name="data_import_confirm_message">这份备份里有 %1$d 次训练、%2$d 条身体记录。导入后会替换现在的训练记录、动作库和个人身体记录，不能撤销。</string>
     <string name="exercise_library">动作库</string>
     <string name="train_start_hint">记录今天的一次训练</string>
+    <string name="train_hero_title">今天练什么？</string>
+    <string name="train_hero_subtitle">从一个动作开始。训练会自动记录时长、组数和容量。</string>
     <string name="train_library_hint">按部位和器械查找、添加动作</string>
+    <string name="training_resume">继续训练</string>
     <string name="library_section_count">%1$s · %2$s · %3$d 个动作</string>
     <string name="library_search_banner">正在搜索全部动作。</string>
     <string name="library_search_count">全部动作 · %1$d 个结果</string>
@@ -156,6 +170,8 @@
     <string name="training_parts">部位</string>
     <string name="training_active_workout">锻炼</string>
     <string name="training_minimize">收起训练</string>
+    <string name="training_timer_tool">训练计时器</string>
+    <string name="training_timer_tool_hint">计时、计次并保存本次训练时长</string>
     <string name="training_start_title">开始</string>
     <string name="training_empty_hint">选择一个动作开始锻炼吧</string>
     <string name="training_complete">完成</string>
@@ -173,12 +189,18 @@
     <string name="training_change_photo">更换照片</string>
     <string name="training_remove_photo">移除照片</string>
     <string name="training_save">保存</string>
-    <string name="training_discard">舍弃锻炼</string>
+    <string name="training_save_action">保存训练</string>
+    <string name="training_save_optional">选填</string>
+    <string name="training_photo_section">训练照片</string>
+    <string name="training_photo_hint">记录今天的器械、状态或变化</string>
+    <string name="training_note_prompt">今天练得怎么样？</string>
+    <string name="training_note_hint">记录动作感受、状态或下次要调整的地方…</string>
+    <string name="training_discard">取消锻炼</string>
     <string name="training_delete">删除训练</string>
     <string name="training_delete_title">删除这次训练？</string>
     <string name="training_delete_message">这次训练和所有已完成的组会被删除，不能撤销。</string>
-    <string name="training_discard_title">舍弃这次锻炼？</string>
-    <string name="training_discard_message">这次训练还没有保存，舍弃后数据不会保留。</string>
+    <string name="training_discard_title">取消这次锻炼？</string>
+    <string name="training_discard_message">这次训练还没有保存，取消后数据不会保留。</string>
     <string name="training_no_completed_sets">请至少勾选完成一组训练</string>
     <string name="training_photo_failed">训练已保存，但照片保存失败，可以再试一次</string>
     <string name="training_photo_empty">没有读到照片</string>
@@ -330,6 +352,8 @@
     <string name="pr_none">暂无</string>
     <string name="stats_body_title">身体数据</string>
     <string name="stats_training_title">训练足迹</string>
+    <string name="stats_training_hint">容量、组数和个人纪录</string>
+    <string name="stats_body_hint">体重、体脂和 BMI 变化</string>
     <string name="stats_weight">体重</string>
     <string name="stats_fat">体脂</string>
     <string name="stats_bmi">BMI</string>
@@ -419,6 +443,7 @@
     <string name="timer_saved">已保存到当天</string>
     <string name="timer_record_title">训练时间</string>
     <string name="timer_day_duration">训练总时长：%1$s</string>
+    <string name="timer_day_duration_label">训练总时长：</string>
     <string name="timer_delete_title">删除这条训练时间？</string>
     <string name="timer_delete_message">只删除这条计时和它的计次，不会改动当天的训练内容。</string>
     <string name="timer_save_failed">保存失败，请重试。</string>

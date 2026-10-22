@@ -2,6 +2,7 @@ package com.example.gymlog.ui.body
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -21,21 +22,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +58,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +78,8 @@ import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.ui.stats.BodyTrendMetric
 import com.example.gymlog.ui.stats.TrendChart
 import com.example.gymlog.ui.stats.quantity
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -194,27 +200,52 @@ private fun BodyRecordOverview(
                 HistoryEntry(count = state.history.size, onClick = onOpenHistory)
             }
             item {
-                Card(
+                GymLogCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable(onClick = onOpenMuscleMap),
-                    shape = dashboardCardShape(),
-                    colors = dashboardCardColors(),
-                    elevation = dashboardCardElevation(),
-                    border = dashboardCardBorder(),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = GymLogSpacing.md, vertical = GymLogSpacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = stringResource(R.string.muscle_map_entry),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = stringResource(R.string.muscle_map_entry_hint),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Accessibility,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(21.dp),
+                            )
+                        }
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = GymLogSpacing.sm),
+                            verticalArrangement = Arrangement.spacedBy(3.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.muscle_map_entry),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = stringResource(R.string.muscle_map_entry_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -229,23 +260,30 @@ private fun CurrentBodyCard(
     onEdit: () -> Unit,
 ) {
     val metrics = currentMetrics(state)
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                ),
+            ),
     ) {
-        Box {
-            Column(
-                modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 40.dp, bottom = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+        Column(
+            modifier = Modifier.padding(start = 16.dp, top = 14.dp, end = 40.dp, bottom = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "当前身体",
+                style = MaterialTheme.typography.labelLarge,
+                color = Color(0xFFBBD0EC),
+            )
             if (metrics.isEmpty()) {
                 Text(
                     text = stringResource(R.string.body_history_empty),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color(0xFFBBD0EC),
                 )
             } else {
                 metrics.chunked(2).forEach { row ->
@@ -259,48 +297,102 @@ private fun CurrentBodyCard(
                     }
                 }
             }
-            }
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 2.dp, end = 2.dp)
-                    .size(36.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.body_edit),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
+        }
+        IconButton(
+            onClick = onEdit,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 2.dp, end = 2.dp)
+                .size(36.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = stringResource(R.string.body_edit),
+                tint = Color(0xFFBBD0EC),
+                modifier = Modifier.size(20.dp),
+            )
         }
     }
 }
+
+private enum class ChangeTone {
+    DOWN,
+    UP,
+    FLAT,
+}
+
+private data class MetricChange(
+    val text: String,
+    val tone: ChangeTone,
+)
 
 private data class ShownMetric(
     val icon: ImageVector,
     val label: String,
     val value: String,
     val unit: String,
+    val change: MetricChange?,
 )
 
 @Composable
 private fun currentMetrics(state: BodyRecordUiState): List<ShownMetric> {
+    val previous = state.history.getOrNull(1)
     val metrics = ArrayList<ShownMetric>()
     state.weightText.takeIf { it.isNotBlank() }?.let {
-        metrics += ShownMetric(Icons.Filled.MonitorWeight, stringResource(R.string.stats_weight), it, "kg")
+        metrics += ShownMetric(
+            Icons.Filled.MonitorWeight,
+            stringResource(R.string.stats_weight),
+            it,
+            "kg",
+            metricChange(WeightLogic.parseKg(it), previous?.weightKg, "kg"),
+        )
     }
     state.bodyFatText.takeIf { it.isNotBlank() }?.let {
-        metrics += ShownMetric(Icons.Filled.Percent, stringResource(R.string.stats_fat), it, "%")
+        metrics += ShownMetric(
+            Icons.Filled.Percent,
+            stringResource(R.string.stats_fat),
+            it,
+            "%",
+            metricChange(WeightLogic.parseKg(it), previous?.bodyFatPercent, "%"),
+        )
     }
     state.heightText.takeIf { it.isNotBlank() }?.let {
-        metrics += ShownMetric(Icons.Filled.Height, stringResource(R.string.body_label_height), it, "cm")
+        metrics += ShownMetric(
+            Icons.Filled.Height,
+            stringResource(R.string.body_label_height),
+            it,
+            "cm",
+            metricChange(WeightLogic.parseKg(it), previous?.heightCm, "cm"),
+        )
     }
     state.bmiText?.let {
-        metrics += ShownMetric(Icons.Filled.MonitorWeight, stringResource(R.string.stats_bmi), it, "")
+        val previousBmi = BodyMetrics.bmi(previous?.heightCm, previous?.weightKg)
+        metrics += ShownMetric(
+            Icons.Filled.MonitorWeight,
+            stringResource(R.string.stats_bmi),
+            it,
+            "",
+            metricChange(it.toDoubleOrNull(), previousBmi, ""),
+        )
     }
     return metrics
+}
+
+private fun metricChange(current: Double?, previous: Double?, unit: String): MetricChange? {
+    if (current == null || previous == null) {
+        return MetricChange("暂无对比", ChangeTone.FLAT)
+    }
+    val diff = current - previous
+    if (kotlin.math.abs(diff) < 0.05) {
+        return MetricChange("— 与上次持平", ChangeTone.FLAT)
+    }
+    val value = String.format(Locale.US, "%.1f", kotlin.math.abs(diff))
+    val suffix = if (unit.isBlank()) "" else " $unit"
+    return if (diff < 0) {
+        MetricChange("↓ 较上次 -$value$suffix", ChangeTone.DOWN)
+    } else {
+        MetricChange("↑ 较上次 +$value$suffix", ChangeTone.UP)
+    }
 }
 
 @Composable
@@ -312,7 +404,7 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
         Icon(
             imageVector = metric.icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = Color(0xFFBBD0EC),
             modifier = Modifier.size(32.dp),
         )
         Column(modifier = Modifier.padding(start = 10.dp)) {
@@ -320,7 +412,7 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
                 text = metric.label,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -328,7 +420,8 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
                 Text(
                     text = metric.value,
                     style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White,
                     maxLines = 1,
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis,
@@ -338,12 +431,28 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
                         text = metric.unit,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White,
                         maxLines = 1,
                         softWrap = false,
                         modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
                     )
                 }
+            }
+            metric.change?.let { change ->
+                Text(
+                    text = change.text,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFeatureSettings = "tnum",
+                    ),
+                    color = when (change.tone) {
+                        ChangeTone.DOWN -> Color(0xFF7BE0A5)
+                        ChangeTone.UP -> Color(0xFFFFB4A2)
+                        ChangeTone.FLAT -> Color(0xFF9FB4CC)
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
             }
         }
     }
@@ -356,20 +465,15 @@ private fun BodyTrendCard(
     points: List<TrendPoint>,
     onMetricSelected: (BodyTrendMetric) -> Unit,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
-    ) {
+    GymLogCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(GymLogSpacing.md),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = stringResource(R.string.body_trend_title),
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 BodyTrendMetric.entries.forEach { item ->
@@ -756,13 +860,21 @@ internal fun BodyRecordHistory(
         },
     ) { innerPadding ->
         if (state.history.isEmpty()) {
-            Text(
-                text = stringResource(R.string.body_history_empty),
-                style = MaterialTheme.typography.bodyLarge,
+            Column(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(innerPadding)
                     .padding(16.dp),
-            )
+            ) {
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.body_history_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(GymLogSpacing.md),
+                    )
+                }
+            }
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -790,31 +902,56 @@ private fun HistoryEntry(
     count: Int,
     onClick: () -> Unit,
 ) {
-    Card(
+    GymLogCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = GymLogSpacing.md, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = stringResource(R.string.body_history_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = if (count == 0) {
-                    stringResource(R.string.body_history_empty)
-                } else {
-                    stringResource(R.string.body_history_count, count)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.History,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = GymLogSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.body_history_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = if (count == 0) {
+                        stringResource(R.string.body_history_empty)
+                    } else {
+                        stringResource(R.string.body_history_count, count)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -846,18 +983,14 @@ private fun MeasurementCard(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
-    Card(
+    GymLogCard(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize()
             .clickable(onClick = onToggle),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(GymLogSpacing.md),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
@@ -871,6 +1004,7 @@ private fun MeasurementCard(
                         .format(dateTimeFormatter),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Icon(
                     imageVector = if (expanded) {

@@ -1,6 +1,7 @@
 package com.example.gymlog.ui.train
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,84 +12,51 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.gymlog.data.TrainingTimerLogic
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
 import com.example.gymlog.R
+import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.ui.settings.SettingsTopBarAction
+import com.example.gymlog.ui.theme.GymLogActionButton
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 
 data class ActiveWorkoutUi(
     val durationMillis: Long,
     val exerciseNames: List<String>,
 )
 
-private data class TrainDestination(
-    val title: String,
-    val subtitle: String,
-    val icon: ImageVector,
-    val onClick: () -> Unit,
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingHomeScreen(
-    activeWorkout: ActiveWorkoutUi?,
-    onResumeWorkout: () -> Unit,
-    onDiscardWorkout: () -> Unit,
+    hasActiveWorkout: Boolean,
     onStartTraining: () -> Unit,
     onOpenLibrary: () -> Unit,
+    onOpenTimer: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    var confirmDiscard by remember { mutableStateOf(false) }
-    val entries = listOf(
-        TrainDestination(
-            title = stringResource(R.string.home_start_training),
-            subtitle = stringResource(R.string.train_start_hint),
-            icon = Icons.Filled.PlayArrow,
-            onClick = onStartTraining,
-        ),
-        TrainDestination(
-            title = stringResource(R.string.exercise_library),
-            subtitle = stringResource(R.string.train_library_hint),
-            icon = Icons.Filled.FitnessCenter,
-            onClick = onOpenLibrary,
-        ),
-    )
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -97,139 +65,56 @@ fun TrainingHomeScreen(
                 actions = { SettingsTopBarAction(onOpenSettings) },
             )
         },
-        bottomBar = {
-            activeWorkout?.let { workout ->
-                ActiveWorkoutBar(
-                    workout = workout,
-                    onResume = onResumeWorkout,
-                    onDiscard = { confirmDiscard = true },
-                )
-            }
-        },
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(
+                start = GymLogSpacing.md,
+                end = GymLogSpacing.md,
+                top = GymLogSpacing.sm,
+                bottom = GymLogSpacing.xl,
+            ),
+            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
         ) {
-            items(entries, key = { it.title }) { entry ->
-                TrainEntryCard(entry)
+            if (!hasActiveWorkout) {
+                item(key = "start") {
+                    StartTrainingCard(onStartTraining = onStartTraining)
+                }
+            }
+            item(key = "library") {
+                LibraryCard(onOpenLibrary = onOpenLibrary)
+            }
+            item(key = "timer-tool") {
+                TrainingTimerToolCard(onOpenTimer = onOpenTimer)
             }
         }
-    }
-
-    if (confirmDiscard) {
-        AlertDialog(
-            onDismissRequest = { confirmDiscard = false },
-            title = { Text(stringResource(R.string.training_discard_title)) },
-            text = { Text(stringResource(R.string.training_discard_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        confirmDiscard = false
-                        onDiscardWorkout()
-                    },
-                ) {
-                    Text(
-                        stringResource(R.string.training_discard),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDiscard = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
     }
 }
 
 @Composable
-private fun ActiveWorkoutBar(
-    workout: ActiveWorkoutUi,
-    onResume: () -> Unit,
-    onDiscard: () -> Unit,
-) {
-    Card(
-        onClick = onResume,
+private fun TrainingTimerToolCard(onOpenTimer: () -> Unit) {
+    GymLogCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(28.dp),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.KeyboardArrowUp,
-                contentDescription = stringResource(R.string.training_minimize),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .size(8.dp)
-                    .background(Color(0xFF4CAF50), CircleShape),
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.training_active_workout) + " " +
-                        TrainingTimerLogic.formatDurationChinese(workout.durationMillis),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = workout.exerciseNames.joinToString("、").ifEmpty { "—" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            IconButton(onClick = onDiscard) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = stringResource(R.string.training_discard),
-                    tint = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TrainEntryCard(entry: TrainDestination) {
-    Card(
-        onClick = entry.onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
+            .clickable(onClick = onOpenTimer),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = GymLogSpacing.md, vertical = GymLogSpacing.md),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = entry.icon,
+                    imageVector = Icons.Filled.Timer,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp),
@@ -238,21 +123,177 @@ private fun TrainEntryCard(entry: TrainDestination) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = GymLogSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
             ) {
                 Text(
-                    text = entry.title,
+                    text = stringResource(R.string.training_timer_tool),
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = entry.subtitle,
+                    text = stringResource(R.string.training_timer_tool_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+fun ActiveWorkoutMiniBar(
+    workout: ActiveWorkoutUi,
+    onResume: () -> Unit,
+    onDiscard: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                ),
+            )
+            .clickable(onClick = onResume)
+            .padding(start = GymLogSpacing.md, end = 4.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color(0xFF6EE7A8)),
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = GymLogSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
+        ) {
+            Text(
+                text = buildString {
+                    append(stringResource(R.string.training_active_workout))
+                    append(" · ")
+                    append(TrainingTimerLogic.formatDurationChinese(workout.durationMillis))
+                },
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFeatureSettings = "tnum",
+                    fontWeight = FontWeight.Normal,
+                ),
+                color = Color.White,
+                maxLines = 1,
+            )
+            Text(
+                text = workout.exerciseNames.joinToString("、").ifEmpty { "—" },
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFFBBD0EC),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        IconButton(onClick = onDiscard, modifier = Modifier.size(40.dp)) {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = stringResource(R.string.training_discard),
+                tint = Color(0xFFBBD0EC),
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = stringResource(R.string.training_resume),
+            tint = Color.White,
+            modifier = Modifier
+                .padding(end = 8.dp)
+                .size(20.dp),
+        )
+    }
+}
+
+@Composable
+private fun StartTrainingCard(onStartTraining: () -> Unit) {
+    GymLogCard(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        border = null,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(GymLogSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+        ) {
+            Text(
+                text = stringResource(R.string.train_hero_title),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = stringResource(R.string.train_hero_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            GymLogActionButton(
+                text = stringResource(R.string.home_start_training),
+                onClick = onStartTraining,
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Filled.PlayArrow,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LibraryCard(onOpenLibrary: () -> Unit) {
+    GymLogCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenLibrary),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(GymLogSpacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.FitnessCenter,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = GymLogSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.exercise_library),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(R.string.train_library_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
             Icon(

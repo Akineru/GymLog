@@ -143,7 +143,7 @@ private fun WheelUnit(
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontFeatureSettings = "tnum",
                                 fontWeight = if (value == selected) {
-                                    FontWeight.Bold
+                                    FontWeight.Normal
                                 } else {
                                     FontWeight.Normal
                                 },

@@ -302,6 +302,205 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 启动器名中文「练有所迹」、英文 Traivol。自适应图标在 `drawable/ic_launcher_foreground.xml` 与 `ic_launcher_background.xml`，`mipmap-anydpi-v26` 引用它们，`mipmap-anydpi` 是 API 24–25 的 layer-list。单色层只用前景的透明度。用户换过好几版图标；桌面若还是旧图，是启动器缓存，需要卸掉再装。
 
+## UI 2.0 第一阶段（方向 A，仅首页）
+
+本阶段只实现统一设计 token、通用组件骨架和首页方向 A；训练、日历、动作库、趋势、身体、照片、设置等页面仍使用原有布局，只是继承了新的主题色、Typography、圆角与输入框默认形状。
+
+- 修改前外部备份：`C:\Users\75192\AndroidStudioProjects\GymLog-backups\ui-phase1-20261021-223404`（Git bundle + design/ + home-current.png + airead.md）。
+- 设计 token：
+  - 浅色：背景 `#F3F6FA`、卡片 `#FFFFFF`、次级底 `#EAF0F8`、主文字 `#0B1220`、次级文字 `#667085`、分割线 `#E1E7F0`、主色 `#2563EB`、主色浅底 `#E8F0FF`、行动橙 `#FF6B35`、成功 `#0F8A5F`、警告 `#B25E09`、危险 `#C33B3B`。
+  - 深色：深蓝灰 `#0E1726`，卡片 `#142033` / `#1A2A40`，文字 `#E9EFF8`，弱文字 `#9AAAC0`，线 `#263A55`，primary `#8AB4FF`。不用纯黑。
+- Typography 已补齐 Display/Headline/Title/Body/Label；训练数字用 tabular numerals。`GymLogTheme` 统一提供文本选中色（主题 primary 24% 背景）。
+- 新增 `ui/theme/GymLogComponents.kt`：`GymLogCard`、主/次/文字/行动按钮、`GymLogChip`、`GymLogTextField`、`GymLogSectionHeader`、`GymLogNumberText`、空状态和 spacing/radii token。首页已使用其中卡片、按钮、chip、section header 和数字样式；其他页面的输入框尚未迁移到 `GymLogTextField`。
+- 首页：
+  - 浅蓝训练主卡，时长加大，显示周/月、日期范围、训练天数/总组数/压缩容量，主 CTA「开始训练」为 48dp 橙色按钮。
+  - 白色周训练足迹卡；白色空状态卡（记录身体/查看趋势）；不再保留重复的快捷入口卡。
+  - 容量在主卡用 `17.8k` 形式，避免 360dp + 130% 字体时被截断。
+  - 最近训练卡已按后续需求彻底移除：同时删除卡片、`latestSession/latestGroups` 状态、`RecentTrainingCard` 和 `home_recent_training` 字符串；其他页面未使用这些状态。
+- 测试：`:app:testDebugUnitTest`，54 个测试类、219 个测试，0 失败/错误/跳过。
+- 本轮移除最近训练卡没有重新打包 APK；现有 `GymLog-1.5-ui-phase1.apk` / `app-debug.apk` 是移除前版本，不能用于验收本次移除。
+- 实际检查：浅色首页、深色首页、360dp 小屏、130% 字体；深色为深蓝灰而非纯黑。
+- 未验证/剩余风险：其他页面未做布局级 UI 2.0 改造；`GymLogTextField` 尚未接入现有表单；只做了首页截图验收，没有做全量 UI 自动化测试；动态壁纸配色仍可由用户设置覆盖品牌色；低端设备滚动性能未单独测试。
+- 本轮只改 UI 主题、通用组件和首页；未修改 Room、DAO、Repository、迁移、备份、训练规则、计时器、PR、趋势、日历、肌群资源。
+
+### 第一阶段验收修复
+
+- 验收问题：最近训练卡汇总最近日期当天所有 session，但点击打开 latestSession，造成卡片与打开内容不一致；首页「开始训练」仍跳日历。
+- 修复前独立备份：`C:\Users\75192\AndroidStudioProjects\GymLog-backups\ui-phase1-fix-20261021-231110`。
+- 最近训练卡（已被后续移除需求覆盖）：曾改为 `HomePeriod.dayGroups(listOf(latestSession), ...)`，日期/部位/动作数/组数/容量来自同一 session；随后按新需求整卡移除。
+- 最近训练显示规则（已作废）：不再显示最近训练卡；首页只保留周训练、当天和空状态。
+- 首页 CTA：复用 `activeDraft ?: Screen.SessionEditor(sessionId = null, returnTab = RootTab.Home)`；已有 activeDraft 时恢复同一草稿，不重复创建；返回首页、再次点击恢复计时已验证。
+- 修复验证：同一天多个 session 时，卡片显示 `1个动作·1组·280kg`，点击后编辑页同样为 `280kg`/1动作/1组；首页开始训练直接进入编辑页并启动计时，返回后再次点击计时继续；空白草稿舍弃确认正常。
+- 测试与构建：移除最近训练卡后仅运行 `:app:testDebugUnitTest`，219 通过；按“不打包新的 APK”要求未运行 `:app:assembleDebug`。上一版 APK 166,594,903 B 不包含本次移除。
+- 字重规则：本周/本月训练时长标题保持 SemiBold；大号训练时长数字改为 Normal；日历/首页当天「训练总时长」的标签 SemiBold、时间数字 Normal（使用 annotated string 拆分字重）。
+- 保存验证：从最近训练打开已有 session，进入保存页后保存成功并返回首页；卡片仍指向同一 session。未验证从首页新建空白草稿后新增动作再保存的完整数据写入路径；最近训练在全空库下的隐藏；动态壁纸配色。
+
+## UI 2.0 第二阶段（训练页/训练编辑/保存页）
+
+- 修改前备份：`C:\Users\75192\AndroidStudioProjects\GymLog-backups\ui-phase2-20261021-233655`。
+- `TrainingHomeScreen`：改为方向 A 的训练入口；无活动训练时显示浅蓝「今天练什么？」主卡和橙色 48dp「开始训练」；有活动训练时改为深蓝活动卡（计时、动作列表、继续训练、舍弃）；动作库为独立白色入口卡；删除原来的 `bottomBar` 活动条，避免和内容卡重复。
+- `SessionEditorScreen`：
+  - 顶部改为 48dp 返回/计时器触控目标，橙色「完成」。
+  - 容量/动作数/组数摘要改为白色 `GymLogCard`，移除无意义的两个 Accessibility 装饰图标。
+  - 动作卡改为 `GymLogCard`；收起卡片改为可点击的 `GymLogCard`。
+  - 「添加动作」「空状态添加动作」「保存」使用统一行动/次按钮。
+  - 保存页摘要和照片卡改用 `GymLogCard`，保存按钮改为橙色行动按钮。
+- 保存页四项摘要改为四等宽列：标签 `labelMedium` 常规、数值 `titleMedium` 半粗、统一 tabular 数字和 3dp 行距；不再使用 1.25/1/0.75/1.4 的不等权重，解决字号和左边缘不齐。
+- 测试：`:app:testDebugUnitTest` 219 通过；`:app:assembleDebug` 成功。
+- 实际检查：训练入口、空训练、动作卡、保存页、360dp+130% 字体、深色训练入口。
+- 初次阶段 APK：165,915,543 B；收尾后的最终 APK 见下方。
+- 未验证/后续：
+  - 动作库和动作选择器仍使用旧布局（本阶段只改训练入口/编辑/保存）。
+  - 从训练页开始后切换深色模式会重建 Activity；初次实现会丢失内存中的 `activeDraft`，已在下方收尾中修复。
+  - 训练保存完整写入路径、照片编辑、工具栏等未做端到端回归。
+  - `GymLogTextField` 仍未迁移到现有表单。
+- 未修改 Room、DAO、Repository、迁移、备份、训练规则、PR、趋势、日历、肌群资源。
+
+## 第二阶段收尾：活动草稿恢复与保存验收
+
+- 修复前备份：`C:\Users\75192\AndroidStudioProjects\GymLog-backups\ui-phase2-completion-20261022-092033`。
+- `GymLogApp.kt` 的 `activeDraft` 从普通 `remember` 改为 `rememberSaveable(stateSaver = SessionDraftSaver)`，保存 `sessionId`、`dateEpochDay`、`draftKey`、`returnTab`；SessionEditorViewModel 由 Activity ViewModelStore 在配置变更中保留。
+- `screen` 同时改为 `rememberSaveable(stateSaver = ScreenSaver)`，保存根页面、训练编辑、动作选择、设置/备份/历史、照片、关于等现有路由参数。Activity 重建后保留当前页面，不再强制回首页。
+- 实际验证：新建训练，添加 1 个动作、2 组；第一组改为 40kg×10 并完成，第二组保留 35kg×8 未完成，时长约 36 秒；切换系统主题配置并重建 Activity 后，训练页活动卡显示 `01分53秒`，继续训练后仍为 40kg×10 已完成、35kg×8 未完成，容量 400kg，计时继续到 2:02，没有第二份草稿。
+- 保存验证：完成组 1 组，保存页显示时长 2:10、容量 400kg、组数 1、部位胸部；保存后返回训练页，活动卡消失。日历当天只出现一条训练记录，显示 40kg×10、容量 400kg、训练总时长 2:10；打开该记录详情，仍为 1 个动作、1 个完成组、40kg×10、400kg，未完成组未写入，符合现有规则。
+- 测试：`:app:testDebugUnitTest` 55 类、221 测试，0 失败/错误/跳过；`:app:assembleDebug` 成功。
+- 历史列表与详情：日历当天只出现一条保存后的训练；打开详情确认 40kg×10、400kg、2:10，只有 1 个完成组。
+- 未验证：
+  - 保存失败时编辑内容保留；本轮没有可靠的本地数据库失败注入方式。
+  - 保存页取消返回后再次保存的完整回归。
+  - 真实低内存/OEM 清理；本轮用 `am kill` 模拟进程死亡，不等同于所有厂商的强杀行为。
+- 已补充验证：Activity 重建并切到深色后，仍停留在训练编辑页；草稿容量 400kg、1 个动作、已完成的 40kg×10 和未完成组均保留，计时继续。
+- 未修改 Room schema、DAO 表、数据库迁移、备份格式、训练保存规则、肌群资源。`WorkoutRepository` 只新增了只读 `findExercise(id)`；活动卡/保存逻辑保持不变。
+- 文案：未保存训练的「舍弃锻炼」统一改为「取消锻炼」；确认弹窗标题/消息/确认按钮同步改名，弹窗左侧保留按钮改为「继续训练」，避免出现两个“取消”。
+
+## 进程死亡草稿快照（JSON）
+
+- `SessionDraftStore` 位于 `app/src/main/java/com/example/gymlog/data/SessionDraftStore.kt`，写入 `filesDir/session_draft.json`，`schemaVersion=1`。
+- 快照包含：draftKey、sessionId、dateEpochDay、note、totalElapsedMillis、timerRunning、savedAtEpochMillis、finishing、finishedDurationMillis、photoId，以及动作/组的 id、负重模式、重量文本、次数、完成状态、动作计时。
+- 写入采用临时文件 + `fsync` + rename；每 350ms 防抖，并在训练中每 5 秒检查点；保存/舍弃/删除时清空。不是 Room 表，不进备份格式。
+- 恢复：Activity SavedState 恢复 activeDraft/screen；ViewModel 冷启动读取快照，通过 `WorkoutRepository.findExercise` 重新取动作，按 `savedAtEpochMillis` 补齐进程死亡期间的计时；照片只保存 photoId，再异步解码。
+- 实际进程测试：创建动作、2 组、40kg×10 完成，快照落盘；`adb shell am kill` 杀进程后重新启动，仍进入训练编辑页，容量 400kg、动作/组/完成状态保留，计时从约 10 秒恢复为 26 秒；保存后快照文件删除。
+- 最终 APK 大小 166,335,409 B；版本仍 1.5 / versionCode 10。
+- 未修改 Room schema、DAO 表、数据库迁移、备份 JSON 或训练保存规则。
+
+## 保存训练页视觉重构
+
+- 顶部摘要改为深蓝渐变「本次训练」卡：日期右上、时长主信息、分割线、总容量/组数/部位三列。
+- 照片区压缩为 108dp 虚线感浅色选择区，含图标、添加文案和提示；已有照片仍显示 160dp 预览和更换/移除。
+- 备注区增加「备注 / 选填」标题，输入框使用 16dp 圆角，提示「今天练得怎么样？」和更具体的占位文案。
+- 日期改为白卡行：日历图标、训练日期、日期值、右箭头，点击逻辑不变。
+- 保存按钮文案改为「保存训练」；取消锻炼保留。
+- 增加 `training_save_action`、`training_save_optional`、`training_photo_section`、`training_photo_hint`、`training_note_prompt`、`training_note_hint` 字符串。
+- 保存/照片/日期/备注逻辑未改；本轮因硬件 WHEA 重启风险未执行 Gradle 构建。
+
+## 动作完成后收起卡变绿
+
+- 动作卡点击「完成动作」后，`completedAtMillis` 写入，卡片收起并整卡使用与单组完成一致的绿色反馈：浅色 `#E6F4EA` 背景 + `#81C784` 边框，深色 `#1B3A2A` 背景 + `#A5D6A7` 绿色标签。
+- 仅收起的已完成动作变绿；手动收起未完成动作保持白卡。
+
+## 字体：系统细黑体 Light
+
+- 全局 `Typography` 改用 Android 系统 `sans-serif-light` Typeface，所有层级字重降为 `FontWeight.Normal`，保留原有字号/行高/tabular 数字。
+- UI 层 10 个文件里原有的 `Bold/SemiBold/ExtraBold/Medium` 覆盖全部改为 `Normal`，避免局部又变回粗黑体。
+- 保存页四项摘要的值改为 Normal，不再额外 SemiBold；身体卡数值同步改为 Normal。
+- 不改布局、不打包第三方字体，安装包体积不变。
+
+## A 清爽蓝主题：首页 + 训练
+
+- 以用户提供的 `app-redesign.png` 为配色基准，但按要求只改配色，不恢复参考图中的「最近训练」，也不改底部活动迷你卡结构。
+- 主题恢复 A 蓝：主色 `#2563EB`、浅蓝 `#E8F0FF`、页面底色 `#F3F6FA`、正文 `#0B1220`、次要文字 `#667085`、分割线 `#E1E7F0`、行动按钮橙色 `#FF6B35`；深色主题恢复深蓝灰。
+- 首页概览改为深海军蓝渐变数据卡：`#060B14 → #11263F → #234A73` 横向渐变，白色大时长、浅蓝日期/说明、橙色开始训练。
+- 三项统计去掉左侧色条和白色小卡，直接排在深色渐变卡内：浅蓝标签、白色数值，容量项保留点击 `kg ↔ t` 切换；空状态卡恢复白底，只保留记录身体、查看趋势。
+- 训练页保留浅蓝「今天练什么？」、白色动作库、橙色开始训练；底部活动迷你卡改为与首页一致的深蓝横向渐变 `#060B14 → #11263F → #234A73`。
+- 部位色、日历日期底色、照片画笔恢复 A 蓝/原色；`ActionOrange` 恢复橙色。
+- 首页和训练页未改结构；其余页面仅继承主题色。测试：55 类、221 测试通过，0 失败。
+- 按新要求去掉日期下方的「本周/本月」文字；日期范围本身仍可点击跳回当前周期。
+- 首页深色概览卡按效果图收紧：顶部 12dp、底部 14dp，内部间距 9dp；时长从 `displaySmall` 改为 `headlineMedium`，日期左右箭头 32dp；标题「本周/本月训练时长」上移。
+- 周/月模式改为 76×32dp 双段切换条：深色半透明轨道、蓝色选中块用 `animateDpAsState` + `tween(220ms)` 左右滑动，点击周/月仍切换统计区间。
+- 动作库/选择器第一批统一：动作卡改为 `GymLogCard` 白卡 + 细边框、圆角图片、`titleSmall` 名称；分类栏和搜索继续沿用蓝色主题。趋势、我的、设置、身体、照片、计时器仍主要是旧布局，仅继承主题色，后续逐页重排。
+- 目前没有与这套 A 配色对应的交付 APK；`GymLog-1.5-green-preview.apk` 是上一版青绿预览，不应作为本版验收包。临时模拟器安装仅用于查看效果。
+
+## 日历月视图：A 方向第二版
+
+- 新增 `CalendarMonthOverview`：深蓝横向渐变「本月训练」摘要，显示训练次数、总组数、总容量 `t` 和月份日期范围；数据由当月已保存训练现算。摘要内的「本月训练」用 `titleSmall`，日期范围用 `labelLarge`，三项统计标签用 `bodyMedium`，数值保持 `titleLarge`。
+- 白色月历卡顶部居中显示月份标题，左右切换按钮在标题两侧；首页日期圆圈与整月详情色块使用同一套部位色（胸 `#E57373`、背 `#64B5F6`、肩 `#FFB74D`、腿 `#81C784`、手臂 `#BA68C8`、其他 `#90A4AE`），休息日灰、偷懒日黄、放纵日粉，选中日深色实心；不再显示数字下方小点，也不再显示外部图例。
+- 选中日期行显示日期 + `未训练/已训练` 标签（点击弹出日类型选择），下方保留部位、当天总时长和训练卡片。
+- 空日期卡改为白底、图标 + 标题 + 文案 + 右箭头，点击编辑当天备注。
+- 右下角 FAB 移除，新增训练入口改到顶栏 `+`；月份标题仍可点击进入整月详情页。
+- 测试：55 类、221 测试通过；临时模拟器已验收摘要、圆圈颜色、选中日期、空状态和迷你卡共存。未生成交付 APK。
+
+## UI 批次 A：趋势 + 我的
+
+- 趋势首页：白色 `GymLogCard` 入口卡，补「训练与身体变化」标题和两项说明（训练足迹、身体数据），图标/箭头统一 A 蓝。
+- 身体趋势：图表移入 `GymLogCard`，增加「变化趋势」标题；体重/体脂/BMI 筛选保留。
+- 训练趋势：指标 Chip、部位/器械选择、动作列表和趋势图保留；趋势图移入 `GymLogCard`，加「趋势图」标题。左侧部位栏结构未改。
+- 我的：个人资料卡改为深蓝横向渐变，头像/姓名/年龄/箭头适配白字；白色统计卡和身体数据、照片墙入口保留，属性切换逻辑未改。
+- 测试：55 类、221 测试通过，0 失败；临时模拟器检查趋势首页、训练趋势、身体趋势、我的。
+- 未生成交付 APK。批次 A 只处理主页面，Mine 的资料编辑弹窗、趋势页深层筛选和空状态仍留待后续批次。
+
+## UI 批次 B1：设置、备份、历史、关于、版本更新
+
+- `SettingsLinkRow` 统一为 A 蓝白卡：可选圆形图标、标题、说明、右侧箭头，错误操作用红色图标/标题；设置、备份、历史三个页面复用。
+- 设置：外观卡改 `GymLogCard`，系统/浅色/深色分段按钮和「使用壁纸配色」开关改为同卡内自定义行；数据区四行统一图标（备份、历史、关于、清除数据），清除数据保留红色危险样式；清空数据的两步确认和提示逻辑未改。
+- 数据备份：导出/导入改为带图标和说明的白卡，备份范围和确认弹窗逻辑未改。
+- 历史记录：计时记录、身体记录统一图标与说明。
+- 关于：顶部改为深蓝渐变品牌卡（应用名、版本、素材版权），版本更新入口统一为白卡行。
+- 版本更新：历史版本卡改为 `GymLogCard`，版本号蓝色、分组标题蓝色、正文深色。
+- 测试：55 类、221 测试通过，0 失败；模拟器检查设置、备份、历史、关于、版本更新。版本更新入口可正常跳转；之前是模拟器点击坐标落偏，不是路由问题。
+- 未生成交付 APK。
+
+## UI 批次 B2：计时器
+
+- 训练计时器：主区域改为深蓝渐变卡，阶段标签浅蓝、计时数字白色 `displayMedium`、点击数字仍可编辑；开始/暂停改为蓝色圆形按钮，计次、重置改为浅色图标，完成按钮保留橙色；分段卡改 `GymLogCard`，空分段改白卡。
+- 已保存计时：顶部改为深蓝渐变卡，显示「训练计时」、时长、日期和分段数量；时长仍可点击编辑；分段卡统一 `GymLogCard`，无分段时显示白卡。
+- 计时历史：记录改为白卡列表（时钟图标、日期、蓝色时长、分段数、右箭头），顶部显示记录总数；空状态改白卡。
+- 计时业务逻辑、Room、计时持久化、保存/删除/编辑逻辑均未改。
+- 训练页新增「训练工具」分区，内含「训练计时器」入口；点击进入 `Screen.TrainingTimer`，该路由的根标签改为 Train，返回回到训练页。
+- 测试：55 类、221 测试通过，0 失败；模拟器验收训练工具入口、训练计时器、计时历史、已保存计时。
+
+## UI 批次 C1：身体数据与肌群
+
+- 身体数据首页：当前身体卡改为深蓝渐变，新增「当前身体」标签，体重/体脂/身高/BMI 改为白色标签/数值/单位，编辑图标改浅蓝；每项下方增加与上一条身体记录的对比：下降绿色、上升橙红、持平灰蓝，首条显示「暂无对比」。
+- 人体围度标签去掉背景，直接显示文字：标题蓝色、数值深色加粗，引线和圆点保持蓝色；右侧标签按自身文字宽度右对齐到最右侧空白区，腰围上移、腿围下移，加大间距避免遮挡。人体图保留全身，底部四项摘要不显示。
+- 身体趋势卡改 `GymLogCard`；身体记录入口、训练肌群图入口改为带圆形图标和右箭头的白卡。
+- 身体记录历史：记录卡改 `GymLogCard`，空状态改白卡；展开逻辑、日期编辑、部位围度逻辑不变。
+- 肌群图：详情卡改 `GymLogCard`；日期切换、范围/角色筛选、肌肉图和调色逻辑不变。
+- 测试：55 类、221 测试通过，0 失败；模拟器验收身体数据首页、身体记录历史。肌群图详情卡已编译，未单独截图。
+- 未生成交付 APK。
+
+## UI 批次 C2：照片
+
+- 照片墙：空状态改为白色 `GymLogCard`（图标、标题、说明）；月份分组显示「yyyy年M月 · N 张」；照片圆角加大；新增照片 FAB 改橙色。
+- 照片详情：图片圆角加大；日期和备注移入 `GymLogCard`；编辑改为橙色主按钮，修改日期/备注改为并排文字按钮，删除保留红色。
+- 照片编辑器：工具 Chip 从单行 `Row` 改为 `FlowRow`，小屏自动换行，避免 5 个工具横向溢出；绘制、马赛克、裁剪、旋转、日期和备注逻辑不变。
+- 测试：55 类、221 测试通过，0 失败；模拟器验收照片墙空状态。当前没有照片数据，详情和编辑器未做运行截图，代码已编译。
+- 未生成交付 APK。
+
+## 活动训练入口改为底部迷你卡
+
+- 训练页不再显示占满宽度的大活动卡；无活动训练时显示「今天练什么？」+ 动作库，有活动训练时隐藏「开始训练」主卡，只保留动作库和底部迷你卡。
+- 活动训练改为根页面底部的深色迷你卡，位于底部导航上方：绿色状态点、`锻炼 · 时长`、动作名、取消入口、右箭头。
+- 迷你卡在首页、日历、训练、趋势、我的五个根标签切换时保持显示；点击任意位置继续训练，垃圾桶弹出取消确认。
+- 内容区底部 padding 使用迷你卡 + 导航栏的总高度，避免遮挡。
+- 进入训练编辑页或保存页时不显示迷你卡，避免和编辑界面重复。
+- 编译通过；`:app:testDebugUnitTest` 55 类、221 测试通过。
+- 已用临时 `assembleDebug` + `adb install` 在模拟器验收：训练页无大活动卡和「开始训练」主卡、显示迷你卡；首页和日历切换时迷你卡保持；点击迷你卡恢复编辑页；垃圾桶弹出「取消这次锻炼」确认；确认后迷你卡消失、快照清理。未生成交付 APK。
+- 首页和日历的当天多条计时记录都改为汇总为一条「训练总时长」，避免同一个日期重复显示多行。
+
+## 第三阶段：日历页
+
+- 修改前备份：`C:\Users\75192\AndroidStudioProjects\GymLog-backups\ui-phase3-calendar-20261022104231`。
+- 顶部改为「日历」标题 + 「今天」+ 设置入口；不再沿用首页的「练有所述」标题。
+- 选中日期区域改为白色 `GymLogCard`：日期、周几、部位容量、当天计时、日类型 Chip 放在同一张卡内。
+- 空日期改为白色空状态卡，图标 + 标题 + 当天文案 + 「写一句」入口；仍可编辑当天备注。
+- 训练记录卡改用 `GymLogCard`，保留动作行、照片、组数据和点击编辑。
+- 右下角新增记录按钮改为橙色 `ActionOrange`。
+- 未改：日期查询、选中日期逻辑、月切换、日历上色、特殊日、训练记录排序、编辑/保存、图片/遮罩。
+- 验证：`:app:compileDebugKotlin` 成功；`:app:testDebugUnitTest` 55 类、221 测试，0 失败/错误/跳过。
+- 日历已用临时 Debug 安装在模拟器验收：顶部「日历/今天」、选中日期白卡、部位容量、聚合后的当天总时长、日类型、空状态、橙色新增按钮、记录卡正常；当天多条计时记录已改为汇总显示，不再重复两行「训练总时长」。
+- 未生成交付 APK；现有 `GymLog-1.5-ui-phase2.apk` 不含本轮日历和迷你卡改动。
+- 整月日历详情页改为白色 `GymLogCard` 内的紧凑月历：顶部月份切换、固定 72dp 周行、日期数字 + 部位底色/特殊日标记；动作名和备注不再塞进格子，避免六周网格被撑高。图例移到卡片下方。已临时安装到模拟器验证，221 测试通过。
+
 ## 历史需求（都已落地）
 
 按用户提出的顺序。后面的条目会覆盖前面的界面结构，以「信息架构」一节为准。
@@ -347,4 +546,17 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 照片墙相对路径必须经 `PhotoPaths.isSafe`；FileProvider 只用于相机临时文件。不要把用户照片内容写进日志或交接文档。
 - 肌群训练高亮用红色系，用户选中用主题 `primary`；不要把选中画成训练色。点击命中优先使用 `MuscleMaskCatalog.layers` 的绘制顺序；`quadriceps` 合并层和子头不能各用一套优先级。
 - `MuscleAssetCache` 按面懒加载，失败时保留底图并提供重试；遮罩解码、BitSet 和锚点计算必须继续在 `Dispatchers.Default`，不要移回主线程。
-- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ReleaseHistoryTest`（最新版应为 1.5）。
+- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ReleaseHistoryTest`（最新版应为 1.5.1）。
+
+## 1.5.1 发版
+
+- `versionCode = 11`，`versionName = 1.5.1`。
+- 设置 → 历史记录移除「计时记录」入口，只保留「身体记录」；计时器统一放在训练页「训练计时器」。
+- 版本更新记录精简为 1.5.1 与 1.5 两条；1.5.1 只保留界面焕新、交互优化两组共 5 条。
+- `ReleaseHistoryTest` 最新版本断言同步改为 `1.5.1`。
+- Release 构建命令：`gradle :app:assembleRelease --no-daemon --max-workers=1`，已成功。
+- 第一次 release 开启 `optimization` 后 R8 把 Kotlin 集合类混淆坏，启动即 `IllegalAccessError`；已关闭 release optimization，重新构建并签名。
+- 单测：清理死机写坏的 `apk-for-local-test.ap_` 测试资源副本后，`:app:testDebugUnitTest --max-workers=1` 通过，55 类 / 221 测试，0 失败。
+- 产物：`GymLog-1.5.1.apk`，156,292,348 B，SHA-256 `E10EA8AB46D4808E6E89DCC3F025FD97AB88B102A061BF8C4D25E9B03A01EBFD`。
+- 已在模拟器 `install -r` + 冷启动验证，首页正常打开，无 FATAL EXCEPTION。
+- 使用 `~/.android/debug.keystore`（Android Debug 证书）签名，和此前预览 APK 的签名一致，可覆盖安装；这不是正式发布证书。

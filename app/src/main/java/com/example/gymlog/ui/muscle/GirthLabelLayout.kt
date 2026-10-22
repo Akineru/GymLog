@@ -165,18 +165,17 @@ internal fun placeGirthLabelsBesideFigure(
     imageWidth: Float = MuscleMaskCatalog.WIDTH.toFloat(),
     imageHeight: Float = MuscleMaskCatalog.HEIGHT.toFloat(),
 ): List<PlacedGirthLabel> {
-    val edge = 2f
-    val measured = labels.maxOfOrNull { input ->
-        input.lines.maxOfOrNull { line ->
-            girthTextWidth(textSize, line, lineWidth(textSize, line))
-        } ?: 0f
-    } ?: 0f
-    val textWidth = measured.coerceAtLeast(textSize)
+    val edge = 4f
     data class Local(val input: GirthLabelInput, val anchorY: Float, val height: Float)
     val locals = labels.map { input ->
+        val verticalNudge = when (input.slot) {
+            GirthSlot.WAIST -> -textSize * 1.2f
+            GirthSlot.THIGH -> textSize * 1.2f
+            else -> 0f
+        }
         Local(
             input = input,
-            anchorY = frameTop + input.imageY / imageHeight * frameHeight,
+            anchorY = frameTop + input.imageY / imageHeight * frameHeight + verticalNudge,
             height = blockHeight(input.lines.size, textSize),
         )
     }
@@ -187,7 +186,7 @@ internal fun placeGirthLabelsBesideFigure(
             var top = item.anchorY - item.height / 2f
             if (top < cursor) top = cursor
             tops[item.input.slot] = top
-            cursor = top + item.height + 6f
+            cursor = top + item.height + textSize * 2f
         }
     }
     val maxBottom = locals.maxOfOrNull { item ->
@@ -197,9 +196,16 @@ internal fun placeGirthLabelsBesideFigure(
     return locals.map { item ->
         val top = ((tops[item.input.slot] ?: 0f) - shift).coerceAtLeast(0f)
         val anchorX = frameLeft + item.input.imageX / imageWidth * frameWidth
-        val textLeft = if (item.input.slot.onRight) canvasWidth - edge - textWidth else edge
+        val ownWidth = item.input.lines.maxOfOrNull { line ->
+            girthTextWidth(textSize, line, lineWidth(textSize, line))
+        } ?: 0f
+        val textLeft = if (item.input.slot.onRight) {
+            canvasWidth - edge - ownWidth
+        } else {
+            edge
+        }
         val lineY = top + item.height / 2f
-        val lineX = if (item.input.slot.onRight) textLeft - 4f else textLeft + textWidth + 4f
+        val lineX = if (item.input.slot.onRight) textLeft - 4f else textLeft + ownWidth + 4f
         PlacedGirthLabel(
             slot = item.input.slot,
             lines = item.input.lines,
@@ -207,7 +213,7 @@ internal fun placeGirthLabelsBesideFigure(
             anchorY = item.anchorY,
             textLeft = textLeft,
             textTop = top,
-            textWidth = textWidth,
+            textWidth = ownWidth,
             textHeight = item.height,
             lineStartX = lineX,
             lineStartY = lineY,

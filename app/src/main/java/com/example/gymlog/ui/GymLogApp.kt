@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -31,18 +32,19 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -54,12 +56,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -67,8 +73,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.TextUnitType
@@ -102,7 +111,7 @@ import com.example.gymlog.ui.muscle.MuscleMapScreen
 import com.example.gymlog.ui.muscle.MuscleMapViewModel
 import com.example.gymlog.ui.body.BodyRecordViewModel
 import com.example.gymlog.ui.calendar.DayKindSelector
-import com.example.gymlog.ui.calendar.TrainingCalendarCard
+import com.example.gymlog.ui.calendar.CalendarMonthOverview
 import com.example.gymlog.ui.calendar.TrainingCalendarDetailScreen
 import com.example.gymlog.ui.exercise.ExerciseLibraryScreen
 import com.example.gymlog.ui.exercise.ExerciseLibraryViewModel
@@ -112,6 +121,7 @@ import com.example.gymlog.ui.photo.PhotoEditorScreen
 import com.example.gymlog.ui.photo.PhotoWallScreen
 import com.example.gymlog.ui.photo.PhotoWallViewModel
 import com.example.gymlog.ui.progress.ProgressScreen
+import com.example.gymlog.ui.train.ActiveWorkoutMiniBar
 import com.example.gymlog.ui.train.ActiveWorkoutUi
 import com.example.gymlog.ui.train.TrainingHomeScreen
 import com.example.gymlog.ui.session.SessionEditorScreen
@@ -135,6 +145,8 @@ import com.example.gymlog.ui.timer.TimerHistoryScreen
 import com.example.gymlog.ui.timer.TrainingTimerScreen
 import com.example.gymlog.ui.timer.TrainingTimerUiState
 import com.example.gymlog.ui.timer.TrainingTimerViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -192,14 +204,164 @@ private sealed interface Screen {
     ) : Screen
 }
 
+private val ScreenSaver: Saver<Screen, Any> = Saver(
+    save = { screen ->
+        when (screen) {
+            Screen.Home -> mapOf("type" to "home")
+            Screen.Calendar -> mapOf("type" to "calendar")
+            Screen.CalendarExpanded -> mapOf("type" to "calendar-expanded")
+            Screen.Train -> mapOf("type" to "train")
+            Screen.ExerciseLibrary -> mapOf("type" to "exercise-library")
+            Screen.Progress -> mapOf("type" to "progress")
+            Screen.Mine -> mapOf("type" to "mine")
+            Screen.BodyTrend -> mapOf("type" to "body-trend")
+            Screen.TrainingTrend -> mapOf("type" to "training-trend")
+            Screen.PhotoWall -> mapOf("type" to "photo-wall")
+            Screen.PhotoEditor -> mapOf("type" to "photo-editor")
+            Screen.TrainingTimer -> mapOf("type" to "training-timer")
+            is Screen.BodyRecord -> mapOf(
+                "type" to "body-record",
+                "returnTab" to screen.returnTab.name,
+            )
+            is Screen.MuscleMap -> mapOf(
+                "type" to "muscle-map",
+                "date" to screen.initialDateEpochDay,
+                "returnTab" to screen.returnTab.name,
+            )
+            is Screen.SessionEditor -> mapOf(
+                "type" to "session",
+                "sessionId" to (screen.sessionId ?: ""),
+                "date" to (screen.dateEpochDay ?: Long.MIN_VALUE),
+                "draftKey" to screen.draftKey,
+                "returnTab" to screen.returnTab.name,
+            )
+            is Screen.PickExercise -> mapOf(
+                "type" to "pick-exercise",
+                "sessionId" to (screen.returnTo.sessionId ?: ""),
+                "date" to (screen.returnTo.dateEpochDay ?: Long.MIN_VALUE),
+                "draftKey" to screen.returnTo.draftKey,
+                "returnTab" to screen.returnTo.returnTab.name,
+            )
+            is Screen.Settings -> mapOf("type" to "settings", "from" to screen.from.name)
+            is Screen.BackupData -> mapOf("type" to "backup", "from" to screen.from.name)
+            is Screen.SettingsHistory -> mapOf("type" to "settings-history", "from" to screen.from.name)
+            is Screen.TimerHistory -> mapOf("type" to "timer-history", "from" to screen.from.name)
+            is Screen.BodyHistory -> mapOf("type" to "body-history", "from" to screen.from.name)
+            is Screen.PhotoDetail -> mapOf("type" to "photo-detail", "id" to screen.id)
+            is Screen.About -> mapOf(
+                "type" to "about",
+                "from" to screen.from.name,
+                "openedFromSettings" to screen.openedFromSettings,
+            )
+            is Screen.ReleaseNotes -> mapOf(
+                "type" to "release-notes",
+                "from" to screen.from.name,
+                "openedFromSettings" to screen.openedFromSettings,
+            )
+            is Screen.SavedTimer -> mapOf(
+                "type" to "saved-timer",
+                "recordId" to screen.recordId,
+                "returnTab" to screen.returnTab.name,
+                "returnToTimerHistory" to screen.returnToTimerHistory,
+            )
+        }
+    },
+    restore = { saved ->
+        val values = saved as? Map<*, *> ?: return@Saver Screen.Home
+        fun tab(key: String): RootTab =
+            (values[key] as? String)
+                ?.let { runCatching { RootTab.valueOf(it) }.getOrNull() }
+                ?: RootTab.Calendar
+        fun session(values: Map<*, *>): Screen.SessionEditor {
+            val id = (values["sessionId"] as? String).orEmpty()
+            val date = values["date"] as? Long
+            return Screen.SessionEditor(
+                sessionId = id.ifBlank { null },
+                dateEpochDay = date?.takeIf { it != Long.MIN_VALUE },
+                draftKey = values["draftKey"] as? String ?: "new-${UUID.randomUUID()}",
+                returnTab = tab("returnTab"),
+            )
+        }
+        when (values["type"] as? String) {
+            "home" -> Screen.Home
+            "calendar" -> Screen.Calendar
+            "calendar-expanded" -> Screen.CalendarExpanded
+            "train" -> Screen.Train
+            "exercise-library" -> Screen.ExerciseLibrary
+            "progress" -> Screen.Progress
+            "mine" -> Screen.Mine
+            "body-trend" -> Screen.BodyTrend
+            "training-trend" -> Screen.TrainingTrend
+            "photo-wall" -> Screen.PhotoWall
+            "photo-editor" -> Screen.PhotoEditor
+            "training-timer" -> Screen.TrainingTimer
+            "body-record" -> Screen.BodyRecord(tab("returnTab"))
+            "muscle-map" -> Screen.MuscleMap(
+                initialDateEpochDay = values["date"] as? Long ?: 0L,
+                returnTab = tab("returnTab"),
+            )
+            "session" -> session(values)
+            "pick-exercise" -> Screen.PickExercise(session(values))
+            "settings" -> Screen.Settings(tab("from"))
+            "backup" -> Screen.BackupData(tab("from"))
+            "settings-history" -> Screen.SettingsHistory(tab("from"))
+            "timer-history" -> Screen.TimerHistory(tab("from"))
+            "body-history" -> Screen.BodyHistory(tab("from"))
+            "photo-detail" -> Screen.PhotoDetail(values["id"] as? String ?: "")
+            "about" -> Screen.About(
+                from = tab("from"),
+                openedFromSettings = values["openedFromSettings"] as? Boolean ?: true,
+            )
+            "release-notes" -> Screen.ReleaseNotes(
+                from = tab("from"),
+                openedFromSettings = values["openedFromSettings"] as? Boolean ?: true,
+            )
+            "saved-timer" -> Screen.SavedTimer(
+                recordId = values["recordId"] as? String ?: "",
+                returnTab = tab("returnTab"),
+                returnToTimerHistory = values["returnToTimerHistory"] as? Boolean ?: false,
+            )
+            else -> Screen.Home
+        }
+    },
+)
+
+private val SessionDraftSaver: Saver<Screen.SessionEditor?, Any> = Saver(
+    save = { draft ->
+        if (draft == null) {
+            null
+        } else {
+            mapOf(
+                "sessionId" to (draft.sessionId ?: ""),
+                "dateEpochDay" to (draft.dateEpochDay ?: Long.MIN_VALUE),
+                "draftKey" to draft.draftKey,
+                "returnTab" to draft.returnTab.name,
+            )
+        }
+    },
+    restore = { saved ->
+        val values = saved as? Map<*, *> ?: return@Saver null
+        val sessionId = (values["sessionId"] as? String).orEmpty()
+        val dateEpochDay = values["dateEpochDay"] as? Long
+        Screen.SessionEditor(
+            sessionId = sessionId.ifBlank { null },
+            dateEpochDay = dateEpochDay?.takeIf { it != Long.MIN_VALUE },
+            draftKey = values["draftKey"] as? String ?: "new-${UUID.randomUUID()}",
+            returnTab = (values["returnTab"] as? String)
+                ?.let { runCatching { RootTab.valueOf(it) }.getOrNull() }
+                ?: RootTab.Calendar,
+        )
+    },
+)
+
 private val Screen.isRoot: Boolean
     get() = this is Screen.Home || this is Screen.Calendar || this is Screen.Train ||
         this is Screen.Progress || this is Screen.Mine
 
 private fun Screen.toRootTab(): RootTab = when (this) {
     Screen.Home -> RootTab.Home
-    Screen.Calendar, Screen.CalendarExpanded, Screen.TrainingTimer, is Screen.SavedTimer, is Screen.SessionEditor, is Screen.PickExercise -> RootTab.Calendar
-    Screen.Train, Screen.ExerciseLibrary -> RootTab.Train
+    Screen.Calendar, Screen.CalendarExpanded, is Screen.SavedTimer, is Screen.SessionEditor, is Screen.PickExercise -> RootTab.Calendar
+    Screen.Train, Screen.ExerciseLibrary, Screen.TrainingTimer -> RootTab.Train
     Screen.Progress, Screen.TrainingTrend, Screen.BodyTrend -> RootTab.Progress
     Screen.Mine, is Screen.BodyRecord, is Screen.MuscleMap, Screen.PhotoWall, is Screen.PhotoDetail, Screen.PhotoEditor -> RootTab.Mine
     is Screen.Settings -> from
@@ -227,7 +389,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
     val measurements by viewModel.measurements.collectAsStateWithLifecycle()
     val calendarMonth by viewModel.calendarMonth.collectAsStateWithLifecycle()
     val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
-    val partsByDate by viewModel.partsByDate.collectAsStateWithLifecycle()
     val dayNotes by viewModel.dayNotes.collectAsStateWithLifecycle()
     val dayKinds by viewModel.dayKinds.collectAsStateWithLifecycle()
     val dayPaints = remember(sessions, measurements, dayKinds) {
@@ -239,8 +400,27 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
         factory = TrainingTimerViewModel.factory(app),
     )
     val timerState by timerViewModel.uiState.collectAsStateWithLifecycle()
-    var screen by remember { mutableStateOf<Screen>(Screen.Home) }
-    var activeDraft by remember { mutableStateOf<Screen.SessionEditor?>(null) }
+    var screen by rememberSaveable(stateSaver = ScreenSaver) {
+        mutableStateOf<Screen>(Screen.Home)
+    }
+    var activeDraft by rememberSaveable(stateSaver = SessionDraftSaver) {
+        mutableStateOf<Screen.SessionEditor?>(null)
+    }
+    var confirmDiscardActive by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (activeDraft == null) {
+            val snapshot = withContext(Dispatchers.IO) { app.sessionDraftStore.load() }
+            if (snapshot != null && snapshot.draftKey.isNotBlank()) {
+                activeDraft = Screen.SessionEditor(
+                    sessionId = snapshot.sessionId,
+                    dateEpochDay = snapshot.dateEpochDay,
+                    draftKey = snapshot.draftKey,
+                    returnTab = RootTab.Train,
+                )
+                if (screen == Screen.Home) screen = Screen.Train
+            }
+        }
+    }
     val activeEditorViewModel: SessionEditorViewModel? = activeDraft?.let { draft ->
         viewModel(
             key = "${draft.draftKey}-$dataEpoch",
@@ -251,6 +431,8 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                 draft.dateEpochDay,
                 app.photoWallRepository,
                 app.timerRecordRepository,
+                draftStore = app.sessionDraftStore,
+                draftKey = draft.draftKey,
             ),
         )
     }
@@ -287,8 +469,11 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     savedTimers = timerState.saved,
                     dayNotes = dayNotes,
                     onStartTraining = {
-                        viewModel.onCalendarDayClick(LocalDate.now())
-                        screen = Screen.Calendar
+                        val draft = activeDraft ?: Screen.SessionEditor(
+                            sessionId = null,
+                            returnTab = RootTab.Home,
+                        ).also { activeDraft = it }
+                        screen = draft
                     },
                     onOpenSession = { sessionId ->
                         screen = Screen.SessionEditor(
@@ -315,7 +500,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     measurements = measurements,
                     calendarMonth = calendarMonth,
                     selectedDate = selectedDate,
-                    partsByDate = partsByDate,
                     onCalendarMonthChange = viewModel::onCalendarMonthChange,
                     onDayClick = viewModel::onCalendarDayClick,
                     onAdd = {
@@ -334,19 +518,11 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     onOpenCalendar = { screen = Screen.CalendarExpanded },
                     timer = timerState,
                     onOpenSavedTimer = { screen = Screen.SavedTimer(it) },
-                    onOpenAbout = { screen = Screen.About(RootTab.Calendar, openedFromSettings = false) },
                 )
             }
             TabPane(visible = isRoot && screen.toRootTab() == RootTab.Train) {
                 TrainingHomeScreen(
-                    activeWorkout = activeWorkout,
-                    onResumeWorkout = {
-                        activeDraft?.let { screen = it }
-                    },
-                    onDiscardWorkout = {
-                        activeEditorViewModel?.discardTraining()
-                        activeDraft = null
-                    },
+                    hasActiveWorkout = activeWorkout != null,
                     onStartTraining = {
                         val draft = activeDraft ?: Screen.SessionEditor(
                             sessionId = null,
@@ -355,6 +531,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                         screen = draft
                     },
                     onOpenLibrary = { screen = Screen.ExerciseLibrary },
+                    onOpenTimer = { screen = Screen.TrainingTimer },
                     onOpenSettings = { screen = Screen.Settings(RootTab.Train) },
                 )
             }
@@ -385,15 +562,27 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
         }
 
         if (isRoot) {
-            RootTabBar(
-                selected = screen.toRootTab(),
-                onSelect = { screen = it.toScreen() },
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .onSizeChanged { size ->
                         measuredBarHeight = with(density) { size.height.toDp() }
                     },
-            )
+            ) {
+                activeWorkout?.let { workout ->
+                    ActiveWorkoutMiniBar(
+                        workout = workout,
+                        onResume = { activeDraft?.let { screen = it } },
+                        onDiscard = { confirmDiscardActive = true },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
+                RootTabBar(
+                    selected = screen.toRootTab(),
+                    onSelect = { screen = it.toScreen() },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         if (!isRoot) {
@@ -451,8 +640,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     Screen.CalendarExpanded -> {
                         TrainingCalendarDetailScreen(
                             month = calendarMonth,
-                            sessions = sessions,
-                            dayNotes = dayNotes,
                             dayPaints = dayPaints,
                             selectedDate = selectedDate,
                             onMonthChange = viewModel::onCalendarMonthChange,
@@ -544,6 +731,8 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                 current.dateEpochDay,
                                 app.photoWallRepository,
                                 app.timerRecordRepository,
+                                draftStore = app.sessionDraftStore,
+                                draftKey = current.draftKey,
                             ),
                         )
                         SessionEditorScreen(
@@ -588,7 +777,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     is Screen.SettingsHistory -> {
                         SettingsHistoryScreen(
                             onBack = { screen = Screen.Settings(current.from) },
-                            onOpenTimers = { screen = Screen.TimerHistory(current.from) },
                             onOpenBody = { screen = Screen.BodyHistory(current.from) },
                         )
                     }
@@ -698,6 +886,8 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                 app.bodyRecordRepository,
                                 current.returnTo.sessionId,
                                 current.returnTo.dateEpochDay,
+                                draftStore = app.sessionDraftStore,
+                                draftKey = current.returnTo.draftKey,
                             ),
                         )
                         ExerciseLibraryScreen(
@@ -715,6 +905,32 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
         }
     }
 
+    if (confirmDiscardActive) {
+        AlertDialog(
+            onDismissRequest = { confirmDiscardActive = false },
+            title = { Text(stringResource(R.string.training_discard_title)) },
+            text = { Text(stringResource(R.string.training_discard_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmDiscardActive = false
+                        activeEditorViewModel?.discardTraining()
+                        activeDraft = null
+                    },
+                ) {
+                    Text(
+                        stringResource(R.string.training_discard),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDiscardActive = false }) {
+                    Text(stringResource(R.string.training_resume))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -824,6 +1040,41 @@ private fun HomeTopBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CalendarTopBar(
+    onToday: () -> Unit,
+    onAdd: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(TopAppBarDefaults.windowInsets)
+                .heightIn(min = 56.dp)
+                .padding(start = 20.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.tab_calendar),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onToday) {
+                Text(stringResource(R.string.calendar_today))
+            }
+            IconButton(onClick = onAdd) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_record),
+                )
+            }
+            SettingsTopBarAction(onOpenSettings)
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun HistoryScreen(
@@ -832,7 +1083,6 @@ private fun HistoryScreen(
     measurements: List<BodyMeasurementEntity>,
     calendarMonth: YearMonth,
     selectedDate: LocalDate,
-    partsByDate: Map<LocalDate, List<String>>,
     onCalendarMonthChange: (YearMonth) -> Unit,
     onDayClick: (LocalDate) -> Unit,
     onAdd: () -> Unit,
@@ -846,7 +1096,6 @@ private fun HistoryScreen(
     onOpenCalendar: () -> Unit,
     timer: TrainingTimerUiState,
     onOpenSavedTimer: (String) -> Unit,
-    onOpenAbout: () -> Unit,
 ) {
     val daySessions = remember(sessions, selectedDate, measurements) {
         sessions.filter { it.session.dateEpochDay == selectedDate.toEpochDay() }
@@ -863,64 +1112,51 @@ private fun HistoryScreen(
     val defaultDayMessage = stringResource(defaultDayNoteRes(storedKind))
     val dayMessage = dayNotes[selectedDate.toEpochDay()] ?: defaultDayMessage
     var editingDayNote by remember { mutableStateOf(false) }
-    var calendarCollapsed by remember { mutableStateOf(true) }
+    var editingDayKind by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            HomeTopBar(
+            CalendarTopBar(
+                onToday = {
+                    onCalendarMonthChange(YearMonth.now())
+                    onDayClick(LocalDate.now())
+                },
+                onAdd = onAdd,
                 onOpenSettings = onOpenSettings,
-                onOpenAbout = onOpenAbout,
             )
-        },
-        floatingActionButton = {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                FloatingActionButton(
-                    onClick = onAdd,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.add_record),
-                    )
-                }
-            }
         },
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item(key = "training-calendar") {
-                TrainingCalendarCard(
+                CalendarMonthOverview(
                     month = calendarMonth,
-                    partsByDate = partsByDate,
-                    selectedDate = selectedDate,
+                    sessions = sessions,
+                    measurements = measurements,
                     dayPaints = dayPaints,
-                    collapsed = calendarCollapsed,
-                    onToggleCollapse = { calendarCollapsed = !calendarCollapsed },
+                    selectedDate = selectedDate,
                     onMonthChange = onCalendarMonthChange,
                     onDayClick = onDayClick,
-                    onOpen = onOpenCalendar,
+                    onOpenFullMonth = onOpenCalendar,
                 )
             }
             item(key = "selected-date-header") {
-                val partLine = daySessions.partVolumes(measurements).joinToString("　") { (part, volume) ->
-                    "$part：${WeightLogic.displayVolume(volume)}"
-                }
+                val partLine = daySessions.partVolumes(measurements)
+                    .map { (part, _) -> part.removeSuffix("部") }
+                    .distinct()
+                    .joinToString("+")
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp, bottom = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                        .padding(top = 2.dp, bottom = 2.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -928,47 +1164,127 @@ private fun HistoryScreen(
                     ) {
                         Text(
                             text = selectedDate.format(dateFormatter),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
                         )
-                        if (partLine.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outlineVariant,
+                                    RoundedCornerShape(6.dp),
+                                )
+                                .clickable { editingDayKind = true }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                        ) {
                             Text(
-                                text = partLine,
-                                style = MaterialTheme.typography.bodySmall,
+                                text = stringResource(
+                                    if (hasTraining) R.string.calendar_training else R.string.calendar_untrained,
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.End,
-                                modifier = Modifier
-                                    .padding(start = 12.dp)
-                                    .weight(1f),
                             )
                         }
                     }
-                    DayKindSelector(
-                        selected = resolvedDayKinds[selectedDate.toEpochDay()],
-                        onSelect = { kind -> onSelectDayKind(selectedDate, kind, hasTraining) },
-                    )
-                    dayTimers.forEach { saved ->
+                    if (partLine.isNotEmpty()) {
                         Text(
-                            text = stringResource(
-                                R.string.timer_day_duration,
-                                TrainingTimerLogic.formatDurationChinese(saved.record.durationMillis),
-                            ),
-                            style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"),
+                            text = partLine,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Normal,
                             color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    val totalDayDuration = dayTimers.sumOf { it.record.durationMillis }
+                    if (totalDayDuration > 0L) {
+                        val dayDurationLabel = stringResource(R.string.timer_day_duration_label)
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(fontWeight = FontWeight.Normal)) {
+                                    append(dayDurationLabel)
+                                }
+                                append(TrainingTimerLogic.formatDurationChinese(totalDayDuration))
+                            },
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontFeatureSettings = "tnum",
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onOpenSavedTimer(saved.record.id) },
+                                .then(
+                                    if (dayTimers.size == 1) {
+                                        Modifier.clickable {
+                                            onOpenSavedTimer(dayTimers.first().record.id)
+                                        }
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
                         )
                     }
                 }
             }
             if (daySessions.isEmpty() || storedKind.isSpecialDay()) {
                 item(key = "empty-day") {
-                    Text(
-                        text = dayMessage,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.clickable { editingDayNote = true },
-                    )
+                    GymLogCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { editingDayNote = true },
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(GymLogSpacing.md),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.FitnessCenter,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        if (selectedDate == LocalDate.now()) {
+                                            R.string.home_empty_title_today
+                                        } else {
+                                            R.string.home_empty_title_other
+                                        },
+                                    ),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = dayMessage,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
             if (daySessions.isNotEmpty()) {
@@ -990,6 +1306,26 @@ private fun HistoryScreen(
             onSave = { text ->
                 onSaveDayNote(selectedDate, text, defaultDayMessage)
                 editingDayNote = false
+            },
+        )
+    }
+    if (editingDayKind) {
+        AlertDialog(
+            onDismissRequest = { editingDayKind = false },
+            title = { Text(stringResource(R.string.calendar_mark_day)) },
+            text = {
+                DayKindSelector(
+                    selected = resolvedDayKinds[selectedDate.toEpochDay()],
+                    onSelect = { kind ->
+                        onSelectDayKind(selectedDate, kind, hasTraining)
+                        editingDayKind = false
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { editingDayKind = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
         )
     }
@@ -1033,19 +1369,16 @@ private fun SessionCard(
     measurements: List<BodyMeasurementEntity>,
     onClick: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    GymLogCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(start = 12.dp, end = 0.dp, top = 10.dp, bottom = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+                .padding(start = GymLogSpacing.md, end = 0.dp, top = GymLogSpacing.sm, bottom = GymLogSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
         ) {
             if (detail.exercises.isEmpty()) {
                 Text(
@@ -1109,7 +1442,7 @@ private fun SessionExerciseRow(
             Spacer(Modifier.height(2.dp))
             Text(
                 text = item.exercise.name,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )

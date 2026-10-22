@@ -1,7 +1,7 @@
 package com.example.gymlog.ui.muscle
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,8 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +57,8 @@ import com.example.gymlog.data.MuscleExerciseRef
 import com.example.gymlog.data.MuscleMapLogic
 import com.example.gymlog.data.MuscleRegion
 import com.example.gymlog.data.MuscleRole
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -294,7 +295,7 @@ private fun MapControls(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     TextButton(onClick = onPickDate) {
-                        Text(dateText, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(dateText, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Normal)
                     }
                     Text(
                         text = stringResource(R.string.muscle_trained_count, trainedCount),
@@ -411,15 +412,9 @@ private fun MuscleDetailCard(
     modifier: Modifier = Modifier,
 ) {
     val palette = rememberMusclePalette()
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    GymLogCard(modifier = modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(GymLogSpacing.md),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (muscle == null) {
@@ -429,7 +424,7 @@ private fun MuscleDetailCard(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             } else {
-                Text(muscle.nameZh, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                Text(muscle.nameZh, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Normal)
                 Text(
                     muscle.nameEn,
                     style = MaterialTheme.typography.bodyMedium,

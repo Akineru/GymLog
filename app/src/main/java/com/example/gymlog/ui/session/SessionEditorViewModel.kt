@@ -8,9 +8,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog.data.BodyMeasurementEntity
 import com.example.gymlog.data.BodyRecordRepository
+import com.example.gymlog.data.DraftExerciseSnapshot
+import com.example.gymlog.data.DraftSetSnapshot
 import com.example.gymlog.data.ExerciseClassification
 import com.example.gymlog.data.ExerciseEntity
 import com.example.gymlog.data.PhotoWallRepository
+import com.example.gymlog.data.SessionDraftSnapshot
+import com.example.gymlog.data.SessionDraftStore
 import com.example.gymlog.data.SessionExerciseDraft
 import com.example.gymlog.data.SessionSetDraft
 import com.example.gymlog.data.TimerRecordRepository
@@ -22,6 +26,7 @@ import com.example.gymlog.data.WorkoutSessionEntity
 import com.example.gymlog.data.WorkoutSetEntity
 import com.example.gymlog.data.sortedGroupingBodyPart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +35,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -86,6 +92,7 @@ data class WorkoutClockUi(
     val timerDurationMillis: Long = WorkoutClockLogic.DEFAULT_TIMER_MILLIS,
 )
 
+@OptIn(FlowPreview::class)
 class SessionEditorViewModel(
     private val repository: WorkoutRepository,
     private val bodyRecordRepository: BodyRecordRepository,
@@ -94,6 +101,8 @@ class SessionEditorViewModel(
     private val photoWallRepository: PhotoWallRepository? = null,
     private val timerRecordRepository: TimerRecordRepository? = null,
     private val elapsedRealtime: () -> Long = { SystemClock.elapsedRealtime() },
+    private val draftStore: SessionDraftStore? = null,
+    private val draftKey: String? = null,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
         SessionEditorUiState(
@@ -118,6 +127,9 @@ class SessionEditorViewModel(
     private var clockStartedAt: Long? = null
     private var clockBaseRemainingMillis = WorkoutClockLogic.DEFAULT_TIMER_MILLIS
     private var stopwatchAccumulatedMillis = 0L
+    private var draftDirty = false
+    private var snapshotLoaded = false
+    private var snapshotEnabled = true
 
     val state: StateFlow<SessionEditorUiState> = combine(
         _state,
@@ -173,7 +185,15 @@ class SessionEditorViewModel(
                         )
                     }
                     totalTick.value++
+                    restoreSnapshot()
                 }
+            }
+        } else {
+            viewModelScope.launch { restoreSnapshot() }
+        }
+        viewModelScope.launch {
+            _state.debounce(350).collect {
+                if (snapshotLoaded && draftDirty) persistSnapshot()
             }
         }
         viewModelScope.launch {
@@ -183,11 +203,130 @@ class SessionEditorViewModel(
                 tickClock()
             }
         }
+        viewModelScope.launch {
+            while (isActive) {
+                delay(5_000)
+                if (snapshotLoaded && draftDirty) persistSnapshot()
+            }
+        }
+    }
+
+    private suspend fun restoreSnapshot() {
+        val store = draftStore
+        val key = draftKey
+        if (store == null || key == null) {
+            snapshotLoaded = true
+            return
+        }
+        val snapshot = withContext(Dispatchers.IO) { store.load() }
+        if (snapshot == null || snapshot.draftKey != key) {
+            snapshotLoaded = true
+            return
+        }
+        val exercises = snapshot.exercises.mapNotNull { item ->
+            val exercise = repository.findExercise(item.exerciseId) ?: return@mapNotNull null
+            DraftExerciseUi(
+                id = item.id,
+                exercise = exercise,
+                sets = item.sets.map { set ->
+                    DraftSetUi(
+                        id = set.id,
+                        mode = set.mode,
+                        normalKgText = set.normalKgText,
+                        extraKgText = set.extraKgText,
+                        repsText = set.repsText,
+                        completed = set.completed,
+                    )
+                },
+                startedAtMillis = item.startedAtMillis,
+                completedAtMillis = item.completedAtMillis,
+                durationMillis = item.durationMillis,
+            )
+        }
+        val nowEpoch = System.currentTimeMillis()
+        val extraElapsed = if (snapshot.timerRunning && snapshot.savedAtEpochMillis > 0L) {
+            (nowEpoch - snapshot.savedAtEpochMillis).coerceAtLeast(0L)
+        } else {
+            0L
+        }
+        totalAccumulatedMillis = snapshot.totalElapsedMillis + extraElapsed
+        totalStartRealtime = if (snapshot.timerRunning) elapsedRealtime() else null
+        totalTick.value++
+        _state.update {
+            it.copy(
+                sessionId = snapshot.sessionId ?: existingSessionId,
+                dateEpochDay = snapshot.dateEpochDay,
+                note = snapshot.note,
+                exercises = exercises,
+                loading = false,
+                finishing = snapshot.finishing,
+                finishedDurationMillis = snapshot.finishedDurationMillis,
+                photoId = snapshot.photoId,
+            )
+        }
+        snapshot.photoId?.let { photoId ->
+            val bitmap = withContext(Dispatchers.IO) {
+                photoWallRepository?.decode(photoId, preferEdited = false)
+            }
+            if (bitmap != null) {
+                _state.update { it.copy(photoBitmap = bitmap) }
+            }
+        }
+        draftDirty = true
+        snapshotLoaded = true
+        totalTick.value++
+    }
+
+    private suspend fun persistSnapshot() {
+        if (!snapshotEnabled) return
+        val store = draftStore ?: return
+        val key = draftKey ?: return
+        val current = _state.value
+        if (current.loading || current.saving) return
+        val snapshot = SessionDraftSnapshot(
+            draftKey = key,
+            sessionId = current.sessionId,
+            dateEpochDay = current.dateEpochDay,
+            note = current.note,
+            totalElapsedMillis = totalElapsed(),
+            timerRunning = totalStartRealtime != null && !current.finishing,
+            savedAtEpochMillis = System.currentTimeMillis(),
+            finishing = current.finishing,
+            finishedDurationMillis = current.finishedDurationMillis,
+            photoId = current.photoId,
+            exercises = current.exercises.map { item ->
+                DraftExerciseSnapshot(
+                    id = item.id,
+                    exerciseId = item.exercise.id,
+                    startedAtMillis = item.startedAtMillis,
+                    completedAtMillis = item.completedAtMillis,
+                    durationMillis = item.durationMillis,
+                    sets = item.sets.map { set ->
+                        DraftSetSnapshot(
+                            id = set.id,
+                            mode = set.mode,
+                            normalKgText = set.normalKgText,
+                            extraKgText = set.extraKgText,
+                            repsText = set.repsText,
+                            completed = set.completed,
+                        )
+                    },
+                )
+            },
+        )
+        withContext(Dispatchers.IO) { runCatching { store.save(snapshot) } }
+    }
+
+    private fun markDraftDirty() {
+        draftDirty = true
     }
 
     fun delete() {
         val id = existingSessionId ?: return
+        snapshotEnabled = false
+        draftDirty = false
         viewModelScope.launch {
+            draftStore?.clear()
             repository.deleteSession(
                 WorkoutSessionEntity(
                     id = id,
@@ -206,6 +345,9 @@ class SessionEditorViewModel(
         current.photoId?.let { photoWallRepository?.discardStaged(it) }
         totalStartRealtime = null
         clockStartedAt = null
+        snapshotEnabled = false
+        draftDirty = false
+        viewModelScope.launch { draftStore?.clear() }
         if (current.sessionId == null) {
             _exitAfterSave.tryEmit(Unit)
         } else {
@@ -214,10 +356,12 @@ class SessionEditorViewModel(
     }
 
     fun onDateChange(epochDay: Long) {
+        markDraftDirty()
         _state.update { it.copy(dateEpochDay = epochDay, errorMessage = null) }
     }
 
     fun onNoteChange(value: String) {
+        markDraftDirty()
         _state.update { it.copy(note = value) }
     }
 
@@ -227,6 +371,7 @@ class SessionEditorViewModel(
         totalAccumulatedMillis = elapsed
         totalStartRealtime = null
         totalTick.value++
+        markDraftDirty()
         _state.update {
             it.copy(
                 finishing = true,
@@ -237,6 +382,7 @@ class SessionEditorViewModel(
     }
 
     fun cancelFinish() {
+        markDraftDirty()
         _state.update { it.copy(finishing = false) }
         if (existingSessionId == null && totalStartRealtime == null) {
             totalStartRealtime = elapsedRealtime()
@@ -244,6 +390,7 @@ class SessionEditorViewModel(
     }
 
     fun addExercise(exercise: ExerciseEntity) {
+        markDraftDirty()
         viewModelScope.launch {
             val fromHistory = repository.latestSetForExercise(exercise.id)?.toDraft()
             _state.update { current ->
@@ -269,12 +416,14 @@ class SessionEditorViewModel(
     }
 
     fun removeExercise(draftId: String) {
+        markDraftDirty()
         _state.update { current ->
             current.copy(exercises = current.exercises.filterNot { it.id == draftId })
         }
     }
 
     fun addSet(exerciseDraftId: String) {
+        markDraftDirty()
         _state.update { current ->
             current.copy(
                 exercises = current.exercises.map { item ->
@@ -290,6 +439,7 @@ class SessionEditorViewModel(
     }
 
     fun removeSet(exerciseDraftId: String, setId: String) {
+        markDraftDirty()
         _state.update { current ->
             current.copy(
                 exercises = current.exercises.map { item ->
@@ -304,6 +454,7 @@ class SessionEditorViewModel(
     }
 
     fun updateSet(exerciseDraftId: String, setId: String, transform: (DraftSetUi) -> DraftSetUi) {
+        markDraftDirty()
         _state.update { current ->
             current.copy(
                 exercises = current.exercises.map { item ->
@@ -334,6 +485,7 @@ class SessionEditorViewModel(
 
     fun finishExercise(exerciseDraftId: String) {
         val now = elapsedRealtime()
+        markDraftDirty()
         _state.update { current ->
             current.copy(
                 exercises = current.exercises.map { item ->
@@ -360,6 +512,7 @@ class SessionEditorViewModel(
     fun stagePhoto(uri: Uri) {
         val photos = photoWallRepository ?: return
         val previousPhotoId = _state.value.photoId
+        markDraftDirty()
         _state.update { it.copy(loadingPhoto = true, errorMessage = null) }
         viewModelScope.launch {
             val id = withContext(Dispatchers.IO) { photos.stageImport(uri) }
@@ -378,6 +531,7 @@ class SessionEditorViewModel(
     fun removePhoto() {
         val current = _state.value
         current.photoId?.let { photoWallRepository?.discardStaged(it) }
+        markDraftDirty()
         _state.update { it.copy(photoId = null, photoBitmap = null) }
     }
 
@@ -472,6 +626,9 @@ class SessionEditorViewModel(
                     return@launch
                 }
             }
+            snapshotEnabled = false
+            draftDirty = false
+            draftStore?.clear()
             _state.update { it.copy(saving = false) }
             _exitAfterSave.tryEmit(Unit)
         }
@@ -568,12 +725,14 @@ class SessionEditorViewModel(
         totalAccumulatedMillis = totalElapsed()
         totalStartRealtime = null
         totalTick.value++
+        markDraftDirty()
     }
 
     fun resumeTotalTimer() {
         if (totalStartRealtime == null && !_state.value.finishing) {
             totalStartRealtime = elapsedRealtime()
             totalTick.value++
+            markDraftDirty()
         }
     }
 
@@ -581,6 +740,7 @@ class SessionEditorViewModel(
         totalAccumulatedMillis = durationMillis.coerceIn(0L, 86_399_000L)
         totalStartRealtime = elapsedRealtime()
         totalTick.value++
+        markDraftDirty()
     }
 
     fun pauseClockForEdit() {
@@ -651,6 +811,8 @@ class SessionEditorViewModel(
             initialDateEpochDay: Long? = null,
             photoWallRepository: PhotoWallRepository? = null,
             timerRecordRepository: TimerRecordRepository? = null,
+            draftStore: SessionDraftStore? = null,
+            draftKey: String? = null,
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
@@ -662,6 +824,8 @@ class SessionEditorViewModel(
                         initialDateEpochDay = initialDateEpochDay,
                         photoWallRepository = photoWallRepository,
                         timerRecordRepository = timerRecordRepository,
+                        draftStore = draftStore,
+                        draftKey = draftKey,
                     ) as T
                 }
             }

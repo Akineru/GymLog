@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -39,10 +38,8 @@ import com.example.gymlog.R
 import com.example.gymlog.data.ExerciseEntity
 import com.example.gymlog.ui.exercise.BodyCategoryRail
 import com.example.gymlog.ui.exercise.EquipmentCategoryBar
-import com.example.gymlog.ui.theme.dashboardCardBorder
-import com.example.gymlog.ui.theme.dashboardCardColors
-import com.example.gymlog.ui.theme.dashboardCardElevation
-import com.example.gymlog.ui.theme.dashboardCardShape
+import com.example.gymlog.ui.theme.GymLogCard
+import com.example.gymlog.ui.theme.GymLogSpacing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -130,16 +127,20 @@ fun TrainingTrendScreen(
                         }
                     }
                     if (state.selectedExerciseId != null) {
-                        Card(
+                        GymLogCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(start = 8.dp, end = 12.dp, bottom = 12.dp),
-                            shape = dashboardCardShape(),
-                            colors = dashboardCardColors(),
-                            elevation = dashboardCardElevation(),
-                            border = dashboardCardBorder(),
                         ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
+                            Column(
+                                modifier = Modifier.padding(GymLogSpacing.md),
+                                verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+                            ) {
+                                Text(
+                                    text = "趋势图",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
                                 TrendChart(
                                     points = state.points,
                                     quantity = TrendQuantity.KILOGRAM,
