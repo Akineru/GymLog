@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -516,12 +515,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                     selectedDate = selectedDate,
                     onCalendarMonthChange = viewModel::onCalendarMonthChange,
                     onDayClick = viewModel::onCalendarDayClick,
-                    onAdd = {
-                        screen = Screen.SessionEditor(
-                            sessionId = null,
-                            dateEpochDay = selectedDate.toEpochDay(),
-                        )
-                    },
                     onEdit = { screen = Screen.SessionEditor(it.session.id) },
                     onOpenSettings = { screen = Screen.Settings(RootTab.Calendar) },
                     dayNotes = dayNotes,
@@ -1062,7 +1055,6 @@ private fun HomeTopBar(
 @Composable
 private fun CalendarTopBar(
     onToday: () -> Unit,
-    onAdd: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     Surface(color = MaterialTheme.colorScheme.surface) {
@@ -1082,12 +1074,6 @@ private fun CalendarTopBar(
             TextButton(onClick = onToday) {
                 Text(stringResource(R.string.calendar_today))
             }
-            IconButton(onClick = onAdd) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_record),
-                )
-            }
             SettingsTopBarAction(onOpenSettings)
         }
     }
@@ -1103,7 +1089,6 @@ private fun HistoryScreen(
     selectedDate: LocalDate,
     onCalendarMonthChange: (YearMonth) -> Unit,
     onDayClick: (LocalDate) -> Unit,
-    onAdd: () -> Unit,
     onEdit: (SessionDetail) -> Unit,
     onOpenSettings: () -> Unit,
     dayNotes: Map<Long, String>,
@@ -1141,7 +1126,6 @@ private fun HistoryScreen(
                     onCalendarMonthChange(YearMonth.now())
                     onDayClick(LocalDate.now())
                 },
-                onAdd = onAdd,
                 onOpenSettings = onOpenSettings,
             )
         },
@@ -1180,12 +1164,29 @@ private fun HistoryScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = selectedDate.format(dateFormatter),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        Row(
                             modifier = Modifier.weight(1f),
-                        )
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = selectedDate.format(dateFormatter),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            if (partLine.isNotEmpty()) {
+                                Text(
+                                    text = partLine,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.padding(start = 8.dp),
+                                )
+                            }
+                        }
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
@@ -1206,14 +1207,6 @@ private fun HistoryScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                    }
-                    if (partLine.isNotEmpty()) {
-                        Text(
-                            text = partLine,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
                     }
                     val totalDayDuration = dayTimers.sumOf { it.record.durationMillis }
                     if (totalDayDuration > 0L) {

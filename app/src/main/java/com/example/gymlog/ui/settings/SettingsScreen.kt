@@ -548,20 +548,11 @@ private fun ProfileEditorDialog(
     onDismiss: () -> Unit,
     onSave: (name: String, gender: Gender?, avatarBytes: ByteArray?, clearAvatar: Boolean) -> Unit,
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf(initialName) }
     var gender by remember { mutableStateOf(initialGender) }
     var pendingBytes by remember { mutableStateOf<ByteArray?>(null) }
     var clearAvatar by remember { mutableStateOf(false) }
-    var cropSource by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
-    val picker = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch {
-            val bitmap = withContext(Dispatchers.IO) { decodeAvatarForCrop(context, uri) }
-            if (bitmap != null) cropSource = bitmap
-        }
-    }
+    var showAvatarEditor by remember { mutableStateOf(false) }
     val previewBytes = pendingBytes
     val previewPath = if (clearAvatar || previewBytes != null) null else avatarPath
     AlertDialog(
@@ -582,11 +573,18 @@ private fun ProfileEditorDialog(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    AvatarImage(
-                        path = previewPath,
-                        bytes = previewBytes,
-                        modifier = Modifier.size(76.dp),
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(76.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = { showAvatarEditor = true }),
+                    ) {
+                        AvatarImage(
+                            path = previewPath,
+                            bytes = previewBytes,
+                            modifier = Modifier.size(76.dp),
+                        )
+                    }
                 }
                 OutlinedTextField(
                     value = name,
@@ -611,28 +609,6 @@ private fun ProfileEditorDialog(
                         )
                     }
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    TextButton(
-                        onClick = {
-                            picker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                        },
-                    ) {
-                        Text(stringResource(R.string.mine_pick_avatar))
-                    }
-                    if (previewBytes != null || previewPath != null) {
-                        TextButton(
-                            onClick = {
-                                pendingBytes = null
-                                clearAvatar = true
-                            },
-                        ) {
-                            Text(stringResource(R.string.mine_remove_avatar))
-                        }
-                    }
-                }
             }
         },
         confirmButton = {
@@ -646,13 +622,106 @@ private fun ProfileEditorDialog(
             }
         },
     )
+    if (showAvatarEditor) {
+        AvatarEditorDialog(
+            avatarPath = avatarPath,
+            pendingBytes = pendingBytes,
+            clearAvatar = clearAvatar,
+            onDismiss = { showAvatarEditor = false },
+            onCropped = { bytes ->
+                pendingBytes = bytes
+                clearAvatar = false
+            },
+            onRemove = {
+                pendingBytes = null
+                clearAvatar = true
+            },
+        )
+    }
+}
+
+@Composable
+private fun AvatarEditorDialog(
+    avatarPath: String?,
+    pendingBytes: ByteArray?,
+    clearAvatar: Boolean,
+    onDismiss: () -> Unit,
+    onCropped: (ByteArray) -> Unit,
+    onRemove: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var cropSource by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    val picker = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val bitmap = withContext(Dispatchers.IO) { decodeAvatarForCrop(context, uri) }
+            if (bitmap != null) cropSource = bitmap
+        }
+    }
+    val previewBytes = pendingBytes
+    val previewPath = if (clearAvatar || previewBytes != null) null else avatarPath
+    val hasAvatar = previewBytes != null || previewPath != null
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.mine_avatar_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AvatarImage(
+                        path = previewPath,
+                        bytes = previewBytes,
+                        modifier = Modifier.size(180.dp),
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = {
+                            picker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                        },
+                    ) {
+                        Text(stringResource(R.string.mine_pick_avatar))
+                    }
+                    if (hasAvatar) {
+                        TextButton(onClick = onRemove) {
+                            Text(stringResource(R.string.mine_remove_avatar))
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.mine_avatar_done))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
     cropSource?.let { bitmap ->
         AvatarCropDialog(
             bitmap = bitmap,
             onDismiss = { cropSource = null },
             onCropped = { bytes ->
-                pendingBytes = bytes
-                clearAvatar = false
+                onCropped(bytes)
                 cropSource = null
             },
         )

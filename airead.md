@@ -73,7 +73,7 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 | 根页面 | 内容 | 再进去 |
 | --- | --- | --- |
 | 首页 | 按周或按月看训练时长、训练天数、总组数、容量；本周训练日；选中日按部位的足迹和已保存计时。顶栏是「首页」，齿轮进设置 | 开始训练会把日历选到今天并切到日历；也能打开当天训练、已保存计时、身体数据、趋势、日历 |
-| 日历 | 月历（按部位容量或特殊日上色）、选中日期的训练卡片、日类型（休息/放纵/偷懒）；右下角无 FAB，新增训练在顶栏 `+`；训练计时器已移到训练页。顶栏标题用 `home_title`，跟界面语言走，现在是「练有所迹」。点标题直接进关于。桌面图标仍用 `app_name`，系统语言为英文时是 Traivol | 展开整月、编辑训练、选动作、已保存计时 |
+| 日历 | 月历（按部位容量或特殊日上色）、选中日期的训练卡片、日类型（休息/放纵/偷懒）；右下角无 FAB，顶栏新增训练入口已按需求删除，只剩「今天」和设置；训练计时器已移到训练页。顶栏标题用 `home_title`，跟界面语言走，现在是「练有所迹」。点标题直接进关于。桌面图标仍用 `app_name`，系统语言为英文时是 Traivol | 展开整月、编辑训练、选动作、已保存计时 |
 | 训练 | 两个入口：开始训练、动作库；有活动训练时底部显示可恢复的缩小卡片 | 开始训练直接打开今天的新训练草稿；返回训练页会保留并继续计时；动作库是子页面，有返回 |
 | 趋势 | 「训练足迹」「身体数据」 | 对应趋势页 |
 | 我的 | 用户名、头像、可切换的统计、「身体数据」与「照片墙」入口；资料表单可改性别 | 身体数据、照片墙（网格→详情→编辑）。头像在这一页裁剪 |
@@ -686,6 +686,38 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 删掉 ② 那个独立按钮（`SessionEditorScreen.kt` 照片 Card 内原来的 `Row` 分支：未选照片时显示 `training_add_photo`、已选照片时显示 `training_change_photo` + `training_remove_photo`）。
 - 保留：未选照片时只有大虚线框（框内含图标 + 「添加训练照片」+ 提示语，点击即选图）；已选照片时显示图片，并在下方保留「更换照片」+「移除」两个按钮（这两个是必需的，避免误删已选图）。
 - 验证：Debug 包含在 Pixel_3a_API_33 模拟器验收，进入用户草稿的保存页，照片区块只出现一个「添加训练照片」字样，原重复的「添加照片」按钮已消失；验收用草稿保留未动。未出交付 APK。
+
+## 日历页删除顶栏新增训练入口
+
+日历根页面顶栏（`ui/GymLogApp.kt` 的 `CalendarTopBar`，只被 `HistoryScreen` 使用）原来有三个操作：「今天」文字按钮、`+` 新增训练图标按钮（content-desc 用 `add_record`「新增训练」）、设置齿轮。按需求删掉 `+`。
+
+- 删掉的内容：`CalendarTopBar` 里的 `IconButton { Icons.Filled.Add }`；`CalendarTopBar` 和 `HistoryScreen` 的 `onAdd` 参数及 `HistoryScreen` 调用处传参（原来点 `+` 会用 `selectedDate` 打开 `Screen.SessionEditor(sessionId = null, dateEpochDay = selectedDate.toEpochDay())`）；`Icons.Filled.Add` 的 import；`strings.xml` 的 `add_record`（全项目仅此一处引用）。
+- 保留：「今天」和设置齿轮不动；新增训练仍可从首页「开始训练」和「训练」页进入。展开整月页（`TrainingCalendarDetailScreen`）本来就没有新增按钮，不用动。
+- 验证：Debug 包含在 Pixel_3a_API_33 模拟器验收，日历页顶栏只剩「日历 / 今天 / 设置」，全页面已无「新增训练」字样；编译通过。未出交付 APK。
+
+## 头像操作收敛到头像查看/编辑页
+
+「选择头像」「移除头像」原来直接放在「编辑个人信息」弹窗里（`ui/settings/SettingsScreen.kt` 的 `ProfileEditorDialog`）。按需求改为：外层界面（「我的」页资料卡、编辑弹窗本身）只显示头像本身，两个操作按钮收进点击头像后进入的「头像」页。
+
+- `ProfileEditorDialog`：删掉头像下方的「选择头像/移除头像」`Row`；头像预览包了一层 `clickable`（`showAvatarEditor = true`），点头像打开 `AvatarEditorDialog`。pending 状态仍由本弹窗持有：`pendingBytes` / `clearAvatar`，保存时经 `onSave(name, gender, pendingBytes, clearAvatar)` 交给 `MineViewModel.saveProfile`，链路未变。
+- 新增 `AvatarEditorDialog`（`SettingsScreen.kt`）：「头像」标题 + 180dp 大图预览 + 「选择头像」（`mine_pick_avatar`）+「移除头像」（仅 `hasAvatar` 时显示）+「完成/取消」。系统选图 → `decodeAvatarForCrop` → `AvatarCropDialog` 裁剪的整条链路（picker launcher、`cropSource`）从 `ProfileEditorDialog` 搬到这个弹窗里，自包含。
+- 状态流转（验收过的路径）：
+  - 头像页「移除头像」→ 回调把父弹窗 `pendingBytes=null, clearAvatar=true` → 预览变占位图、移除按钮隐藏；再「选择头像」→ `pendingBytes` 有值、`clearAvatar=false`，按钮恢复。
+  - 裁剪页「使用」→ `onCropped(bytes)` 更新父弹窗 pending 状态并关裁剪页，头像页预览即时刷新（父状态是参数传入，重组即更新）。
+  - 头像页「完成/取消」都只是关掉本页，不回退已做的 pending 修改；最终「取消」在编辑弹窗，弹窗离开组合后 `remember` 状态全部丢弃，不落库。
+  - 编辑弹窗「保存」→ `MineViewModel.saveProfile` 写 `filesDir/profile/avatar.jpg` + `saveIdentity` → `observeProfile()` 回流 → `MineUiState.avatarPath` 更新，「我的」页头像自动刷新（验收时文件 08:22 被重写，页面即时显示新头像）。
+- 新增字符串 `mine_avatar_title`「头像」、`mine_avatar_done`「完成」；`mine_pick_avatar` / `mine_remove_avatar` 搬到新弹窗继续用。`values-en/strings.xml` 本来就没有这批 mine_ 字符串，未加。
+- 验证：Debug 包含在 Pixel_3a_API_33 模拟器走完整链路——「我的」页无按钮；编辑弹窗无按钮、点头像进头像页；移除头像后按钮隐藏；选图→裁剪→使用→头像页预览刷新；保存后「我的」页头像与 `files/profile/avatar.jpg` 同步更新；编辑弹窗取消后资料原样。编译通过，未出交付 APK。
+- **验收注意事项**：完整链路会把模拟器上用户的真实头像覆盖掉。本次验收后已用设备里 2026-10-20 的备份（`/sdcard/Download/gymlog-2026-10-20.json` 的 `profile.avatarJpeg`）按字节还原（MD5 `fc403744efb98243001b7c17d62858bd`，43956 字节，与备份解码结果完全一致）。以后验收这条链路，先备份头像或验收后还原。
+
+## 日历选中日期：部位名与日期并排并加粗
+
+日历根页面选中日期卡（`ui/GymLogApp.kt` `HistoryScreen` 的 `selected-date-header` item）原来日期、「已训练/未训练」徽章在第一行，部位名（`partLine`，由 `daySessions.partVolumes` 归并）单独在第二行。按需求把部位名挪到日期同一行并加粗。
+
+- 结构：外层 `Row`（日期+部位 包在内层 `Modifier.weight(1f)` 的 `Row` 里，徽章保持最右不变）；内层日期 `Text` 不再挂 `weight(1f)`（由内层 Row 整体占位，徽章才能继续贴右边），部位名 `Text` 加 `padding(start = 8.dp)`。
+- 部位名样式：`titleMedium` + `fontWeight = FontWeight.Bold` + `primary` 色不变；日期 `titleLarge` 格式/字号/颜色完全未动。
+- 防溢出：日期和部位名都加 `maxLines = 1` + `TextOverflow.Ellipsis`。内层 Row 被 `weight(1f)` 限定了宽度，部位名过长时先被截断，不会把日期挤没或顶掉徽章；`partLine` 的计算逻辑（归并、去「部」后缀、`+` 连接）没有改。
+- 验证：Debug 包含在 Pixel_3a_API_33 模拟器验收——选 10月13日，「2026年10月13日」与「背+上臂」在同一行（y 区间重叠、水平相距 8dp）、加粗显示，「已训练」徽章仍在最右，三者不重叠；选无训练的 10月27日只有日期和徽章，位置与改前一致。编译通过，未出交付 APK。
 
 ## 历史需求（都已落地）
 

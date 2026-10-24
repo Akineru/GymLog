@@ -2,7 +2,6 @@
     <string name="app_name">练有所迹</string>
     <string name="home_title">练有所迹</string>
     <string name="history_title">训练记录</string>
-    <string name="add_record">新增训练</string>
     <string name="edit_record">编辑训练</string>
     <string name="empty_history">还没有训练记录。点右下角加号，记下今天的训练。</string>
     <string name="empty_day">这一天还没有训练记录。</string>
@@ -175,7 +174,7 @@
     <string name="timer_finished_text">倒计时到点了</string>
     <string name="training_minimize">收起训练</string>
     <string name="training_timer_tool">训练计时器</string>
-    <string name="training_timer_tool_hint">计时、计次并保存本次训练时长</string>
+    <string name="training_timer_tool_hint">计时，计次</string>
     <string name="training_start_title">开始</string>
     <string name="training_empty_hint">选择一个动作开始锻炼吧</string>
     <string name="training_complete">完成</string>
@@ -238,6 +237,8 @@
     <string name="bodyweight_invalid">请输入有效体重</string>
     <string name="mine_profile_title">个人信息</string>
     <string name="mine_edit_profile">编辑个人信息</string>
+    <string name="mine_avatar_title">头像</string>
+    <string name="mine_avatar_done">完成</string>
     <string name="mine_name_label">用户名</string>
     <string name="mine_pick_avatar">选择头像</string>
     <string name="mine_crop_avatar">裁剪头像</string>
