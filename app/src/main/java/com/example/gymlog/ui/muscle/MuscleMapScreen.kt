@@ -29,6 +29,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -167,15 +168,29 @@ fun MuscleMapScreen(
                             )
                         }
                         item {
-                            MuscleFigure(
-                                highlights = visible,
-                                selectedRegionId = selectedRegionId,
-                                onRegionClick = { selectedRegionId = if (selectedRegionId == it) null else it },
-                                onBackgroundClick = { selectedRegionId = null },
-                                onViewSideChange = { selectedRegionId = null },
-                            )
+                            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                                MuscleFigure(
+                                    highlights = visible,
+                                    selectedRegionId = selectedRegionId,
+                                    onRegionClick = { selectedRegionId = if (selectedRegionId == it) null else it },
+                                    onBackgroundClick = { selectedRegionId = null },
+                                    onViewSideChange = { selectedRegionId = null },
+                                    modifier = Modifier.padding(8.dp),
+                                )
+                            }
                         }
-                        item { StatusCopy(hasSessions = state.hasSessions, unsupported = unsupported) }
+                        if (!state.hasSessions || unsupported.isNotEmpty()) {
+                            item {
+                                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        StatusCopy(
+                                            hasSessions = state.hasSessions,
+                                            unsupported = unsupported,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                     MuscleDetailCard(
                         muscle = selectedMuscle,
@@ -212,15 +227,29 @@ fun MuscleMapScreen(
                         )
                     }
                     item {
-                        MuscleFigure(
-                            highlights = visible,
-                            selectedRegionId = selectedRegionId,
-                            onRegionClick = { selectedRegionId = if (selectedRegionId == it) null else it },
-                            onBackgroundClick = { selectedRegionId = null },
-                            onViewSideChange = { selectedRegionId = null },
-                        )
+                        GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                            MuscleFigure(
+                                highlights = visible,
+                                selectedRegionId = selectedRegionId,
+                                onRegionClick = { selectedRegionId = if (selectedRegionId == it) null else it },
+                                onBackgroundClick = { selectedRegionId = null },
+                                onViewSideChange = { selectedRegionId = null },
+                                modifier = Modifier.padding(8.dp),
+                            )
+                        }
                     }
-                    item { StatusCopy(hasSessions = state.hasSessions, unsupported = unsupported) }
+                    if (!state.hasSessions || unsupported.isNotEmpty()) {
+                        item {
+                            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    StatusCopy(
+                                        hasSessions = state.hasSessions,
+                                        unsupported = unsupported,
+                                    )
+                                }
+                            }
+                        }
+                    }
                     item {
                         MuscleDetailCard(
                             muscle = selectedMuscle,
@@ -242,6 +271,7 @@ fun MuscleMapScreen(
         )
         DatePickerDialog(
             onDismissRequest = { pickingDate = false },
+            shape = RoundedCornerShape(24.dp),
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -278,10 +308,10 @@ private fun MapControls(
     onRange: (MuscleMapRange) -> Unit,
     onRole: (RoleFilter) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Surface(
-            shape = RoundedCornerShape(18.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -295,7 +325,12 @@ private fun MapControls(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     TextButton(onClick = onPickDate) {
-                        Text(dateText, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Normal)
+                        Text(
+                            text = dateText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                     Text(
                         text = stringResource(R.string.muscle_trained_count, trainedCount),
@@ -307,42 +342,60 @@ private fun MapControls(
                     Icon(Icons.Filled.ChevronRight, contentDescription = stringResource(R.string.muscle_next_day))
                 }
             }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Text(
+                text = "范围",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                FilterChip(
+                    selected = range == MuscleMapRange.DAY,
+                    onClick = { onRange(MuscleMapRange.DAY) },
+                    label = { Text(stringResource(R.string.muscle_scope_day)) },
+                )
+                FilterChip(
+                    selected = range == MuscleMapRange.WEEK,
+                    onClick = { onRange(MuscleMapRange.WEEK) },
+                    label = { Text(stringResource(R.string.muscle_scope_week)) },
+                )
+                FilterChip(
+                    selected = range == MuscleMapRange.MONTH,
+                    onClick = { onRange(MuscleMapRange.MONTH) },
+                    label = { Text(stringResource(R.string.muscle_scope_month)) },
+                )
+            }
+            Text(
+                text = "角色",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                FilterChip(
+                    selected = roleFilter == RoleFilter.ALL,
+                    onClick = { onRole(RoleFilter.ALL) },
+                    label = { Text(stringResource(R.string.muscle_filter_all)) },
+                )
+                FilterChip(
+                    selected = roleFilter == RoleFilter.PRIMARY,
+                    onClick = { onRole(RoleFilter.PRIMARY) },
+                    label = { Text(stringResource(R.string.muscle_primary)) },
+                )
+                FilterChip(
+                    selected = roleFilter == RoleFilter.SECONDARY,
+                    onClick = { onRole(RoleFilter.SECONDARY) },
+                    label = { Text(stringResource(R.string.muscle_secondary)) },
+                )
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            LegendRow()
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = range == MuscleMapRange.DAY,
-                onClick = { onRange(MuscleMapRange.DAY) },
-                label = { Text(stringResource(R.string.muscle_scope_day)) },
-            )
-            FilterChip(
-                selected = range == MuscleMapRange.WEEK,
-                onClick = { onRange(MuscleMapRange.WEEK) },
-                label = { Text(stringResource(R.string.muscle_scope_week)) },
-            )
-            FilterChip(
-                selected = range == MuscleMapRange.MONTH,
-                onClick = { onRange(MuscleMapRange.MONTH) },
-                label = { Text(stringResource(R.string.muscle_scope_month)) },
-            )
-        }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = roleFilter == RoleFilter.ALL,
-                onClick = { onRole(RoleFilter.ALL) },
-                label = { Text(stringResource(R.string.muscle_filter_all)) },
-            )
-            FilterChip(
-                selected = roleFilter == RoleFilter.PRIMARY,
-                onClick = { onRole(RoleFilter.PRIMARY) },
-                label = { Text(stringResource(R.string.muscle_primary)) },
-            )
-            FilterChip(
-                selected = roleFilter == RoleFilter.SECONDARY,
-                onClick = { onRole(RoleFilter.SECONDARY) },
-                label = { Text(stringResource(R.string.muscle_secondary)) },
-            )
-        }
-        LegendRow()
     }
 }
 

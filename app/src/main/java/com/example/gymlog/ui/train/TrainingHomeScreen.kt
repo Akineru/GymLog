@@ -45,7 +45,8 @@ import com.example.gymlog.ui.theme.GymLogSpacing
 
 data class ActiveWorkoutUi(
     val durationMillis: Long,
-    val exerciseNames: List<String>,
+    val currentExerciseName: String?,
+    val timerText: String? = null,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,21 +179,51 @@ fun ActiveWorkoutMiniBar(
                 .padding(horizontal = GymLogSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = buildString {
+                        append(stringResource(R.string.training_active_workout))
+                        append(" · ")
+                        append(TrainingTimerLogic.formatDurationChinese(workout.durationMillis))
+                    },
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontFeatureSettings = "tnum",
+                        fontWeight = FontWeight.Normal,
+                    ),
+                    color = Color.White,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f),
+                )
+                workout.timerText?.let { timer ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        modifier = Modifier.padding(start = 8.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Timer,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        Text(
+                            text = timer,
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontFeatureSettings = "tnum",
+                                fontWeight = FontWeight.Medium,
+                            ),
+                            color = Color.White,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
             Text(
-                text = buildString {
-                    append(stringResource(R.string.training_active_workout))
-                    append(" · ")
-                    append(TrainingTimerLogic.formatDurationChinese(workout.durationMillis))
-                },
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontFeatureSettings = "tnum",
-                    fontWeight = FontWeight.Normal,
-                ),
-                color = Color.White,
-                maxLines = 1,
-            )
-            Text(
-                text = workout.exerciseNames.joinToString("、").ifEmpty { "—" },
+                text = workout.currentExerciseName
+                    ?: stringResource(R.string.training_active_next_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color(0xFFBBD0EC),
                 maxLines = 1,

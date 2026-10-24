@@ -203,6 +203,7 @@ fun SavedTimerScreen(
     if (confirmingDelete) {
         AlertDialog(
             onDismissRequest = { confirmingDelete = false },
+            shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.timer_delete_title)) },
             text = { Text(stringResource(R.string.timer_delete_message)) },
             confirmButton = {
@@ -213,7 +214,10 @@ fun SavedTimerScreen(
                         onBack()
                     },
                 ) {
-                    Text(stringResource(R.string.delete))
+                    Text(
+                        text = stringResource(R.string.delete),
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             },
             dismissButton = {

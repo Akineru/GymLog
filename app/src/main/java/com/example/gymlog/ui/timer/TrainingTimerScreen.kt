@@ -324,6 +324,7 @@ internal fun EditTimerDialog(
     var seconds by remember { mutableIntStateOf((totalSeconds % 60).toInt()) }
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
         title = { Text(stringResource(R.string.timer_edit)) },
         text = {
             Row(
@@ -477,6 +478,7 @@ private fun ResetTimerDialog(
     var clearLaps by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
         title = { Text(stringResource(R.string.timer_reset_title)) },
         text = {
             Column {

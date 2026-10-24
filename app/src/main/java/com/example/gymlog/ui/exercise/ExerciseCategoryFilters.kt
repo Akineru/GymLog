@@ -1,6 +1,7 @@
 package com.example.gymlog.ui.exercise
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +36,7 @@ fun BodyCategoryRail(
 ) {
     LazyColumn(
         modifier = Modifier
-            .width(84.dp)
+            .width(82.dp)
             .fillMaxHeight(),
         contentPadding = PaddingValues(vertical = 8.dp),
     ) {
@@ -43,16 +44,25 @@ fun BodyCategoryRail(
             val isSelected = part.id == selected.id
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 6.dp, vertical = 4.dp)
+                    .padding(horizontal = 6.dp, vertical = 3.dp)
                     .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .heightIn(min = 44.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(
                         if (isSelected) {
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.primary
                         } else {
-                            MaterialTheme.colorScheme.surface
+                            MaterialTheme.colorScheme.surfaceContainerLowest
                         },
+                    )
+                    .border(
+                        1.dp,
+                        if (isSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        },
+                        RoundedCornerShape(14.dp),
                     )
                     .clickable(role = Role.Button, onClick = { onSelect(part) }),
                 contentAlignment = Alignment.Center,
@@ -61,7 +71,7 @@ fun BodyCategoryRail(
                     text = part.labelZh,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
+                        MaterialTheme.colorScheme.onPrimary
                     } else {
                         MaterialTheme.colorScheme.onSurface
                     },

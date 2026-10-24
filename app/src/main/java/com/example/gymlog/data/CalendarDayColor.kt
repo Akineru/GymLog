@@ -11,13 +11,13 @@ package com.example.gymlog.data
  * If several special marks were ever present on one day, [specialDay] keeps
  * lazy, then indulge, then rest. The database stores only one mark per day.
  */
-enum class CalendarColorCategory(val argb: Int) {
-    CHEST(0xFFE57373.toInt()),
-    BACK(0xFF64B5F6.toInt()),
-    SHOULDERS(0xFFFFB74D.toInt()),
-    LEGS(0xFF81C784.toInt()),
-    ARMS(0xFFBA68C8.toInt()),
-    OTHER(0xFF90A4AE.toInt()),
+enum class CalendarColorCategory(val argb: Int, val labelZh: String) {
+    CHEST(0xFFE57373.toInt(), "胸"),
+    BACK(0xFF64B5F6.toInt(), "背"),
+    SHOULDERS(0xFFFFB74D.toInt(), "肩"),
+    LEGS(0xFF81C784.toInt(), "腿"),
+    ARMS(0xFFBA68C8.toInt(), "手臂"),
+    OTHER(0xFF90A4AE.toInt(), "其他"),
 }
 
 enum class CalendarSpecialDay(val argb: Int) {
@@ -104,11 +104,18 @@ object CalendarDayColorLogic {
         return CalendarDayPaint.Training(category)
     }
 
-    fun paintsFor(
+    /**
+     * Per-day volume per merged body-part category.
+     *
+     * Exercises with no recorded sets are skipped, so a day that only has an
+     * empty exercise is not treated as trained. Shares its result with
+     * [paintsFor] and [CalendarDayPartsLogic] so the color and the part text on
+     * a calendar cell can never disagree.
+     */
+    fun categoryVolumes(
         sessions: List<SessionDetail>,
         measurements: List<BodyMeasurementEntity>,
-        stored: Map<Long, DayKind>,
-    ): Map<Long, CalendarDayPaint> {
+    ): Map<Long, Map<CalendarColorCategory, Double>> {
         val volumes = HashMap<Long, MutableMap<CalendarColorCategory, Double>>()
         for (detail in sessions) {
             val day = detail.session.dateEpochDay
@@ -130,6 +137,15 @@ object CalendarDayColorLogic {
                 }
             }
         }
+        return volumes
+    }
+
+    fun paintsFor(
+        sessions: List<SessionDetail>,
+        measurements: List<BodyMeasurementEntity>,
+        stored: Map<Long, DayKind>,
+    ): Map<Long, CalendarDayPaint> {
+        val volumes = categoryVolumes(sessions, measurements)
         val days = HashSet<Long>(volumes.size + stored.size)
         days.addAll(volumes.keys)
         days.addAll(stored.keys)

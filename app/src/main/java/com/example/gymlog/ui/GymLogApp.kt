@@ -90,6 +90,7 @@ import com.example.gymlog.GymLogApplication
 import com.example.gymlog.R
 import com.example.gymlog.data.CalendarDayColorLogic
 import com.example.gymlog.data.CalendarDayPaint
+import com.example.gymlog.data.CalendarDayPartsLogic
 import com.example.gymlog.data.DayKind
 import com.example.gymlog.data.DayKindLogic
 import com.example.gymlog.data.SessionDetail
@@ -100,6 +101,7 @@ import com.example.gymlog.data.BodyMeasurementEntity
 import com.example.gymlog.data.ExerciseClassification
 import com.example.gymlog.data.TimerPhase
 import com.example.gymlog.data.TrainingTimerLogic
+import com.example.gymlog.data.WorkoutClockLogic
 import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.displayName
 import com.example.gymlog.data.orderedForDay
@@ -124,6 +126,7 @@ import com.example.gymlog.ui.progress.ProgressScreen
 import com.example.gymlog.ui.train.ActiveWorkoutMiniBar
 import com.example.gymlog.ui.train.ActiveWorkoutUi
 import com.example.gymlog.ui.train.TrainingHomeScreen
+import com.example.gymlog.ui.train.currentExerciseLabel
 import com.example.gymlog.ui.session.SessionEditorScreen
 import com.example.gymlog.ui.session.SessionEditorViewModel
 import com.example.gymlog.ui.settings.AboutScreen
@@ -394,6 +397,9 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
     val dayPaints = remember(sessions, measurements, dayKinds) {
         CalendarDayColorLogic.paintsFor(sessions, measurements, dayKinds)
     }
+    val dayParts = remember(sessions, measurements) {
+        CalendarDayPartsLogic.labelsFor(sessions, measurements)
+    }
     val dataEpoch by app.backupRepository.dataEpoch.collectAsStateWithLifecycle()
     val photoViewModel: PhotoWallViewModel = viewModel(factory = PhotoWallViewModel.factory(app))
     val timerViewModel: TrainingTimerViewModel = viewModel(
@@ -433,6 +439,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                 app.timerRecordRepository,
                 draftStore = app.sessionDraftStore,
                 draftKey = draft.draftKey,
+                timerAlarmScheduler = app.timerAlarmScheduler,
             ),
         )
     }
@@ -441,10 +448,17 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
     } else {
         null
     }
+    val activeEditorClock = activeEditorViewModel?.clock?.collectAsStateWithLifecycle()?.value
+    val activeWorkoutTimerText = if (activeEditorClock?.running == true) {
+        WorkoutClockLogic.formatClock(activeEditorClock.displayMillis)
+    } else {
+        null
+    }
     val activeWorkout = activeEditorState?.let { state ->
         ActiveWorkoutUi(
             durationMillis = state.totalElapsedMillis,
-            exerciseNames = state.exercises.map { it.exercise.displayName() },
+            currentExerciseName = currentExerciseLabel(state.exercises),
+            timerText = activeWorkoutTimerText,
         )
     }
     val density = LocalDensity.current
@@ -648,6 +662,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                 screen = Screen.Calendar
                             },
                             onBack = { screen = Screen.Calendar },
+                            dayParts = dayParts,
                         )
                     }
                     is Screen.BodyRecord -> {
@@ -733,6 +748,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                 app.timerRecordRepository,
                                 draftStore = app.sessionDraftStore,
                                 draftKey = current.draftKey,
+                                timerAlarmScheduler = app.timerAlarmScheduler,
                             ),
                         )
                         SessionEditorScreen(
@@ -888,6 +904,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                 current.returnTo.dateEpochDay,
                                 draftStore = app.sessionDraftStore,
                                 draftKey = current.returnTo.draftKey,
+                                timerAlarmScheduler = app.timerAlarmScheduler,
                             ),
                         )
                         ExerciseLibraryScreen(
@@ -908,6 +925,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
     if (confirmDiscardActive) {
         AlertDialog(
             onDismissRequest = { confirmDiscardActive = false },
+            shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.training_discard_title)) },
             text = { Text(stringResource(R.string.training_discard_message)) },
             confirmButton = {
@@ -1312,7 +1330,13 @@ private fun HistoryScreen(
     if (editingDayKind) {
         AlertDialog(
             onDismissRequest = { editingDayKind = false },
-            title = { Text(stringResource(R.string.calendar_mark_day)) },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.calendar_mark_day),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
             text = {
                 DayKindSelector(
                     selected = resolvedDayKinds[selectedDate.toEpochDay()],
@@ -1340,12 +1364,19 @@ private fun DayNoteDialog(
     var text by remember(initialText) { mutableStateOf(initialText) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.empty_day_edit_title)) },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.empty_day_edit_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
                 minLines = 2,
             )
         },

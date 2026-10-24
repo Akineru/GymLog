@@ -50,7 +50,7 @@
     <string name="calendar_mark_day">标记这一天</string>
     <string name="calendar_edit_day_note">写一句</string>
     <string name="tab_train">训练</string>
-    <string name="tab_progress">趋势</string>
+    <string name="tab_progress">统计</string>
     <string name="tab_mine">我的</string>
     <string name="home_overview_subtitle">训练概览 · %1$s</string>
     <string name="home_date_range">%1$s — %2$s</string>
@@ -79,7 +79,7 @@
     <string name="home_shortcuts">快捷入口</string>
     <string name="home_start_training">开始训练</string>
     <string name="home_record_body">记录身体</string>
-    <string name="home_open_trends">查看趋势</string>
+    <string name="home_open_trends">查看统计</string>
     <string name="home_empty_title_today">今天还没有训练记录</string>
     <string name="home_empty_title_other">这一天还没有训练记录</string>
     <string name="home_empty_message">练完一组也算进步，先动起来。</string>
@@ -169,6 +169,10 @@
     <string name="training_exercises">动作数</string>
     <string name="training_parts">部位</string>
     <string name="training_active_workout">锻炼</string>
+    <string name="training_active_next_hint">开始新的动作吧</string>
+    <string name="timer_finished_channel">计时结束</string>
+    <string name="timer_finished_title">计时结束</string>
+    <string name="timer_finished_text">倒计时到点了</string>
     <string name="training_minimize">收起训练</string>
     <string name="training_timer_tool">训练计时器</string>
     <string name="training_timer_tool_hint">计时、计次并保存本次训练时长</string>
@@ -195,11 +199,11 @@
     <string name="training_photo_hint">记录今天的器械、状态或变化</string>
     <string name="training_note_prompt">今天练得怎么样？</string>
     <string name="training_note_hint">记录动作感受、状态或下次要调整的地方…</string>
-    <string name="training_discard">取消锻炼</string>
+    <string name="training_discard">取消训练</string>
     <string name="training_delete">删除训练</string>
     <string name="training_delete_title">删除这次训练？</string>
     <string name="training_delete_message">这次训练和所有已完成的组会被删除，不能撤销。</string>
-    <string name="training_discard_title">取消这次锻炼？</string>
+    <string name="training_discard_title">取消这次训练？</string>
     <string name="training_discard_message">这次训练还没有保存，取消后数据不会保留。</string>
     <string name="training_no_completed_sets">请至少勾选完成一组训练</string>
     <string name="training_photo_failed">训练已保存，但照片保存失败，可以再试一次</string>
@@ -340,6 +344,12 @@
     <string name="body_bmi">BMI %1$s</string>
     <string name="body_bmi_unknown">填写身高和体重后会自动计算 BMI</string>
     <string name="body_saved">已保存</string>
+    <string name="body_section_profile">基础资料</string>
+    <string name="body_section_metrics">身体数据</string>
+    <string name="body_save_action">保存资料</string>
+    <string name="girth_section_arms">手臂</string>
+    <string name="girth_section_torso">躯干</string>
+    <string name="girth_section_legs">腿部</string>
     <string name="body_history_title">身体记录</string>
     <string name="body_history_count">共 %1$d 条</string>
     <string name="body_history_empty">还没有身体数据。保存后会出现在这里，方便以后看趋势。</string>

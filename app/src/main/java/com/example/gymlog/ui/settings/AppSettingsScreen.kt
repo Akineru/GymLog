@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -183,7 +184,7 @@ fun AppSettingsScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.settings_history),
-                    subtitle = "查看计时与身体历史",
+                    subtitle = "查看身体记录历史",
                     icon = Icons.Filled.History,
                     onClick = onOpenHistory,
                 )
@@ -220,6 +221,7 @@ fun AppSettingsScreen(
     if (clearStep == 1) {
         AlertDialog(
             onDismissRequest = { clearStep = 0 },
+            shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.clear_data_understand_title)) },
             text = { Text(stringResource(R.string.clear_data_understand_message)) },
             confirmButton = {
@@ -238,6 +240,7 @@ fun AppSettingsScreen(
     if (clearStep == 2) {
         AlertDialog(
             onDismissRequest = { clearStep = 0 },
+            shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.clear_data_confirm_title)) },
             text = { Text(stringResource(R.string.clear_data_confirm_message)) },
             confirmButton = {
@@ -264,6 +267,7 @@ fun AppSettingsScreen(
     uiState.notice?.let { notice ->
         AlertDialog(
             onDismissRequest = viewModel::dismissNotice,
+            shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.clear_data)) },
             text = {
                 Text(

@@ -1,9 +1,6 @@
 package com.example.gymlog.ui.session
 
 import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -97,6 +94,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
 import com.example.gymlog.data.ExerciseClassification
 import com.example.gymlog.data.ExerciseMediaView
+import com.example.gymlog.data.TimerAlerts
 import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.data.WorkoutClockLogic
@@ -150,7 +148,7 @@ fun SessionEditorScreen(
         viewModel.exitAfterSave.collect { onExitAfterSave() }
     }
     LaunchedEffect(Unit) {
-        viewModel.clockFinished.collect { vibrateOnce(context) }
+        viewModel.clockFinished.collect { TimerAlerts.alert(context) }
     }
 
     if (state.finishing) {
@@ -261,6 +259,7 @@ fun SessionEditorScreen(
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
+            shape = RoundedCornerShape(24.dp),
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -286,6 +285,7 @@ fun SessionEditorScreen(
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            shape = RoundedCornerShape(24.dp),
             title = {
                 Text(
                     stringResource(
@@ -410,6 +410,7 @@ private fun TrainingSessionPage(
     pendingRemove?.let { exercise ->
         AlertDialog(
             onDismissRequest = { pendingRemove = null },
+            shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.exercise_delete_title)) },
             text = { Text(stringResource(R.string.exercise_delete_message)) },
             confirmButton = {
@@ -1242,7 +1243,9 @@ private fun TrainingSavePage(
                                         .fillMaxWidth()
                                         .height(108.dp)
                                         .clip(RoundedCornerShape(14.dp))
-                                        .background(Color(0xFFFAFCFF))
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                                        )
                                         .border(
                                             1.dp,
                                             MaterialTheme.colorScheme.outlineVariant,
@@ -1262,7 +1265,7 @@ private fun TrainingSavePage(
                                             modifier = Modifier.size(26.dp),
                                         )
                                         Text(
-                                            text = "添加训练照片",
+                                            text = stringResource(R.string.training_add_photo),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary,
                                         )
@@ -1274,19 +1277,11 @@ private fun TrainingSavePage(
                                     }
                                 }
                             }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                TextButton(onClick = onPickPhoto, enabled = !state.loadingPhoto) {
-                                    Text(
-                                        stringResource(
-                                            if (bitmap == null) {
-                                                R.string.training_add_photo
-                                            } else {
-                                                R.string.training_change_photo
-                                            },
-                                        ),
-                                    )
-                                }
-                                if (bitmap != null) {
+                            if (bitmap != null) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    TextButton(onClick = onPickPhoto, enabled = !state.loadingPhoto) {
+                                        Text(stringResource(R.string.training_change_photo))
+                                    }
                                     TextButton(onClick = onRemovePhoto) {
                                         Text(stringResource(R.string.training_remove_photo))
                                     }
@@ -1410,17 +1405,25 @@ private fun BodyWeightDialog(
     val weight = WeightLogic.parseKg(text)?.takeIf { it > 0.0 }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.bodyweight_missing_title)) },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.bodyweight_missing_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.bodyweight_missing_message))
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
                     label = { Text(stringResource(R.string.bodyweight_weight_label)) },
                     singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
                     isError = text.isNotBlank() && weight == null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 if (text.isNotBlank() && weight == null) {
                     Text(
@@ -1462,6 +1465,7 @@ private fun WorkoutClockSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
     ) {
         Column(
             modifier = Modifier
@@ -1565,24 +1569,4 @@ private fun draftWeightKg(set: DraftSetUi, bodyWeightKg: Double): Double {
         WeightMode.BODYWEIGHT_PLUS -> WeightLogic.parseSignedKg(set.extraKgText)
     }
     return WeightLogic.effectiveKg(set.mode, stored, bodyWeightKg)
-}
-
-private fun vibrateOnce(context: android.content.Context) {
-    runCatching {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            context.getSystemService(VibratorManager::class.java)?.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Vibrator::class.java)
-        }
-        if (vibrator?.hasVibrator() != true) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(
-                VibrationEffect.createOneShot(500L, VibrationEffect.DEFAULT_AMPLITUDE),
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(500L)
-        }
-    }
 }

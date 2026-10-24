@@ -14,3 +14,35 @@
 .cxx
 local.properties
 *.apk
+
+# ---------------------------------------------------------------------------
+# 验收产物与临时文件
+#
+# 下面所有规则都用前导 "/" 限定在仓库根目录，避免误伤 src / assets / tools 里
+# 已纳入版本控制的素材（动作库缩略图、人体底图、肌肉遮罩审计图等）。
+# 只影响未跟踪文件，已经 git 跟踪的文件不受影响。
+# ---------------------------------------------------------------------------
+
+# 模拟器 / 真机验收截图与录屏、UI 层级 dump（cancel.xml / draft.xml / fix.xml 之类）
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+/*.gif
+/*.mp4
+/*.xml
+
+# 设计草稿的渲染图：由 design/*.html 现渲染生成，删了可以再出一份
+/design/*.png
+/design/*.jpg
+/design/*.jpeg
+
+# 打包产物与签名文件
+/*.aab
+/*.apks
+/*.idsig
+/*.zip
+
+# IDE 本机状态（设备选择器、部署目标会随着插拔设备变化）
+/.idea/deviceManager.xml
+/.idea/deploymentTargetSelector.xml

@@ -4,6 +4,13 @@
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Android 13+: posting the timer-finished notification needs this at runtime. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Alarm-clock style app: granted at install, cannot be revoked by the user.
+         SCHEDULE_EXACT_ALARM is denied by default from Android 14, so this is the
+         permission to rely on for exact countdown delivery. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <application
         android:name=".GymLogApplication"
         android:allowBackup="false"
@@ -35,6 +42,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".data.TimerAlarmReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

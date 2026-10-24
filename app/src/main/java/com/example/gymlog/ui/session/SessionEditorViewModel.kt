@@ -16,6 +16,7 @@ import com.example.gymlog.data.PhotoWallRepository
 import com.example.gymlog.data.SessionDraftSnapshot
 import com.example.gymlog.data.SessionDraftStore
 import com.example.gymlog.data.SessionExerciseDraft
+import com.example.gymlog.data.TimerAlarmScheduler
 import com.example.gymlog.data.SessionSetDraft
 import com.example.gymlog.data.TimerRecordRepository
 import com.example.gymlog.data.WeightLogic
@@ -103,6 +104,7 @@ class SessionEditorViewModel(
     private val elapsedRealtime: () -> Long = { SystemClock.elapsedRealtime() },
     private val draftStore: SessionDraftStore? = null,
     private val draftKey: String? = null,
+    private val timerAlarmScheduler: TimerAlarmScheduler? = null,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
         SessionEditorUiState(
@@ -345,6 +347,11 @@ class SessionEditorViewModel(
         current.photoId?.let { photoWallRepository?.discardStaged(it) }
         totalStartRealtime = null
         clockStartedAt = null
+        clockBaseRemainingMillis = WorkoutClockLogic.DEFAULT_TIMER_MILLIS
+        stopwatchAccumulatedMillis = 0L
+        timerAlarmScheduler?.cancel()
+        timerAlarmScheduler?.cancelAlerts()
+        _clock.value = WorkoutClockUi()
         snapshotEnabled = false
         draftDirty = false
         viewModelScope.launch { draftStore?.clear() }
@@ -639,6 +646,7 @@ class SessionEditorViewModel(
     fun setClockMode(mode: WorkoutClockMode) {
         if (_clock.value.mode == mode) return
         clockStartedAt = null
+        timerAlarmScheduler?.cancel()
         clockBaseRemainingMillis = WorkoutClockLogic.DEFAULT_TIMER_MILLIS
         stopwatchAccumulatedMillis = 0L
         _clock.value = WorkoutClockUi(
@@ -657,6 +665,7 @@ class SessionEditorViewModel(
             clockBaseRemainingMillis = current.displayMillis
             stopwatchAccumulatedMillis = current.displayMillis
             clockStartedAt = null
+            timerAlarmScheduler?.cancel()
             _clock.update { it.copy(running = false) }
             return
         }
@@ -669,10 +678,14 @@ class SessionEditorViewModel(
         clockBaseRemainingMillis = display
         stopwatchAccumulatedMillis = display
         _clock.value = current.copy(running = true, displayMillis = display)
+        if (current.mode == WorkoutClockMode.TIMER) {
+            timerAlarmScheduler?.scheduleCountdown(display)
+        }
     }
 
     fun resetClock() {
         clockStartedAt = null
+        timerAlarmScheduler?.cancel()
         val timerDuration = _clock.value.timerDurationMillis
         _clock.update {
             it.copy(
@@ -693,6 +706,7 @@ class SessionEditorViewModel(
         if (current.running) {
             clockStartedAt = elapsedRealtime()
             clockBaseRemainingMillis = adjusted.displayMillis
+            timerAlarmScheduler?.scheduleCountdown(adjusted.displayMillis)
         }
         _clock.value = current.copy(
             displayMillis = adjusted.displayMillis,
@@ -710,6 +724,7 @@ class SessionEditorViewModel(
             _clock.update { it.copy(displayMillis = remaining) }
             if (remaining == 0L) {
                 clockStartedAt = null
+                timerAlarmScheduler?.cancel()
                 _clock.update { it.copy(running = false, displayMillis = 0L) }
                 _clockFinished.tryEmit(Unit)
             }
@@ -813,6 +828,7 @@ class SessionEditorViewModel(
             timerRecordRepository: TimerRecordRepository? = null,
             draftStore: SessionDraftStore? = null,
             draftKey: String? = null,
+            timerAlarmScheduler: TimerAlarmScheduler? = null,
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
@@ -826,6 +842,7 @@ class SessionEditorViewModel(
                         timerRecordRepository = timerRecordRepository,
                         draftStore = draftStore,
                         draftKey = draftKey,
+                        timerAlarmScheduler = timerAlarmScheduler,
                     ) as T
                 }
             }

@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -106,16 +108,11 @@ fun MineScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                ProfileCard(
+                ProfileStatsCard(
                     name = state.displayName,
                     avatarPath = state.avatarPath,
                     gender = state.gender,
                     ageYears = state.ageYears,
-                    onClick = { editingProfile = true },
-                )
-            }
-            item {
-                StatsCard(
                     state = state,
                     showTrainingYears = showTrainingYears,
                     onToggleTrainingSpan = { showTrainingYears = !showTrainingYears },
@@ -123,6 +120,7 @@ fun MineScreen(
                     onToggleDuration = { durationInMinutes = !durationInMinutes },
                     showBodyWeight = showBodyWeight,
                     onToggleBodyMetric = { showBodyWeight = !showBodyWeight },
+                    onClick = { editingProfile = true },
                 )
             }
             item {
@@ -148,27 +146,38 @@ fun MineScreen(
 }
 
 @Composable
-private fun ProfileCard(
+private fun ProfileStatsCard(
     name: String?,
     avatarPath: String?,
     gender: Gender?,
     ageYears: Int?,
+    state: MineUiState,
+    showTrainingYears: Boolean,
+    onToggleTrainingSpan: () -> Unit,
+    durationInMinutes: Boolean,
+    onToggleDuration: () -> Unit,
+    showBodyWeight: Boolean,
+    onToggleBodyMetric: () -> Unit,
     onClick: () -> Unit,
 ) {
+    val bodyValue = if (showBodyWeight) state.bodyWeightText else state.bodyFatText
+    val durationValue = if (durationInMinutes) state.durationMinutesValue else state.durationValue
+    val durationUnit = if (durationInMinutes) MineDurationUnit.MINUTE else state.durationUnit
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(22.dp))
             .background(
                 Brush.horizontalGradient(
                     listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
                 ),
-            )
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+            ),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AvatarImage(
@@ -223,30 +232,19 @@ private fun ProfileCard(
                 tint = Color(0xFFBBD0EC),
             )
         }
-    }
-}
-
-@Composable
-private fun StatsCard(
-    state: MineUiState,
-    showTrainingYears: Boolean,
-    onToggleTrainingSpan: () -> Unit,
-    durationInMinutes: Boolean,
-    onToggleDuration: () -> Unit,
-    showBodyWeight: Boolean,
-    onToggleBodyMetric: () -> Unit,
-) {
-    val bodyValue = if (showBodyWeight) state.bodyWeightText else state.bodyFatText
-    val durationValue = if (durationInMinutes) state.durationMinutesValue else state.durationValue
-    val durationUnit = if (durationInMinutes) MineDurationUnit.MINUTE else state.durationUnit
-    DashboardCard {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color.White.copy(alpha = 0.16f)),
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 8.dp),
-            verticalAlignment = Alignment.Top,
+                .padding(vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            StatItem(
+            DarkStatItem(
                 icon = Icons.Filled.Today,
                 label = stringResource(
                     if (showTrainingYears) R.string.mine_stat_years else R.string.mine_stat_days,
@@ -258,7 +256,8 @@ private fun StatsCard(
                 onClick = onToggleTrainingSpan,
                 modifier = Modifier.weight(1f),
             )
-            StatItem(
+            StatsDivider()
+            DarkStatItem(
                 icon = Icons.Filled.Schedule,
                 label = stringResource(R.string.mine_stat_duration),
                 value = durationValue,
@@ -266,7 +265,8 @@ private fun StatsCard(
                 onClick = onToggleDuration,
                 modifier = Modifier.weight(1f),
             )
-            StatItem(
+            StatsDivider()
+            DarkStatItem(
                 icon = if (showBodyWeight) Icons.Filled.MonitorWeight else Icons.Filled.Percent,
                 label = stringResource(
                     if (showBodyWeight) R.string.mine_stat_weight else R.string.mine_stat_fat,
@@ -285,45 +285,58 @@ private fun StatsCard(
 }
 
 @Composable
-private fun StatItem(
+private fun StatsDivider() {
+    Box(
+        modifier = Modifier
+            .width(1.dp)
+            .height(38.dp)
+            .background(Color.White.copy(alpha = 0.14f)),
+    )
+}
+
+@Composable
+private fun DarkStatItem(
     icon: ImageVector,
     label: String,
     value: String,
     unit: String,
-    onClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = 4.dp)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(22.dp),
+            tint = Color(0xFF9FC4FF),
+            modifier = Modifier.size(20.dp),
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color(0xFFBBD0EC),
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(top = 5.dp),
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp),
+                .padding(top = 2.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFeatureSettings = "tnum",
+                ),
+                color = Color.White,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 softWrap = false,
@@ -332,8 +345,8 @@ private fun StatItem(
             if (unit.isNotBlank()) {
                 Text(
                     text = unit,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFFD6E4F5),
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
@@ -553,23 +566,42 @@ private fun ProfileEditorDialog(
     val previewPath = if (clearAvatar || previewBytes != null) null else avatarPath
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.mine_edit_profile)) },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.mine_edit_profile),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                AvatarImage(
-                    path = previewPath,
-                    bytes = previewBytes,
-                    modifier = Modifier.size(72.dp),
-                )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AvatarImage(
+                        path = previewPath,
+                        bytes = previewBytes,
+                        modifier = Modifier.size(76.dp),
+                    )
+                }
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it.take(24) },
                     label = { Text(stringResource(R.string.mine_name_label)) },
                     singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text(stringResource(R.string.field_gender), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = stringResource(R.string.field_gender),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Gender.entries.forEach { option ->
                         FilterChip(
@@ -579,21 +611,26 @@ private fun ProfileEditorDialog(
                         )
                     }
                 }
-                TextButton(
-                    onClick = {
-                        picker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                    },
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    Text(stringResource(R.string.mine_pick_avatar))
-                }
-                if (previewBytes != null || previewPath != null) {
                     TextButton(
                         onClick = {
-                            pendingBytes = null
-                            clearAvatar = true
+                            picker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                         },
                     ) {
-                        Text(stringResource(R.string.mine_remove_avatar))
+                        Text(stringResource(R.string.mine_pick_avatar))
+                    }
+                    if (previewBytes != null || previewPath != null) {
+                        TextButton(
+                            onClick = {
+                                pendingBytes = null
+                                clearAvatar = true
+                            },
+                        ) {
+                            Text(stringResource(R.string.mine_remove_avatar))
+                        }
                     }
                 }
             }

@@ -1,6 +1,7 @@
 package com.example.gymlog.ui.exercise
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +22,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -72,6 +75,7 @@ import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.PersonalRecordLogic
 import com.example.gymlog.data.displayName
 import com.example.gymlog.ui.muscle.MuscleFigure
+import com.example.gymlog.ui.theme.ActionOrange
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 
@@ -167,6 +171,7 @@ fun ExerciseLibraryScreen(
                     },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
+                    shape = RoundedCornerShape(16.dp),
                     placeholder = { Text(stringResource(R.string.search_exercise)) },
                     leadingIcon = {
                         Icon(Icons.Filled.Search, contentDescription = null)
@@ -175,12 +180,15 @@ fun ExerciseLibraryScreen(
                 IconButton(
                     onClick = { showAddDialog = true },
                     modifier = Modifier
-                        .padding(start = 4.dp)
-                        .size(48.dp),
+                        .padding(start = 8.dp)
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(ActionOrange),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(R.string.add_custom_exercise),
+                        tint = androidx.compose.ui.graphics.Color.White,
                     )
                 }
             }
@@ -220,8 +228,9 @@ fun ExerciseLibraryScreen(
                                 state.exercises.size,
                             )
                         },
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                     ExerciseBrowsePane(
                         state = state,
@@ -434,25 +443,41 @@ private fun AddExerciseDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.add_custom_exercise)) },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.add_custom_exercise),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
             Column(
                 modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(stringResource(R.string.field_exercise)) },
                     singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                Text(stringResource(R.string.filter_body_part), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = stringResource(R.string.filter_body_part),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 FlowChipBlock(
                     options = ExerciseClassification.bodyStandard.map { it to it.labelZh },
                     selected = bodyPart,
                     onSelect = { bodyPart = it },
                 )
-                Text(stringResource(R.string.filter_equipment), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = stringResource(R.string.filter_equipment),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 FlowChipBlock(
                     options = ExerciseClassification.equipmentStandard.map { it to it.labelZh },
                     selected = equipment,
@@ -542,7 +567,13 @@ private fun ExerciseMuscleDialog(
     var tab by remember { mutableIntStateOf(0) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(exercise.displayName()) },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = exercise.displayName(),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
             Column(
                 modifier = Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
@@ -689,7 +720,13 @@ private fun MuscleEditorDialog(
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.muscle_edit)) },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.muscle_edit),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
             Column(modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
                 MuscleRolePicker(

@@ -61,6 +61,7 @@ fun TrainingCalendarDetailScreen(
     onMonthChange: (YearMonth) -> Unit,
     onDayClick: (LocalDate) -> Unit,
     onBack: () -> Unit,
+    dayParts: Map<Long, String> = emptyMap(),
 ) {
     BackHandler(onBack = onBack)
     val today = LocalDate.now()
@@ -160,6 +161,7 @@ fun TrainingCalendarDetailScreen(
                                         isToday = date == today,
                                         isSelected = date == selectedDate,
                                         paint = dayPaints[date.toEpochDay()] ?: CalendarDayPaint.Empty,
+                                        parts = dayParts[date.toEpochDay()].orEmpty(),
                                         onClick = {
                                             val dateMonth = YearMonth.from(date)
                                             if (dateMonth != month) onMonthChange(dateMonth)
@@ -189,6 +191,7 @@ private fun DetailDayCell(
     isToday: Boolean,
     isSelected: Boolean,
     paint: CalendarDayPaint,
+    parts: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -242,6 +245,19 @@ private fun DetailDayCell(
         if (inMonth && special != null) {
             Text(
                 text = stringResource(special.markRes()),
+                color = CalendarDayInk,
+                fontSize = 9.sp,
+                lineHeight = 11.sp,
+                fontWeight = FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (inMonth && parts.isNotBlank()) {
+            Text(
+                text = parts,
                 color = CalendarDayInk,
                 fontSize = 9.sp,
                 lineHeight = 11.sp,

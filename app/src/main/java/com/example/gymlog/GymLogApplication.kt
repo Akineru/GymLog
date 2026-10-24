@@ -35,6 +35,7 @@ import com.example.gymlog.data.ExerciseCatalogImporter
 import com.example.gymlog.data.ExerciseMediaRepository
 import com.example.gymlog.data.ProfileAvatarStore
 import com.example.gymlog.data.SessionDraftStore
+import com.example.gymlog.data.TimerAlarmScheduler
 import com.example.gymlog.data.TimerRecordRepository
 import com.example.gymlog.data.TrainingTimerStore
 import com.example.gymlog.data.WorkoutRepository
@@ -136,6 +137,10 @@ class GymLogApplication : Application() {
 
     val timerRecordRepository: TimerRecordRepository by lazy {
         TimerRecordRepository(database.timerRecordDao())
+    }
+
+    val timerAlarmScheduler: TimerAlarmScheduler by lazy {
+        TimerAlarmScheduler(this)
     }
 
     val backupRepository: BackupRepository by lazy {

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.History
@@ -36,11 +37,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Percent
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -78,6 +79,7 @@ import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.ui.stats.BodyTrendMetric
 import com.example.gymlog.ui.stats.TrendChart
 import com.example.gymlog.ui.stats.quantity
+import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 import java.time.Instant
@@ -566,11 +568,6 @@ private fun BodyRecordEditor(
                         )
                     }
                 },
-                actions = {
-                    TextButton(onClick = viewModel::save) {
-                        Text(stringResource(R.string.save))
-                    }
-                },
             )
         },
     ) { innerPadding ->
@@ -579,70 +576,134 @@ private fun BodyRecordEditor(
                 .fillMaxSize()
                 .padding(innerPadding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
-                OutlinedTextField(
-                    value = state.birthdayEpochDay
-                        ?.let { LocalDate.ofEpochDay(it).format(dateFormatter) }
-                        .orEmpty(),
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.field_birthday)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                TextButton(onClick = { pickingBirthday = true }) {
-                    Text(stringResource(R.string.pick_birthday))
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(GymLogSpacing.md),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.body_section_profile),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { pickingBirthday = true }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.CalendarMonth,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(17.dp),
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 10.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.field_birthday),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = state.birthdayEpochDay
+                                        ?.let { LocalDate.ofEpochDay(it).format(dateFormatter) }
+                                        ?: stringResource(R.string.body_not_set),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                            Text(
+                                text = state.ageYears?.let {
+                                    stringResource(R.string.body_age, it)
+                                } ?: stringResource(R.string.body_age_unknown),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 2.dp),
+                            )
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Text(
+                            text = stringResource(R.string.field_gender),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        GenderChips(
+                            selected = state.gender,
+                            onSelect = viewModel::onGenderChange,
+                        )
+                    }
                 }
-                Text(
-                    text = state.ageYears?.let { stringResource(R.string.body_age, it) }
-                        ?: stringResource(R.string.body_age_unknown),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
             }
             item {
-                Text(stringResource(R.string.field_gender), style = MaterialTheme.typography.labelLarge)
-                GenderChips(
-                    selected = state.gender,
-                    onSelect = viewModel::onGenderChange,
-                )
-            }
-            item {
-                OutlinedTextField(
-                    value = state.heightText,
-                    onValueChange = viewModel::onHeightChange,
-                    label = { Text(stringResource(R.string.field_height)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            item {
-                OutlinedTextField(
-                    value = state.weightText,
-                    onValueChange = viewModel::onWeightChange,
-                    label = { Text(stringResource(R.string.field_body_weight)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            item {
-                Text(
-                    text = state.bmiText?.let { stringResource(R.string.body_bmi, it) }
-                        ?: stringResource(R.string.body_bmi_unknown),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
-            item {
-                OutlinedTextField(
-                    value = state.bodyFatText,
-                    onValueChange = viewModel::onBodyFatChange,
-                    label = { Text(stringResource(R.string.field_body_fat)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(GymLogSpacing.md),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.body_section_metrics),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedTextField(
+                            value = state.heightText,
+                            onValueChange = viewModel::onHeightChange,
+                            label = { Text(stringResource(R.string.field_height)) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(14.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        OutlinedTextField(
+                            value = state.weightText,
+                            onValueChange = viewModel::onWeightChange,
+                            label = { Text(stringResource(R.string.field_body_weight)) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(14.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Text(
+                            text = state.bmiText?.let { stringResource(R.string.body_bmi, it) }
+                                ?: stringResource(R.string.body_bmi_unknown),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedTextField(
+                            value = state.bodyFatText,
+                            onValueChange = viewModel::onBodyFatChange,
+                            label = { Text(stringResource(R.string.field_body_fat)) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(14.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
             }
             state.errorMessage?.let { code ->
                 item {
@@ -662,6 +723,14 @@ private fun BodyRecordEditor(
             }
             item {
                 HistoryEntry(count = state.history.size, onClick = onOpenHistory)
+            }
+            item {
+                GymLogActionButton(
+                    text = stringResource(R.string.body_save_action),
+                    onClick = viewModel::save,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(16.dp))
             }
         }
     }
@@ -719,49 +788,85 @@ private fun GirthEditor(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            GirthPair(
-                label = stringResource(R.string.body_label_arm),
-                left = state.armLeftText,
-                right = state.armRightText,
-                onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.ARM_LEFT, it) },
-                onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.ARM_RIGHT, it) },
-            )
-            GirthPair(
-                label = stringResource(R.string.girth_forearm),
-                left = state.forearmLeftText,
-                right = state.forearmRightText,
-                onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.FOREARM_LEFT, it) },
-                onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.FOREARM_RIGHT, it) },
-            )
-            GirthSingle(
-                label = stringResource(R.string.girth_chest),
-                value = state.chestText,
-                onValue = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.CHEST, it) },
-            )
-            GirthSingle(
-                label = stringResource(R.string.body_label_waist),
-                value = state.waistText,
-                onValue = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.WAIST, it) },
-            )
-            GirthSingle(
-                label = stringResource(R.string.girth_hip),
-                value = state.hipText,
-                onValue = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.HIP, it) },
-            )
-            GirthPair(
-                label = stringResource(R.string.girth_thigh),
-                left = state.thighLeftText,
-                right = state.thighRightText,
-                onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.THIGH_LEFT, it) },
-                onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.THIGH_RIGHT, it) },
-            )
-            GirthPair(
-                label = stringResource(R.string.girth_calf),
-                left = state.calfLeftText,
-                right = state.calfRightText,
-                onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.CALF_LEFT, it) },
-                onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.CALF_RIGHT, it) },
-            )
+            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(GymLogSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.girth_section_arms),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    GirthPair(
+                        label = stringResource(R.string.body_label_arm),
+                        left = state.armLeftText,
+                        right = state.armRightText,
+                        onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.ARM_LEFT, it) },
+                        onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.ARM_RIGHT, it) },
+                    )
+                    GirthPair(
+                        label = stringResource(R.string.girth_forearm),
+                        left = state.forearmLeftText,
+                        right = state.forearmRightText,
+                        onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.FOREARM_LEFT, it) },
+                        onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.FOREARM_RIGHT, it) },
+                    )
+                }
+            }
+            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(GymLogSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.girth_section_torso),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    GirthSingle(
+                        label = stringResource(R.string.girth_chest),
+                        value = state.chestText,
+                        onValue = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.CHEST, it) },
+                    )
+                    GirthSingle(
+                        label = stringResource(R.string.body_label_waist),
+                        value = state.waistText,
+                        onValue = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.WAIST, it) },
+                    )
+                    GirthSingle(
+                        label = stringResource(R.string.girth_hip),
+                        value = state.hipText,
+                        onValue = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.HIP, it) },
+                    )
+                }
+            }
+            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(GymLogSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.girth_section_legs),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    GirthPair(
+                        label = stringResource(R.string.girth_thigh),
+                        left = state.thighLeftText,
+                        right = state.thighRightText,
+                        onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.THIGH_LEFT, it) },
+                        onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.THIGH_RIGHT, it) },
+                    )
+                    GirthPair(
+                        label = stringResource(R.string.girth_calf),
+                        left = state.calfLeftText,
+                        right = state.calfRightText,
+                        onLeft = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.CALF_LEFT, it) },
+                        onRight = { viewModel.onGirthChange(BodyRecordViewModel.GirthField.CALF_RIGHT, it) },
+                    )
+                }
+            }
             state.errorMessage?.let { code ->
                 Text(
                     text = if (code == "GIRTH_INVALID") {
@@ -772,12 +877,11 @@ private fun GirthEditor(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-            Button(
+            GymLogActionButton(
+                text = stringResource(R.string.girth_save),
                 onClick = viewModel::saveGirths,
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.girth_save))
-            }
+            )
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -831,6 +935,7 @@ private fun GirthField(
         suffix = { Text(stringResource(R.string.unit_cm)) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         singleLine = true,
+        shape = RoundedCornerShape(14.dp),
         modifier = modifier,
     )
 }
@@ -1058,6 +1163,7 @@ private fun BodyDatePicker(
     )
     DatePickerDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
         confirmButton = {
             TextButton(
                 onClick = {

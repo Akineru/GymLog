@@ -17,6 +17,27 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.5.2",
+            date = "2026年10月24日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "训练记录",
+                    items = listOf(
+                        "日历展开月历每个日期显示当天训练部位，例如「胸+腿」。",
+                        "底部训练迷你卡只显示当前动作，全部完成后提示「开始新的动作吧」。",
+                        "训练迷你卡在定时器运行时，第一行右侧同步显示倒计时/秒表时间。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "计时器",
+                    items = listOf(
+                        "倒计时在后台或锁屏到点也能震动提醒，不再错过组间休息。",
+                        "取消训练时会同时停止本次训练的倒计时、秒表，并清除到点提醒。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.5.1",
             date = "2026年10月23日",
             sections = listOf(

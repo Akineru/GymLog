@@ -181,6 +181,7 @@ fun PhotoWallScreen(
         state.message?.let { text ->
             AlertDialog(
                 onDismissRequest = viewModel::dismissMessage,
+                shape = RoundedCornerShape(24.dp),
                 text = { Text(text) },
                 confirmButton = {
                     TextButton(onClick = viewModel::dismissMessage) { Text(stringResource(R.string.save)) }
@@ -191,7 +192,13 @@ fun PhotoWallScreen(
     if (adding) {
         AlertDialog(
             onDismissRequest = { adding = false },
-            title = { Text(stringResource(R.string.photo_wall_add)) },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.photo_wall_add),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
             text = {
                 Column {
                     TextButton(onClick = {
@@ -212,7 +219,13 @@ fun PhotoWallScreen(
     if (pickingMonth) {
         AlertDialog(
             onDismissRequest = { pickingMonth = false },
-            title = { Text(stringResource(R.string.photo_wall_pick_month)) },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.photo_wall_pick_month),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
             text = {
                 Column {
                     TextButton(onClick = {
@@ -398,12 +411,19 @@ fun PhotoDetailScreen(
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            shape = RoundedCornerShape(24.dp),
+            title = { Text(stringResource(R.string.photo_wall_delete)) },
             text = { Text(stringResource(R.string.photo_wall_delete_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
                     onDelete()
-                }) { Text(stringResource(R.string.photo_wall_delete)) }
+                }) {
+                    Text(
+                        text = stringResource(R.string.photo_wall_delete),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) }

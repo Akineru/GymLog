@@ -2,7 +2,9 @@
 
 本地离线的 Android 力量训练记录应用。单 Activity，Kotlin + Jetpack Compose + Room。没有账号、没有网络同步。界面中文；启动器英文名是 Traivol（`values-en/strings.xml` 的 `app_name`），中文名是「练有所迹」。
 
-当前版本：`versionName` 1.5，`versionCode` 10。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **19**。
+当前版本：`versionName` **1.5.2**，`versionCode` **12**。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **19**。
+
+> 状态：这是当前开发版。下面的「1.5.1 发版」「1.5.2」和实际代码是当前口径；更早的 UI 阶段章节保留为历史记录，涉及页面结构时以本文件末尾的 1.5.2 节和实际代码为准。
 
 下一个实现者先读这份文档，再改代码。用户用简体中文沟通。版本说明写在 `ui/settings/ReleaseNotes.kt` 的 `ReleaseHistory.notes`，新版本插在列表最上面。关于页读安装包的 `versionName`。
 
@@ -14,7 +16,7 @@
 - 不要改备份格式的已有字段含义。可以加可选字段，旧文件必须还能导入。当前 `BackupCodec.VERSION` 是 **2**。version 1 没有计时和头像键，仍然要能导入。`dayKinds` 是可选数组，旧文件没有该键当成空列表。照片墙**不进**备份 JSON。
 - 数据集动作缩略图/GIF 版权归 Gym visual，按 180×180 授权随 APK 打包；备用示意图是 Bryl Lim / Everkinetic，CC BY-SA 4.0。不要重新生成，不要删掉动作库和关于页的署名字符串 `exercise_art_credit`。人体底图和肌肉遮罩是另一套素材，同样不要重画、不要改 `muscleId` 去凑文件名。
 - 页面里的业务文案（训练记录、容量、PR 等）不要随启动器改名一起改掉。
-- 明确没做、先不要做的：记组复制、组间休息计时、估算 1RM、热身组。已经做的「训练计时器」是整段训练的秒表，不是组间休息。训练计划、训练工具入口已删除，不要再以占位页形式加回。
+- 明确没做、先不要做的：记组复制、组间休息计时、估算 1RM、热身组。训练页的「训练计时器」是独立训练工具，入口在动作库下方；不要再把它当占位页删除。训练计划仍不要以占位页形式加回。
 
 ## 技术栈与编译
 
@@ -55,7 +57,7 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 1.4 / 1.4.1 / 1.4.2 相关界面文件：
 
 - `ui/settings/BackupDataScreen.kt`：导出/导入和导入确认、结果提示；文案说明照片墙不进备份。
-- `ui/settings/SettingsHistoryScreen.kt`：设置 → 历史记录菜单（计时记录、身体记录）。
+- `ui/settings/SettingsHistoryScreen.kt`：设置 → 历史记录菜单（仅身体记录；计时入口已于 1.5.1 移除）。
 - `ui/timer/TimerHistoryScreen.kt`：已保存计时列表，点条目进入 `SavedTimerScreen`。
 - `ui/body/BodyRecordScreen.kt` 的 `BodyRecordHistory` 是 `internal`，供设置里的身体记录复用。
 - `ui/photo/PhotoWallScreen.kt`、`PhotoEditor` 相关、`PhotoWallViewModel.kt`：照片墙。
@@ -71,12 +73,12 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 | 根页面 | 内容 | 再进去 |
 | --- | --- | --- |
 | 首页 | 按周或按月看训练时长、训练天数、总组数、容量；本周训练日；选中日按部位的足迹和已保存计时。顶栏是「首页」，齿轮进设置 | 开始训练会把日历选到今天并切到日历；也能打开当天训练、已保存计时、身体数据、趋势、日历 |
-| 日历 | 月历（按部位容量或特殊日上色）、选中日期的训练卡片、日类型（休息/放纵/偷懒）、右下角加号、训练计时入口。顶栏标题用 `home_title`，跟界面语言走，现在是「练有所迹」。点标题直接进关于。桌面图标仍用 `app_name`，系统语言为英文时是 Traivol | 展开整月、编辑训练、选动作、计时器、已保存计时 |
+| 日历 | 月历（按部位容量或特殊日上色）、选中日期的训练卡片、日类型（休息/放纵/偷懒）；右下角无 FAB，新增训练在顶栏 `+`；训练计时器已移到训练页。顶栏标题用 `home_title`，跟界面语言走，现在是「练有所迹」。点标题直接进关于。桌面图标仍用 `app_name`，系统语言为英文时是 Traivol | 展开整月、编辑训练、选动作、已保存计时 |
 | 训练 | 两个入口：开始训练、动作库；有活动训练时底部显示可恢复的缩小卡片 | 开始训练直接打开今天的新训练草稿；返回训练页会保留并继续计时；动作库是子页面，有返回 |
 | 趋势 | 「训练足迹」「身体数据」 | 对应趋势页 |
 | 我的 | 用户名、头像、可切换的统计、「身体数据」与「照片墙」入口；资料表单可改性别 | 身体数据、照片墙（网格→详情→编辑）。头像在这一页裁剪 |
 
-五个根页面的齿轮都进同一套设置。设置里是外观、数据、关于、清除本地数据；数据下有两个子页面：「数据备份」（导出/导入）和「历史记录」（计时记录、身体记录）。关于再进版本更新。从日历标题打开的关于，返回回日历，不经过设置。
+五个根页面的齿轮都进同一套设置。设置里是外观、数据、关于、清除本地数据；数据下有两个子页面：「数据备份」（导出/导入）和「历史记录」（仅身体记录；计时入口已移除）。关于再进版本更新。从日历标题打开的关于，返回回日历，不经过设置。
 
 子页面隐藏底部栏。五个根页面用 `TabPane` 一直留在组合里：切 tab 不新建 ViewModel，日历选中日期、首页周月选择和列表滚动保留。子页面盖在上面。
 
@@ -87,7 +89,7 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 - `PickExercise(returnTo)` 回到原来的 `SessionEditor`，草稿还在。选择器 ViewModel key 是 `picker-${draftKey}-$dataEpoch`，与训练 tab 的动作库 `library-$dataEpoch` 分开；新建训练不会继承之前的搜索/筛选。
 - `CalendarExpanded` 返回日历。点某一天会选中它并回到日历。
 - `Settings` / `BackupData` / `SettingsHistory` / `TimerHistory` / `BodyHistory` / `About` / `ReleaseNotes` 带 `from: RootTab`。返回回到打开设置时的那个根页面，不在五个 tab 之间做返回栈。`About` 和 `ReleaseNotes` 还有 `openedFromSettings`。
-- `TimerHistory` 进入 `SavedTimer` 时带 `returnToTimerHistory = true`，详情返回计时记录列表；普通 `SavedTimer` 仍返回日历/原根页面。
+- `TimerHistory` 页面和路由仍保留兼容，但设置历史已不提供入口；从日历当天已保存计时进入 `SavedTimer`，详情返回日历/原根页面。
 - `BodyRecord` 和 `MuscleMap` 带 `returnTab`。首页和「我的」都能进身体数据。肌群图返回身体数据展示，再返回原来的根页面。
 - `PhotoWall` → `PhotoDetail(id)` → `PhotoEditor`。详情/编辑返回照片墙；照片墙返回「我的」。归在 `RootTab.Mine`。
 - `SavedTimer` 带 `returnTab` 和可选的 `returnToTimerHistory`。计时器页本身返回日历。
@@ -241,7 +243,7 @@ PR 在写入前先把每组换成当天的有效重量。
 
 ## 计时器
 
-日历页可以开始、暂停、继续。计次记的是从上一个计次点到现在的间隔，以及当时的累计时间。可以直接改时、分、秒：分和秒必须在 0–59，时不超过 999。改完如果还在跑，起点改成现在的 `elapsedRealtime`，累计改成新值。计时器页当前只有当前计时和计次，不再显示“已保存的计时”；已保存记录统一从设置 → 数据 → 历史记录 → 计时记录进入。
+训练页「训练计时器」可以开始、暂停、继续。计次记的是从上一个计次点到现在的间隔，以及当时的累计时间。可以直接改时、分、秒：分和秒必须在 0–59，时不超过 999。改完如果还在跑，起点改成现在的 `elapsedRealtime`，累计改成新值。计时器页当前只有当前计时和计次；设置 → 历史记录不再提供计时入口，已保存计时从日历当天记录进入。
 
 操作栏四个控件在同一行：开始/暂停/继续（播放/暂停图标）、计次（旗帜图标）、重置（刷新图标）、训练结束（文字按钮）。已保存记录从 `TimerHistoryScreen` 打开 `SavedTimerScreen`，返回时回计时记录列表。
 
@@ -298,7 +300,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 ## 外观与图标
 
-`MainActivity` 读 `AppearanceStore`：跟随系统 / 浅色 / 深色，以及是否 `dynamicColor`。关掉壁纸配色后用应用自己的紫灰色，日历部位色更稳。卡片样式集中在 `ui/theme/DashboardCards.kt`。
+`MainActivity` 读 `AppearanceStore`：跟随系统 / 浅色 / 深色，以及是否 `dynamicColor`。关掉壁纸配色后使用 A 蓝品牌色（`#2563EB`），日历部位色更稳。卡片样式集中在 `ui/theme/DashboardCards.kt` 和 `ui/theme/GymLogComponents.kt`。
 
 启动器名中文「练有所迹」、英文 Traivol。自适应图标在 `drawable/ic_launcher_foreground.xml` 与 `ic_launcher_background.xml`，`mipmap-anydpi-v26` 引用它们，`mipmap-anydpi` 是 API 24–25 的 layer-list。单色层只用前景的透明度。用户换过好几版图标；桌面若还是旧图，是启动器缓存，需要卸掉再装。
 
@@ -380,7 +382,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 写入采用临时文件 + `fsync` + rename；每 350ms 防抖，并在训练中每 5 秒检查点；保存/舍弃/删除时清空。不是 Room 表，不进备份格式。
 - 恢复：Activity SavedState 恢复 activeDraft/screen；ViewModel 冷启动读取快照，通过 `WorkoutRepository.findExercise` 重新取动作，按 `savedAtEpochMillis` 补齐进程死亡期间的计时；照片只保存 photoId，再异步解码。
 - 实际进程测试：创建动作、2 组、40kg×10 完成，快照落盘；`adb shell am kill` 杀进程后重新启动，仍进入训练编辑页，容量 400kg、动作/组/完成状态保留，计时从约 10 秒恢复为 26 秒；保存后快照文件删除。
-- 最终 APK 大小 166,335,409 B；版本仍 1.5 / versionCode 10。
+- 该轮 APK 大小 166,335,409 B，版本 1.5 / versionCode 10（历史记录；当前版本见文末 1.5.2）。
 - 未修改 Room schema、DAO 表、数据库迁移、备份 JSON 或训练保存规则。
 
 ## 保存训练页视觉重构
@@ -391,7 +393,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 日期改为白卡行：日历图标、训练日期、日期值、右箭头，点击逻辑不变。
 - 保存按钮文案改为「保存训练」；取消锻炼保留。
 - 增加 `training_save_action`、`training_save_optional`、`training_photo_section`、`training_photo_hint`、`training_note_prompt`、`training_note_hint` 字符串。
-- 保存/照片/日期/备注逻辑未改；本轮因硬件 WHEA 重启风险未执行 Gradle 构建。
+- 保存/照片/日期/备注逻辑未改；后续已在 1.5.1/1.5.2 构建中编译验证。
 
 ## 动作完成后收起卡变绿
 
@@ -443,7 +445,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - `SettingsLinkRow` 统一为 A 蓝白卡：可选圆形图标、标题、说明、右侧箭头，错误操作用红色图标/标题；设置、备份、历史三个页面复用。
 - 设置：外观卡改 `GymLogCard`，系统/浅色/深色分段按钮和「使用壁纸配色」开关改为同卡内自定义行；数据区四行统一图标（备份、历史、关于、清除数据），清除数据保留红色危险样式；清空数据的两步确认和提示逻辑未改。
 - 数据备份：导出/导入改为带图标和说明的白卡，备份范围和确认弹窗逻辑未改。
-- 历史记录：计时记录、身体记录统一图标与说明。
+- 历史记录：当时统一了计时记录、身体记录的图标与说明；1.5.1 起计时入口已移除，只保留身体记录。
 - 关于：顶部改为深蓝渐变品牌卡（应用名、版本、素材版权），版本更新入口统一为白卡行。
 - 版本更新：历史版本卡改为 `GymLogCard`，版本号蓝色、分组标题蓝色、正文深色。
 - 测试：55 类、221 测试通过，0 失败；模拟器检查设置、备份、历史、关于、版本更新。版本更新入口可正常跳转；之前是模拟器点击坐标落偏，不是路由问题。
@@ -467,6 +469,118 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 肌群图：详情卡改 `GymLogCard`；日期切换、范围/角色筛选、肌肉图和调色逻辑不变。
 - 测试：55 类、221 测试通过，0 失败；模拟器验收身体数据首页、身体记录历史。肌群图详情卡已编译，未单独截图。
 - 未生成交付 APK。
+
+## UI 收尾：最终测试与烟测
+
+- 2026-10-24 UI 批次完成后重跑 `:app:testDebugUnitTest --no-daemon --max-workers=1`：57 类 / 239 测试，0 失败、0 错误、0 跳过。
+- `:app:installDebug` 成功；冷启动检查 logcat，无 `FATAL EXCEPTION`。
+- 仍未生成交付 APK；1.5.2 是开发版，正式发版前需用户指定的 release keystore 和版本记录确认。
+
+## 取消训练清理计时器
+
+- 保存页按钮「取消锻炼」改为「取消训练」，确认标题「取消这次锻炼？」改为「取消这次训练？」。
+- 所有取消训练路径（保存页、迷你卡垃圾桶、返回放弃）最终都走 `SessionEditorViewModel.discardTraining()`。
+- 取消时重置独立计时器：停止倒计时/秒表、恢复默认 120 秒、清除系统闹钟、清除到点通知与震动。
+- `TimerAlarmScheduler.cancelAlerts()` 单独用于清理通知/震动，避免自然到点时误清提醒。
+- 验证：模拟器启动 2 分钟倒计时 → 保存页取消训练 → `dumpsys alarm` 显示 `alarm_cancelled`，无遗留通知；重新开始训练时计时器恢复 `02:00` 且未运行。
+- 1.5.2 更新记录加入「取消训练会同时停止本次训练的倒计时、秒表，并清除到点提醒」。
+
+## UI 批次 C12：动作详情与肌群编辑
+
+- 动作详情弹窗改为 24dp 圆角，标题用 `titleLarge`；动作演示、PR、肌群和删除按钮逻辑未改。
+- 肌群编辑弹窗改为 24dp 圆角，标题用 `titleLarge`；主要/次要肌群选择逻辑未改。
+- 验证：`:app:installDebug` 成功；模拟器检查动作详情弹窗。
+
+## UI 批次 C13：零散弹窗
+
+- 照片提示、添加照片、选择月份、照片备注、日类型、日备注统一 24dp 圆角和标题层级。
+- 日备注、照片备注输入框统一 14dp 圆角。
+- 逻辑均未改。
+
+## UI 批次 C14：改名、清理与深层回归
+
+- 底部导航和页面标题「趋势」改为「统计」；首页入口文案改为「查看统计」。
+- 设置 → 历史记录说明从「查看计时与身体历史」改为「查看身体记录历史」。
+- 删除 `SettingsScreen.kt` 中已不再使用的旧 `ProfileCard` / `StatsCard` / `StatItem`。
+- `ReleaseHistoryTest` 测试名改为 `newestNoteIsVersionOnePointFiveTwo`，断言仍是 1.5.2。
+- 深色 + 360dp + 130% 检查统计、训练趋势、设置、备份、保存训练页。
+- 修复保存页训练照片选择框在深色下仍是白底的问题，改用 `surfaceVariant` 半透明底；文案改用 `training_add_photo` 资源。
+- 回归后恢复模拟器 density 440、font_scale 1.0、浅色模式。
+
+## UI 批次 C11：日期选择器
+
+- 四处 `DatePickerDialog` 统一为 24dp 圆角：身体资料生日、训练日期、肌群图日期、照片日期。
+- 选择、取消、日期换算和确认逻辑未改。
+- 日期选择器内部文案跟随系统语言；模拟器是英文系统，所以显示 `Select date` / `November 2000`，中文手机上会显示中文。这是系统控件行为，不在 App 内硬编码语言。
+- 验证：`:app:installDebug` 成功；模拟器检查身体资料生日选择器。未生成交付 APK。
+
+## UI 批次 C10：时长滚轮与训练时钟
+
+- 训练时长滚轮 `DurationWheelDialog`：24dp 圆角、`titleLarge` 标题；时/分/秒滚轮中间选中行增加浅蓝圆角高亮，选中值使用主色，标签保留在下方。
+- 训练时钟底部面板 `WorkoutClockSheet`：顶部圆角改为 24dp，内部计时圆、分段、±30 秒和开始/重置按钮逻辑不变。
+- 验证：`:app:installDebug` 成功；模拟器检查训练时长滚轮。训练时钟面板已编译，未单独截图。未生成交付 APK。
+
+## UI 批次 C9：确认弹窗统一
+
+- 关键确认弹窗统一为 24dp 圆角：照片删除、训练草稿丢弃/已有训练删除、动作删除、活跃训练取消、清空数据两步确认、备份导入/结果、计时器编辑/重置、已保存计时删除、照片编辑放弃。
+- 危险操作按钮统一为错误色：照片删除、动作删除、训练取消、清空数据、已保存计时删除、照片编辑放弃。
+- 照片删除弹窗补标题「删除照片」，正文保留确认说明。
+- 确认/取消逻辑、两步清空流程、备份导入流程均未改。
+- 验证：`:app:installDebug` 成功；模拟器检查照片删除确认弹窗。其余弹窗已编译，未逐个截图。未生成交付 APK。
+
+## UI 批次 C8：深色 / 360dp / 130% 字体回归
+
+- 深色模式检查首页、日历、训练、我的、动作库和训练编辑页，整体可用。
+- 修复日历选中日期：`MonthDayCircle` 改为主题主色圆底 + `onPrimary` 数字，避免深色或高字体下数字与圆底对比不足。
+- 360dp（density 480）+ 130% 字体检查首页、日历、我的、训练编辑页：无横向溢出；我的资料卡三项统计、首页数据卡和日历月统计均正常。
+- 已知可接受现象：我的页「身体数据」说明在 360dp/130% 下折成两行。
+- 回归后已恢复模拟器：density 440、font_scale 1.0、浅色模式。
+- 验证：`:app:installDebug` 成功；未生成交付 APK。
+
+## UI 批次 C7：弹窗与表单统一
+
+- 个人信息编辑弹窗：24dp 圆角、`titleLarge` 标题、头像居中、14dp 圆角用户名输入框、性别小标题、头像操作并排居中；头像选择和移除仍沿用原逻辑。
+- 添加自定义动作弹窗：24dp 圆角、标题层级、动作名 14dp 圆角输入框，部位/器械小标题使用次要色。
+- 体重输入弹窗：24dp 圆角、标题层级、体重输入框 14dp 圆角并占满宽度。
+- 验证：`:app:installDebug` 成功；模拟器检查个人信息弹窗。添加动作、体重弹窗已编译，未逐个截图。未生成交付 APK。
+
+## UI 批次 C6：照片详情与编辑器
+
+- 照片编辑器画布改为深色 16dp 圆角背景，图片 `ContentScale.Fit` 居中。
+- 工具区收进白色 `GymLogCard`：马赛克/模糊/涂鸦/文字/裁剪 Chip、旋转按钮、文字/模糊操作；涂鸦调色改为圆形色块，选中有边框。
+- 照片日期改为白卡行：日历图标、照片日期、日期值、右箭头；备注输入框改 16dp 圆角。
+- 照片详情保持大图 + 日期/备注白卡 + 橙色编辑按钮 + 修改日期/备注 + 红色删除。
+- 验证：在模拟器相册放入测试图，完整走「照片墙 → 从相册选择 → 编辑照片 → 保存 → 照片详情」，`installDebug` 成功。未生成交付 APK。
+
+## UI 批次 C5：肌群图
+
+- 控制区从灰色 Surface + 裸 Chip 收成一张 `GymLogCard`：日期/训练块数、范围（当天/本周/本月）、角色（全部/主要/次要）、图例和说明同卡显示。
+- 人体图放进独立白色 `GymLogCard`，正面/背面切换保留；无训练或存在未支持肌肉时，状态文案放入白卡。
+- 肌群详情卡继续使用 `GymLogCard`；日期切换、范围/角色筛选、点击肌肉和调色逻辑未改。
+- 验证：`:app:installDebug` 成功；模拟器检查控制卡、图例、人体卡和筛选 Chip。未生成交付 APK。
+
+## UI 批次 C4：动作库
+
+- 动作库搜索框改为 16dp 圆角；新增动作按钮改为橙色圆形 `+`。
+- 左侧部位栏改为白底细边框卡片，选中项使用实心主蓝 + 白字；器械筛选保留横向 Chip。
+- 数量标题改为 `titleSmall` + 次要色；动作栅格卡和详情弹窗结构保留。
+- 动作详情弹窗沿用 `AlertDialog`：名称、部位/器械、做组 PR/极限 PR、动作演示/正面/反面、署名和主要/次要肌群。
+- 搜索、筛选、自定义动作、删除和选择逻辑均未改。
+- 验证：`:app:installDebug` 成功；模拟器检查动作库搜索/筛选、卡片栅格和动作详情弹窗。未生成交付 APK。
+
+## UI 批次 C3：我的合并卡
+
+- 「我的」页个人资料与三项统计合并为一张深蓝渐变 `ProfileStatsCard`：上半头像/姓名/性别/年龄/箭头，分隔线，下半三列统计。
+- 三列统计使用白色数值、浅蓝标签、半透明分隔线；训练天数/年限、时长单位、体脂/体重仍可点击切换。
+- 下方「身体数据」「照片墙」入口卡不变。
+- 验证：`:app:installDebug` 成功；模拟器检查资料区、统计对齐、分隔线和入口卡。未生成交付 APK。
+
+## UI 批次 C3：身体资料与围度编辑
+
+- 身体资料编辑页 `BodyRecordEditor`：改为「基础资料」+「身体数据」两张白卡；生日改为可点击行（日历图标、日期、年龄、箭头），性别 Chip 放入基础资料卡；身高/体重/体脂使用 14dp 圆角输入框，BMI 作为说明行；底部橙色「保存资料」，不再使用顶栏保存。
+- 围度编辑页 `GirthEditor`：按「手臂 / 躯干 / 腿部」三张白卡分组，左右围度并排，单位 cm；底部橙色「保存围度」。
+- 保存、生日选择、字段校验、历史入口逻辑均未改。
+- 验证：`:app:installDebug` 成功，模拟器检查两个编辑页的生日行、性别 Chip、数值字段、分组、BMI 和保存按钮。未生成交付 APK。
 
 ## UI 批次 C2：照片
 
@@ -501,6 +615,71 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 未生成交付 APK；现有 `GymLog-1.5-ui-phase2.apk` 不含本轮日历和迷你卡改动。
 - 整月日历详情页改为白色 `GymLogCard` 内的紧凑月历：顶部月份切换、固定 72dp 周行、日期数字 + 部位底色/特殊日标记；动作名和备注不再塞进格子，避免六周网格被撑高。图例移到卡片下方。已临时安装到模拟器验证，221 测试通过。
 
+## 日历格子显示训练部位
+
+整月日历详情页（`ui/calendar/TrainingCalendarDetailScreen.kt`）每个日期格子在数字下方增加一行「训练部位」文字，例如 `胸+腿`。只改这个页面，首页小月历（`CalendarMonthOverview` / `TrainingCalendarCard`）不动。
+
+- 数据来源：当天真实保存的训练记录，**没有组数的动作不算**（与 `paintsFor` 的着色口径一致）。
+- 归并口径直接复用 `CalendarColorCategory`：大腿+小腿→`腿`，上臂+前臂→`手臂`，腰/有氧/颈/未分类→`其他`。标签写在枚举的 `labelZh` 上（胸/背/肩/腿/手臂/其他），不要另建一套文案。
+- 排序：按当天该大类的**容量**从高到低，容量相同按 `CalendarColorCategory` ordinal（胸、背、肩、腿、手臂、其他）兜底，保证两次渲染结果一致。
+- 超过 3 个部位只显示前 3 个并加省略号，例如 `胸+背+肩…`；上限常量是 `CalendarDayPartsLogic.MAX_VISIBLE_PARTS`。另外格子实测只装得下约 5 个字符，所以折叠按字符预算做：还有后续部位时限 4 字符、末位限 5 字符，保证省略号不会切在「手臂」这种两字词中间（`胸+背+肩+腿+手臂` 实际显示 `胸+背…`）。
+- 日类型标记（休息/放纵/偷懒）与部位文字**同时显示**，标记在上、部位在下。格高仍是 72dp，三行（数字 28dp + 两行 11sp）放得下。
+- 逻辑在 `data/CalendarDayParts.kt`。体积聚合抽成 `CalendarDayColorLogic.categoryVolumes()`，与 `paintsFor()` 共用，保证格子的底色和文字不会算出两套结果。
+- 验证：`:app:testDebugUnitTest` 56 类、233 测试，0 失败（新增 `CalendarDayPartsTest` 12 个）。已用 `:app:installDebug` 装 Debug 包在 Pixel_3a_API_33 模拟器验收，未出交付 APK；验收日类型+部位同显时曾临时往 `day_kinds` 写入一行 (20734,'REST')，验证完已删除，数据已还原。
+
+## 迷你卡只显示当前动作
+
+底部活动训练迷你卡（`ui/train/ActiveWorkoutMiniBar`）第二行从「列出草稿里全部动作名」改为**只显示当前动作**。
+
+- 当前动作 = 草稿动作列表里第一个 `completedAtMillis == null` 的动作（`ui/train/ActiveWorkoutLabel.kt` 的 `currentExerciseLabel()`）。做完一个点「完成动作」，迷你卡自动切到下一个。
+- 「完成」以「完成动作」按钮为准；把组全勾完但不点按钮，动作仍是当前动作（与编辑器收起变绿口径一致）。
+- 没有可显示的动作（还没加动作，或全部已完成）→ 显示 `training_active_next_hint`「开始新的动作吧」（`ActiveWorkoutUi.currentExerciseName` 为 null 时）。绿点、第一行「锻炼 · 时长」、垃圾桶、点击继续都不变。
+- 验证：`:app:testDebugUnitTest` 57 类、239 测试，0 失败（新增 `ActiveWorkoutLabelTest` 6 个）；Debug 包在模拟器验收了三种状态：全部完成→提示语、加一个未完成动作→显示「上臂-哑铃 交替 肱二头肌弯举」、删除后回到提示语。未出交付 APK。
+
+## 迷你卡在定时器运行时显示倒计时
+
+训练进行中（底部迷你卡可见）且训练内的定时器（`WorkoutClock`，倒计时/秒表，组间休息用）正在跑时，迷你卡**第一行右侧**显示该定时器的时间，第一行左侧仍是「锻炼 · 总时长」，第二行（当前动作名）不变。
+
+- `WorkoutClockUi` 的 `running == true` 才显示；暂停、停止或倒计时归零后第一行恢复成「锻炼 · 总时长」，不残留定时器时间。
+- 时间格式用 `WorkoutClockLogic.formatClock(displayMillis)`（与训练内定时器面板一致，输出 `MM:SS` / `HH:MM:SS`），前面带一个定时器小图标。
+- 数据来源：`GymLogApp.kt` 里 `activeEditorViewModel` 与编辑器共用同一个 `SessionEditorViewModel` 实例（key 都是 `${draftKey}-$dataEpoch`），所以迷你卡直接 `activeEditorViewModel?.clock?.collectAsStateWithLifecycle()` 就能读到正在跑的定时器；回到根页面不会丢草稿也不会丢定时器状态。
+- `ActiveWorkoutUi` 增加可空字段 `timerText: String?`（默认 null）；`ActiveWorkoutMiniBar` 第一行由单个 `Text` 改成 `Row`，左侧时长 `weight(1f)`、右侧定时器时间。
+- 验证：Debug 包在 Pixel_3a_API_33 模拟器验收——从迷你卡进入编辑器、开定时器（02:00 倒计时）回到根页面，迷你卡第一行显示「锻炼 · 09时31分25秒 01:14」（时长 + 倒计时并排）；暂停定时器后回到根页面，第一行只剩「锻炼 · 09时32分26秒」，定时器时间消失。未出交付 APK；验收用的是模拟器上已有的用户草稿，结束后已暂停定时器并保留原草稿。
+
+## 计时器后台/锁屏震动提醒
+
+倒计时到点后，应用在后台或锁屏时也要能震动。原来的实现是「协程 `delay` 到点 → 调 `Vibrator.vibrate()`」，前台可以、后台不行。原因有两条，缺一不可：
+
+1. 协程随界面走，进程退到后台被系统挂起后 `delay` 不再准时（甚至不再执行）。
+2. `Vibrator.vibrate()` 官方定位就是「前台才有效」，后台调用会被忽略。
+
+改法：把「到点」这件事交给系统闹钟，把「提醒」这件事交给通知。
+
+- `data/TimerAlarmScheduler.kt`：`scheduleCountdown(remainingMillis)` 用 `AlarmManager.setAlarmClock()` 注册一个精确闹钟（RTC_WAKEUP，可唤醒 CPU，且会在状态栏显示闹钟图标，系统优先级最高最不容易被 Doze 推迟）。`cancel()` 取消。请求码 `REQUEST_ALARM=9401`、`REQUEST_SHOW=9402`。
+- `data/TimerAlarmReceiver.kt`：静态注册的 `BroadcastReceiver`，收 `ACTION_TIMER_FINISHED`（`com.example.gymlog.action.TIMER_FINISHED`），`exported=false`。到点后调 `TimerAlerts.alert()`。
+- `data/TimerAlerts.kt`：发一条通知（渠道 `timer_finished`、id 9401、`CATEGORY_ALARM`、`PRIORITY_MAX`、震动 `[0,600,400,600]`）；通知权限被拒时退回直接调 `Vibrator`。**后台震动只能靠通知渠道带出来，直接调 Vibrator 在后台无效。**
+- `AndroidManifest.xml`：`POST_NOTIFICATIONS`、`USE_EXACT_ALARM` 两个权限；注册 receiver。`USE_EXACT_ALARM` 是系统授予、不可撤销，比 `SCHEDULE_EXACT_ALARM` 省掉「用户去设置里手动授权」这一步。
+- `MainActivity.kt`：`RequestNotificationPermissionIfNeeded()` 在 API 33+ 首次进入时申请通知权限。
+- `ui/session/SessionEditorViewModel.kt`：构造参数多了一个 `timerAlarmScheduler: TimerAlarmScheduler?`（factory 同步加）。开始/调整倒计时时 `scheduleCountdown()`；暂停、重置、切换计时模式、结束训练时 `cancel()`。**三处 `SessionEditorViewModel.factory(...)` 调用点都要传，漏一个就会静默失效。**
+- `ui/session/SessionEditorScreen.kt`：前台到点仍是 `viewModel.clockFinished.collect { TimerAlerts.alert(context) }`。本地 `vibrateOnce()` 已删除，Vibrator 的 import 一并清掉。
+
+验证：Debug 包装到 Pixel_3a_API_33 模拟器。`adb shell dumpsys alarm` 看到 `RTC_WAKEUP ... com.example.gymlog.action.TIMER_FINISHED` 且时间为精确值；按 Home 退后台等 65 秒后 `dumpsys notification` 能看到已发出的通知，渠道 `timer_finished`、重要性 4、`mVibration=[0, 600, 400, 600]`、`mVibrationEnabled=true`。未出交付 APK。
+
+已知边界（未做，需要时再说）：
+
+- **重启后闹钟会丢**。`AlarmManager` 的闹钟不跨开机。要做开机恢复得再加 `BOOT_COMPLETED` 的 receiver，把没跑完的倒计时重新注册，并且倒计时目标时间得先落盘。
+- **国产 ROM**（小米/华为/OPPO/vivo 等）默认限制后台唤醒，即使代码正确也可能不响。只能引导用户去「电池优化 / 自启动 / 锁定后台」里把应用加白名单，代码里加不了。
+- **Doze 深度待机**下 `setAlarmClock` 是少数还能准点的方式，但如果用户手动开了省电/飞行模式仍会不准。
+- 应用被用户从最近任务划掉后，`BroadcastReceiver` 仍能收到闹钟（静态注册），但进程若已被杀且没有落盘数据，恢复不了剩余时间。
+
+## 保存页删除重复的训练照片添加入口
+
+保存页「训练照片」区块原来有两处功能完全一样的添加入口：① 大虚线框（点框内任意位置都触发选图），② 框下方一个独立的「添加照片」文字按钮。两者都调 `onPickPhoto`，属重复。
+
+- 删掉 ② 那个独立按钮（`SessionEditorScreen.kt` 照片 Card 内原来的 `Row` 分支：未选照片时显示 `training_add_photo`、已选照片时显示 `training_change_photo` + `training_remove_photo`）。
+- 保留：未选照片时只有大虚线框（框内含图标 + 「添加训练照片」+ 提示语，点击即选图）；已选照片时显示图片，并在下方保留「更换照片」+「移除」两个按钮（这两个是必需的，避免误删已选图）。
+- 验证：Debug 包含在 Pixel_3a_API_33 模拟器验收，进入用户草稿的保存页，照片区块只出现一个「添加训练照片」字样，原重复的「添加照片」按钮已消失；验收用草稿保留未动。未出交付 APK。
+
 ## 历史需求（都已落地）
 
 按用户提出的顺序。后面的条目会覆盖前面的界面结构，以「信息架构」一节为准。
@@ -528,6 +707,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 21. 1.4.1：日历日类型（休息/放纵/偷懒，迁移 14→15，进备份 `dayKinds`）；日历上色改为六大类 + 特殊日盖过（`CalendarDayColorLogic`）；「我的」增加照片墙（迁移 15→16，私有存储，不进备份、清除训练数据不删）；「我的」身体入口改称「身体数据」；资料编辑可改性别；设置历史记录（计时/身体）在 1.4 已有，1.4.1 版本说明再次列出。
 22. 1.4.2：物理删除旧的单侧臂围 `armCm` 及其数据（迁移 16→17），身体历史不再显示旧臂围；旧备份里的 `armCm` 导入时忽略。
 23. 1.5：训练总时长自动计时并写入日历计时记录，日历手动计时入口移除但旧记录保留；训练时长/计时器支持滚轮编辑；动作用时写入 `exercise_durations`（Room 19）；动作卡支持完成动作收起、组横向编辑、自重组自动体重、保存页照片/备注/日期。
+24. 1.5.2（开发中）：日历展开月历格子显示训练部位文字；底部迷你卡只显示当前动作；计时器倒计时在后台/锁屏到点也能震动提醒（改走 AlarmManager + 通知，详见「计时器后台/锁屏震动提醒」）。三项均无数据库迁移，Room 仍是 19。
 
 ## 改代码时容易踩的点
 
@@ -546,7 +726,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 照片墙相对路径必须经 `PhotoPaths.isSafe`；FileProvider 只用于相机临时文件。不要把用户照片内容写进日志或交接文档。
 - 肌群训练高亮用红色系，用户选中用主题 `primary`；不要把选中画成训练色。点击命中优先使用 `MuscleMaskCatalog.layers` 的绘制顺序；`quadriceps` 合并层和子头不能各用一套优先级。
 - `MuscleAssetCache` 按面懒加载，失败时保留底图并提供重试；遮罩解码、BitSet 和锚点计算必须继续在 `Dispatchers.Default`，不要移回主线程。
-- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ReleaseHistoryTest`（最新版应为 1.5.1）。
+- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`CalendarDayPartsTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ActiveWorkoutLabelTest`、`ReleaseHistoryTest`（最新版应为 1.5.2）。
 
 ## 1.5.1 发版
 
@@ -560,3 +740,14 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 产物：`GymLog-1.5.1.apk`，156,292,348 B，SHA-256 `E10EA8AB46D4808E6E89DCC3F025FD97AB88B102A061BF8C4D25E9B03A01EBFD`。
 - 已在模拟器 `install -r` + 冷启动验证，首页正常打开，无 FATAL EXCEPTION。
 - 使用 `~/.android/debug.keystore`（Android Debug 证书）签名，和此前预览 APK 的签名一致，可覆盖安装；这不是正式发布证书。
+
+## 1.5.2（已出可试安装包）
+
+- `versionCode = 12`，`versionName = 1.5.2`（2026-10-24 自 1.5.1 升上来，无数据库迁移）。
+- 包含四项功能：日历展开月历格子显示训练部位；底部迷你卡只显示当前动作；计时器后台/锁屏到点震动（见「计时器后台/锁屏震动提醒」）；训练迷你卡在定时器运行时第一行右侧同步显示倒计时/秒表时间（见「迷你卡在定时器运行时显示倒计时」）。另含一处 UI 修正：保存页删除重复的「训练照片」添加入口（保留大虚线框 + 已选图时的「更换/移除」，见「保存页删除重复的训练照片添加入口」）。
+- `ReleaseNotes.kt` 顶部新增 1.5.2 更新记录；`ReleaseHistoryTest` 首条断言同步改为 `1.5.2`。
+- 构建：`gradle :app:assembleDebug`（debug 证书自动签名，可直接 `adb install` 或拷到手机安装，用于试用）。最终单测：57 类 / 239 测试，0 失败、0 错误。
+- 产物：仓库根目录 `GymLog-1.5.2.apk`，166,734,143 B，SHA-256 `DA4F61F68AB553B0D004CBC635EF75E59785DCE8377186DE3ECBB0BFF90CBF37`。
+- `aapt dump badging`：`com.example.gymlog`，versionCode 12，versionName 1.5.2，label「练有所迹」。
+- 签名：Android Debug 证书（`CN=Android Debug`，证书 SHA-256 `8dfbabfe94e907e2ebe5c0069ae31a868da7109219e564a7edbe04a01514b633`）；可覆盖旧预览包，但不是正式商店签名。
+- 已在模拟器 `adb install -r` + 冷启动验证，无 `FATAL EXCEPTION`。
