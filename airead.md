@@ -476,6 +476,13 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - `:app:installDebug` 成功；冷启动检查 logcat，无 `FATAL EXCEPTION`。
 - 仍未生成交付 APK；1.5.2 是开发版，正式发版前需用户指定的 release keystore 和版本记录确认。
 
+## 训练页深蓝主卡
+
+- 「今天练什么？」从浅蓝 `primaryContainer` 卡改为与首页一致的深海军蓝横向渐变：`#060B14 → #11263F → #234A73`，20dp 圆角。
+- 标题改用浅蓝 `#BBD0EC`，说明文字用 `#D6E4F5`，橙色「开始训练」按钮保留。
+- 动作库、训练计时器入口不变。
+- 验证：`:app:installDebug` 成功；模拟器检查浅色训练页主卡。
+
 ## 取消训练清理计时器
 
 - 保存页按钮「取消锻炼」改为「取消训练」，确认标题「取消这次锻炼？」改为「取消这次训练？」。
@@ -747,7 +754,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 包含四项功能：日历展开月历格子显示训练部位；底部迷你卡只显示当前动作；计时器后台/锁屏到点震动（见「计时器后台/锁屏震动提醒」）；训练迷你卡在定时器运行时第一行右侧同步显示倒计时/秒表时间（见「迷你卡在定时器运行时显示倒计时」）。另含一处 UI 修正：保存页删除重复的「训练照片」添加入口（保留大虚线框 + 已选图时的「更换/移除」，见「保存页删除重复的训练照片添加入口」）。
 - `ReleaseNotes.kt` 顶部新增 1.5.2 更新记录；`ReleaseHistoryTest` 首条断言同步改为 `1.5.2`。
 - 构建：`gradle :app:assembleDebug`（debug 证书自动签名，可直接 `adb install` 或拷到手机安装，用于试用）。最终单测：57 类 / 239 测试，0 失败、0 错误。
-- 产物：仓库根目录 `GymLog-1.5.2.apk`，166,734,143 B，SHA-256 `DA4F61F68AB553B0D004CBC635EF75E59785DCE8377186DE3ECBB0BFF90CBF37`。
+- 产物：仓库根目录 `GymLog-1.5.2.apk`，166,734,143 B，SHA-256 `9942D152B8583ABCC862820740A4C43F989BFEC04963719698380F342AB30E7B`。
 - `aapt dump badging`：`com.example.gymlog`，versionCode 12，versionName 1.5.2，label「练有所迹」。
 - 签名：Android Debug 证书（`CN=Android Debug`，证书 SHA-256 `8dfbabfe94e907e2ebe5c0069ae31a868da7109219e564a7edbe04a01514b633`）；可覆盖旧预览包，但不是正式商店签名。
 - 已在模拟器 `adb install -r` + 冷启动验证，无 `FATAL EXCEPTION`。

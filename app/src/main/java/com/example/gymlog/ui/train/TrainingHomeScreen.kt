@@ -251,34 +251,34 @@ fun ActiveWorkoutMiniBar(
 
 @Composable
 private fun StartTrainingCard(onStartTraining: () -> Unit) {
-    GymLogCard(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-        border = null,
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
+                ),
+            )
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(GymLogSpacing.lg),
-            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
-        ) {
-            Text(
-                text = stringResource(R.string.train_hero_title),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = stringResource(R.string.train_hero_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            GymLogActionButton(
-                text = stringResource(R.string.home_start_training),
-                onClick = onStartTraining,
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = Icons.Filled.PlayArrow,
-            )
-        }
+        Text(
+            text = stringResource(R.string.train_hero_title),
+            style = MaterialTheme.typography.headlineSmall,
+            color = Color(0xFFBBD0EC),
+        )
+        Text(
+            text = stringResource(R.string.train_hero_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color(0xFFD6E4F5),
+        )
+        GymLogActionButton(
+            text = stringResource(R.string.home_start_training),
+            onClick = onStartTraining,
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = Icons.Filled.PlayArrow,
+        )
     }
 }
 
