@@ -72,6 +72,8 @@ data class SessionEditorUiState(
     val errorMessage: String? = null,
     val loading: Boolean = false,
     val totalElapsedMillis: Long = 0L,
+    /** 总计时此刻是否在走。仅供通知等只读消费方使用，不改变计时语义。 */
+    val totalTimerRunning: Boolean = false,
     val finishing: Boolean = false,
     val finishedDurationMillis: Long = 0L,
     val saving: Boolean = false,
@@ -89,6 +91,14 @@ enum class WorkoutClockMode {
 data class WorkoutClockUi(
     val mode: WorkoutClockMode = WorkoutClockMode.TIMER,
     val running: Boolean = false,
+    /**
+     * 这一次配置是否真正启动过。
+     *
+     * 只用来区分「还没开始 / 已重置」与「暂停在初始值」——两者在 [displayMillis]
+     * 上可能完全相同，光看数值无法区分。**不参与任何计时计算**：
+     * 切模式 / 重置 / 重新设定时长归 false，暂停与继续都不改它。
+     */
+    val started: Boolean = false,
     val displayMillis: Long = WorkoutClockLogic.DEFAULT_TIMER_MILLIS,
     val timerDurationMillis: Long = WorkoutClockLogic.DEFAULT_TIMER_MILLIS,
 )
@@ -146,6 +156,7 @@ class SessionEditorViewModel(
             } else {
                 totalElapsed()
             },
+            totalTimerRunning = !editor.finishing && totalStartRealtime != null,
             collapsedExerciseIds = collapsed,
         )
     }.stateIn(
@@ -651,6 +662,7 @@ class SessionEditorViewModel(
         stopwatchAccumulatedMillis = 0L
         _clock.value = WorkoutClockUi(
             mode = mode,
+            started = false,
             displayMillis = if (mode == WorkoutClockMode.TIMER) {
                 WorkoutClockLogic.DEFAULT_TIMER_MILLIS
             } else {
@@ -677,7 +689,8 @@ class SessionEditorViewModel(
         clockStartedAt = elapsedRealtime()
         clockBaseRemainingMillis = display
         stopwatchAccumulatedMillis = display
-        _clock.value = current.copy(running = true, displayMillis = display)
+        // 只要真正开跑过就置位：之后暂停在初始值也能被认定为「已暂停」
+        _clock.value = current.copy(running = true, started = true, displayMillis = display)
         if (current.mode == WorkoutClockMode.TIMER) {
             timerAlarmScheduler?.scheduleCountdown(display)
         }
@@ -690,6 +703,8 @@ class SessionEditorViewModel(
         _clock.update {
             it.copy(
                 running = false,
+                // 重置 = 回到这一档的初始状态，不再算「启动过」
+                started = false,
                 displayMillis = if (it.mode == WorkoutClockMode.TIMER) timerDuration else 0L,
             )
         }
@@ -773,6 +788,8 @@ class SessionEditorViewModel(
         _clock.value = _clock.value.copy(
             mode = WorkoutClockMode.TIMER,
             running = false,
+            // 换了新时长，等于一次新的配置：回到「未启动」
+            started = false,
             displayMillis = clamped,
             timerDurationMillis = clamped,
         )

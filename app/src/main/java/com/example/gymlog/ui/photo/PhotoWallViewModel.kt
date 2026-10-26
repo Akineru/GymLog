@@ -22,7 +22,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
-import java.util.ArrayDeque
 
 enum class PhotoTool {
     DRAW,
@@ -66,8 +65,7 @@ class PhotoWallViewModel(
     private val message = MutableStateFlow<String?>(null)
     private val editor = MutableStateFlow<PhotoEditorUi?>(null)
     private val edits = Mutex()
-    private val undo = ArrayDeque<Bitmap>()
-    private val redo = ArrayDeque<Bitmap>()
+    private val history = BitmapHistory()
     private val queue = ArrayList<String>()
     private var queueIndex = 0
     private var saving = false
@@ -145,7 +143,7 @@ class PhotoWallViewModel(
                 onReady(false)
                 return@launch
             }
-            clearHistory()
+            history.clear()
             queue.clear()
             editor.value = PhotoEditorUi(
                 id = id,
@@ -208,18 +206,14 @@ class PhotoWallViewModel(
 
     fun undo() {
         val state = editor.value ?: return
-        if (undo.isEmpty()) return
-        redo.addLast(state.bitmap)
-        val previous = undo.removeLast()
-        editor.value = state.copy(bitmap = previous, canUndo = undo.isNotEmpty(), canRedo = true, dirty = true)
+        val previous = history.undo(state.bitmap) ?: return
+        editor.value = state.copy(bitmap = previous, canUndo = history.canUndo, canRedo = history.canRedo, dirty = true)
     }
 
     fun redo() {
         val state = editor.value ?: return
-        if (redo.isEmpty()) return
-        undo.addLast(state.bitmap)
-        val next = redo.removeLast()
-        editor.value = state.copy(bitmap = next, canUndo = true, canRedo = redo.isNotEmpty(), dirty = true)
+        val next = history.redo(state.bitmap) ?: return
+        editor.value = state.copy(bitmap = next, canUndo = history.canUndo, canRedo = history.canRedo, dirty = true)
     }
 
     fun resetToOpened() {
@@ -228,7 +222,7 @@ class PhotoWallViewModel(
             val fresh = withContext(Dispatchers.IO) {
                 repository.decode(state.id, preferEdited = !state.isNew)
             } ?: return@launch
-            clearHistory()
+            history.clear()
             editor.value = state.copy(bitmap = fresh, canUndo = false, canRedo = false, dirty = false)
         }
     }
@@ -304,7 +298,7 @@ class PhotoWallViewModel(
         queue.clear()
         queue += ids
         queueIndex = 0
-        clearHistory()
+        history.clear()
         openQueueItem(isNew = true, onReady = onReady)
     }
 
@@ -318,7 +312,7 @@ class PhotoWallViewModel(
                 if (!advanceQueue()) releaseEditor()
                 return@launch
             }
-            clearHistory()
+            history.clear()
             editor.value = PhotoEditorUi(
                 id = id,
                 isNew = isNew,
@@ -339,7 +333,7 @@ class PhotoWallViewModel(
     }
 
     private fun releaseEditor() {
-        clearHistory()
+        history.clear()
         editor.value?.bitmap?.recycle()
         editor.value = null
         queue.clear()
@@ -354,10 +348,7 @@ class PhotoWallViewModel(
                 if (current.saving) return@withLock
                 val next = withContext(Dispatchers.Default) { runCatching { block(current.bitmap) }.getOrNull() }
                     ?: return@withLock
-                undo.addLast(current.bitmap)
-                while (undo.size > 5) undo.removeFirst().recycle()
-                redo.forEach { it.recycle() }
-                redo.clear()
+                history.push(current.bitmap)
                 editor.value = current.copy(
                     bitmap = next,
                     canUndo = true,
@@ -368,15 +359,8 @@ class PhotoWallViewModel(
         }
     }
 
-    private fun clearHistory() {
-        undo.forEach { it.recycle() }
-        redo.forEach { it.recycle() }
-        undo.clear()
-        redo.clear()
-    }
-
     override fun onCleared() {
-        clearHistory()
+        history.clear()
         editor.value?.bitmap?.recycle()
         super.onCleared()
     }

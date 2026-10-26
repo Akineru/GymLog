@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Traivol</string>
+    <!-- Ongoing workout notification -->
+    <string name="workout_notification_channel">Workout in progress</string>
+    <string name="workout_notification_channel_desc">Shows the workout that is currently in progress. Silent, no sound or vibration.</string>
+    <string name="workout_notification_title_running">Workout in progress</string>
+    <string name="workout_notification_title_pending">Workout not saved yet</string>
+    <string name="workout_notification_running">Tap to continue</string>
+    <string name="workout_notification_running_named">Current: %1$s</string>
+    <string name="workout_notification_paused">Paused · elapsed %1$s</string>
+    <string name="workout_notification_paused_named">Paused · elapsed %1$s · %2$s</string>
+    <string name="workout_notification_pending_text">This workout is %1$s long and still needs saving</string>
+    <string name="workout_notification_duration">%1$dm %2$ds</string>
+    <string name="workout_notification_clock_countdown">Rest · %1$s</string>
+    <string name="workout_notification_clock_countdown_paused">Rest · %1$s · paused</string>
+    <string name="workout_notification_clock_countdown_finished">Rest · 00:00 · done</string>
+    <string name="workout_notification_clock_stopwatch">Stopwatch · %1$s</string>
+    <string name="workout_notification_clock_stopwatch_paused">Stopwatch · %1$s · paused</string>
 </resources>

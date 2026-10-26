@@ -34,6 +34,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -75,17 +79,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -110,6 +119,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val dateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy年M月d日", Locale.CHINA)
@@ -982,6 +993,7 @@ private fun SetRow(
                     WeightMode.WEIGHTED -> R.string.field_weight
                 },
             ),
+            keyboardType = KeyboardType.Decimal,
             increase = {
                 if (set.mode == WeightMode.WEIGHTED) {
                     onUpdate { it.copy(normalKgText = WeightLogic.stepKg(it.normalKgText, true)) }
@@ -996,18 +1008,34 @@ private fun SetRow(
                     onUpdate { it.copy(extraKgText = WeightLogic.stepSignedKg(it.extraKgText, false)) }
                 }
             },
+            onValueChange = { raw ->
+                // 负重模式（自重 + 额外重量）允许负数，普通重量不允许
+                val signed = set.mode == WeightMode.BODYWEIGHT_PLUS
+                val sanitized = WeightLogic.sanitizeWeightInput(raw, signed)
+                when (set.mode) {
+                    WeightMode.WEIGHTED -> onUpdate { it.copy(normalKgText = sanitized) }
+                    WeightMode.BODYWEIGHT_PLUS -> onUpdate { it.copy(extraKgText = sanitized) }
+                    WeightMode.BODYWEIGHT -> Unit
+                }
+            },
+            normalize = { WeightLogic.normalizeWeightInput(it, set.mode == WeightMode.BODYWEIGHT_PLUS) },
             modifier = Modifier.weight(1f).padding(horizontal = 3.dp),
         )
         VerticalNumberControl(
             value = set.repsText,
             enabled = true,
             placeholder = stringResource(R.string.field_reps),
+            keyboardType = KeyboardType.Number,
             increase = {
                 onUpdate { it.copy(repsText = WeightLogic.stepReps(it.repsText, true)) }
             },
             decrease = {
                 onUpdate { it.copy(repsText = WeightLogic.stepReps(it.repsText, false)) }
             },
+            onValueChange = { raw ->
+                onUpdate { it.copy(repsText = WeightLogic.sanitizeRepsInput(raw)) }
+            },
+            normalize = WeightLogic::normalizeRepsInput,
             modifier = Modifier.weight(1f).padding(horizontal = 3.dp),
         )
         Box(
@@ -1044,10 +1072,17 @@ private fun VerticalNumberControl(
     value: String,
     enabled: Boolean,
     placeholder: String,
+    keyboardType: KeyboardType,
     increase: () -> Unit,
     decrease: () -> Unit,
+    onValueChange: (String) -> Unit,
+    normalize: (String) -> String,
     modifier: Modifier = Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val bringIntoView = remember { BringIntoViewRequester() }
+    var editing by remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1077,28 +1112,70 @@ private fun VerticalNumberControl(
                 )
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    color = if (editing) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant
+                    },
                     shape = RoundedCornerShape(8.dp),
                 )
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 4.dp)
+                .bringIntoViewRequester(bringIntoView),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = value.ifBlank { placeholder },
-                style = if (value.isBlank()) {
-                    MaterialTheme.typography.labelSmall
-                } else {
-                    MaterialTheme.typography.bodyLarge
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                enabled = enabled,
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = keyboardType,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            if (!editing) {
+                                editing = true
+                                // 键盘弹起会改变可视区域，等它稳定后再滚进视野
+                                scope.launch {
+                                    delay(250)
+                                    bringIntoView.bringIntoView()
+                                }
+                            }
+                        } else if (editing) {
+                            editing = false
+                            // 只在确认（失焦 / 键盘完成）时收敛数值，逐字不做格式化
+                            val normalized = normalize(value)
+                            if (normalized != value) onValueChange(normalized)
+                        }
+                    },
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (value.isBlank()) {
+                            Text(
+                                text = placeholder,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        innerTextField()
+                    }
                 },
-                color = if (value.isBlank()) {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
             )
         }
         IconButton(

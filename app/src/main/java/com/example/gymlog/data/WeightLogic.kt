@@ -44,6 +44,62 @@ object WeightLogic {
         return maxOf(0, next).toString()
     }
 
+    /**
+     * 重量手动输入的**逐字过滤**：只保留数字与一个小数点，负重模式额外允许开头一个负号。
+     *
+     * 刻意不做任何格式化（不改写、不补零、不四舍五入），这样输入「22.」时不会被吃掉小数点，
+     * 光标也不会因为数值被重排而跳动。规范化放在失焦 / 确认时由 [normalizeWeightInput] 做。
+     */
+    fun sanitizeWeightInput(raw: String, signed: Boolean): String {
+        val builder = StringBuilder()
+        var dot = false
+        var intDigits = 0
+        var fracDigits = 0
+        raw.forEachIndexed { index, ch ->
+            when {
+                ch.isDigit() -> {
+                    if (dot) {
+                        if (fracDigits < 2) {
+                            builder.append(ch)
+                            fracDigits++
+                        }
+                    } else if (intDigits < 4) {
+                        builder.append(ch)
+                        intDigits++
+                    }
+                }
+                (ch == '.' || ch == ',') && !dot -> {
+                    dot = true
+                    // 允许直接打「.5」，补前导 0 更稳
+                    if (intDigits == 0) {
+                        builder.append('0')
+                        intDigits++
+                    }
+                    builder.append('.')
+                }
+                ch == '-' && signed && index == 0 && builder.isEmpty() -> builder.append('-')
+            }
+        }
+        return builder.toString()
+    }
+
+    /** 次数手动输入的逐字过滤：只保留数字，最多 4 位（足够 100 次以上）。 */
+    fun sanitizeRepsInput(raw: String): String = raw.filter { it.isDigit() }.take(4)
+
+    /**
+     * 确认（失焦 / 键盘完成）时才做的规范化：把编辑中的字符串收敛成合法数值。
+     * 解析不出来就清空，交给既有的「重量必填」校验提示，不写入 0。
+     */
+    fun normalizeWeightInput(text: String, signed: Boolean): String {
+        val parsed = if (signed) parseSignedKg(text) else parseKg(text)
+        return if (parsed == null) "" else formatKg(parsed)
+    }
+
+    fun normalizeRepsInput(text: String): String {
+        val value = text.trim().toIntOrNull() ?: return ""
+        return value.coerceAtLeast(0).toString()
+    }
+
     fun storedWeightKg(
         mode: WeightMode,
         normalText: String,

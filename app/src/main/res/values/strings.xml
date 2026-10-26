@@ -118,9 +118,7 @@
     <string name="settings_section_training">训练数据</string>
     <string name="settings_section_data">数据</string>
     <string name="data_backup">数据备份</string>
-    <string name="settings_history">历史记录</string>
     <string name="timer_history">计时记录</string>
-    <string name="body_history">身体记录</string>
     <string name="data_export">导出数据</string>
     <string name="data_import">导入数据</string>
     <string name="data_busy">正在处理…</string>
@@ -464,4 +462,22 @@
     <string name="timer_linked">已关联当天训练</string>
     <string name="timer_linked_named">已关联：%1$s</string>
     <string name="timer_recovered">设备重新启动后，计时已暂停。请核对时间后再继续。</string>
+    <!-- 正在训练通知（前台服务） -->
+    <string name="workout_notification_channel">训练进行中</string>
+    <string name="workout_notification_channel_desc">在通知栏显示当前正在进行的训练，静音、不震动。</string>
+    <string name="workout_notification_title_running">正在训练</string>
+    <string name="workout_notification_title_pending">训练待保存</string>
+    <!-- 运行中的时长由系统 chronometer 在标题右侧走秒，正文不再写死时间，避免"停住不动"的误导 -->
+    <string name="workout_notification_running">继续训练</string>
+    <string name="workout_notification_running_named">当前动作：%1$s</string>
+    <string name="workout_notification_paused">已暂停 · 已练 %1$s</string>
+    <string name="workout_notification_paused_named">已暂停 · 已练 %1$s · %2$s</string>
+    <string name="workout_notification_pending_text">本次训练 %1$s，等待保存</string>
+    <string name="workout_notification_duration">%1$d分%2$d秒</string>
+    <!-- 独立计时器（与训练总计时各归各，绝不合并） -->
+    <string name="workout_notification_clock_countdown">组歇 · %1$s</string>
+    <string name="workout_notification_clock_countdown_paused">组歇 · %1$s · 已暂停</string>
+    <string name="workout_notification_clock_countdown_finished">组歇 · 00:00 · 已结束</string>
+    <string name="workout_notification_clock_stopwatch">秒表 · %1$s</string>
+    <string name="workout_notification_clock_stopwatch_paused">秒表 · %1$s · 已暂停</string>
 </resources>

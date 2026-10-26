@@ -118,4 +118,98 @@ class WeightLogicTest {
         assertTrue(WeightLogic.storedWeightKg(WeightMode.WEIGHTED, "", "").isFailure)
         assertTrue(WeightLogic.storedWeightKg(WeightMode.BODYWEIGHT_PLUS, "20", "").isFailure)
     }
+
+    // ---- 手动输入：逐字过滤（不格式化，避免光标跳动） ----
+
+    @Test
+    fun weightInputKeepsIntegersAndDecimals() {
+        assertEquals("20", WeightLogic.sanitizeWeightInput("20", signed = false))
+        assertEquals("22.5", WeightLogic.sanitizeWeightInput("22.5", signed = false))
+        assertEquals("7.5", WeightLogic.sanitizeWeightInput("7.5", signed = false))
+        assertEquals("42.5", WeightLogic.sanitizeWeightInput("42.5", signed = false))
+    }
+
+    @Test
+    fun weightInputDoesNotReformatWhileTyping() {
+        // 正在输入小数：末尾的小数点必须保留，否则用户永远打不出「22.5」
+        assertEquals("22.", WeightLogic.sanitizeWeightInput("22.", signed = false))
+        // 暂时为空也要保留，不能立刻回写成 0
+        assertEquals("", WeightLogic.sanitizeWeightInput("", signed = false))
+        assertEquals("0", WeightLogic.sanitizeWeightInput("0", signed = false))
+    }
+
+    @Test
+    fun weightInputRejectsIllegalCharactersAndExtraDots() {
+        assertEquals("20", WeightLogic.sanitizeWeightInput("2a0", signed = false))
+        assertEquals("22.5", WeightLogic.sanitizeWeightInput("22..5", signed = false))
+        assertEquals("0.5", WeightLogic.sanitizeWeightInput(".5", signed = false))
+        assertEquals("", WeightLogic.sanitizeWeightInput("abc", signed = false))
+        assertEquals("3.25", WeightLogic.sanitizeWeightInput("3,25", signed = false))
+    }
+
+    @Test
+    fun weightInputRespectsSignOnlyForExtraLoad() {
+        // 普通重量不允许负数
+        assertEquals("5", WeightLogic.sanitizeWeightInput("-5", signed = false))
+        // 负重（自重 + 额外）允许负数，用于辅助
+        assertEquals("-5", WeightLogic.sanitizeWeightInput("-5", signed = true))
+        assertEquals("-10.5", WeightLogic.sanitizeWeightInput("-10.5", signed = true))
+    }
+
+    @Test
+    fun weightInputCapsLengthToStayInRange() {
+        assertEquals("1234", WeightLogic.sanitizeWeightInput("12345", signed = false))
+        assertEquals("22.56", WeightLogic.sanitizeWeightInput("22.567", signed = false))
+    }
+
+    @Test
+    fun repsInputAllowsMultiDigitAndStripsNonDigits() {
+        assertEquals("12", WeightLogic.sanitizeRepsInput("12"))
+        assertEquals("100", WeightLogic.sanitizeRepsInput("100"))
+        assertEquals("12", WeightLogic.sanitizeRepsInput("1a2"))
+        assertEquals("", WeightLogic.sanitizeRepsInput(""))
+        assertEquals("1234", WeightLogic.sanitizeRepsInput("12345"))
+    }
+
+    // ---- 确认时（失焦 / 键盘完成）才做的规范化 ----
+
+    @Test
+    fun weightNormalizationHappensOnConfirm() {
+        assertEquals("22", WeightLogic.normalizeWeightInput("22.", signed = false))
+        assertEquals("22.5", WeightLogic.normalizeWeightInput("22.50", signed = false))
+        assertEquals("22.5", WeightLogic.normalizeWeightInput("22,5", signed = false))
+        // 清空后保持为空，交给既有的「重量必填」校验
+        assertEquals("", WeightLogic.normalizeWeightInput("", signed = false))
+        // 负数在普通重量下不合法，清空而不是写 0
+        assertEquals("", WeightLogic.normalizeWeightInput("-10", signed = false))
+        assertEquals("-10", WeightLogic.normalizeWeightInput("-10", signed = true))
+        // 非法文本不会变成 NaN / Infinity
+        assertEquals("", WeightLogic.normalizeWeightInput("NaN", signed = false))
+        assertEquals("", WeightLogic.normalizeWeightInput("Infinity", signed = false))
+    }
+
+    @Test
+    fun repsNormalizationHappensOnConfirm() {
+        assertEquals("7", WeightLogic.normalizeRepsInput("007"))
+        assertEquals("0", WeightLogic.normalizeRepsInput("0"))
+        assertEquals("", WeightLogic.normalizeRepsInput(""))
+        assertEquals("", WeightLogic.normalizeRepsInput("abc"))
+    }
+
+    @Test
+    fun manualInputFeedsTheExistingStorageRules() {
+        // 手动输入的值走的是同一套 storedWeightKg 规则，没有新增第二条路径
+        val typed = WeightLogic.normalizeWeightInput("42.5", signed = false)
+        assertEquals(42.5, WeightLogic.storedWeightKg(WeightMode.WEIGHTED, typed, "").getOrNull()!!, 0.0)
+        val extra = WeightLogic.normalizeWeightInput("-7.5", signed = true)
+        assertEquals(-7.5, WeightLogic.storedWeightKg(WeightMode.BODYWEIGHT_PLUS, "", extra).getOrNull()!!, 0.0)
+        // 空值仍然是失败，不会静默写成 0
+        assertTrue(
+            WeightLogic.storedWeightKg(
+                WeightMode.WEIGHTED,
+                WeightLogic.normalizeWeightInput("", signed = false),
+                "",
+            ).isFailure,
+        )
+    }
 }

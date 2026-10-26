@@ -1,5 +1,6 @@
 package com.example.gymlog.ui
 
+import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -88,6 +89,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymlog.GymLogApplication
 import com.example.gymlog.R
 import com.example.gymlog.data.CalendarDayColorLogic
+import com.example.gymlog.data.ActiveWorkoutNotifier
+import com.example.gymlog.data.WorkoutClockKind
+import com.example.gymlog.data.WorkoutNotificationClock
+import com.example.gymlog.data.WorkoutNotificationPhase
 import com.example.gymlog.data.CalendarDayPaint
 import com.example.gymlog.data.CalendarDayPartsLogic
 import com.example.gymlog.data.DayKind
@@ -106,7 +111,6 @@ import com.example.gymlog.data.displayName
 import com.example.gymlog.data.orderedForDay
 import com.example.gymlog.data.partVolumes
 import com.example.gymlog.ui.home.HomeScreen
-import com.example.gymlog.ui.body.BodyRecordHistory
 import com.example.gymlog.ui.body.BodyRecordScreen
 import com.example.gymlog.ui.muscle.MuscleMapScreen
 import com.example.gymlog.ui.muscle.MuscleMapViewModel
@@ -128,6 +132,7 @@ import com.example.gymlog.ui.train.TrainingHomeScreen
 import com.example.gymlog.ui.train.currentExerciseLabel
 import com.example.gymlog.ui.session.SessionEditorScreen
 import com.example.gymlog.ui.session.SessionEditorViewModel
+import com.example.gymlog.ui.session.WorkoutClockMode
 import com.example.gymlog.ui.settings.AboutScreen
 import com.example.gymlog.ui.settings.MineViewModel
 import com.example.gymlog.ui.settings.ReleaseNotesScreen
@@ -135,7 +140,6 @@ import com.example.gymlog.ui.settings.AppSettingsScreen
 import com.example.gymlog.ui.settings.BackupDataScreen
 import com.example.gymlog.ui.settings.DataTransferViewModel
 import com.example.gymlog.ui.settings.MineScreen
-import com.example.gymlog.ui.settings.SettingsHistoryScreen
 import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.settings.SettingsViewModel
 import com.example.gymlog.ui.stats.BodyTrendScreen
@@ -190,9 +194,7 @@ private sealed interface Screen {
     data class PickExercise(val returnTo: SessionEditor) : Screen
     data class Settings(val from: RootTab) : Screen
     data class BackupData(val from: RootTab) : Screen
-    data class SettingsHistory(val from: RootTab) : Screen
     data class TimerHistory(val from: RootTab) : Screen
-    data class BodyHistory(val from: RootTab) : Screen
     data object PhotoWall : Screen
     data class PhotoDetail(val id: String) : Screen
     data object PhotoEditor : Screen
@@ -246,9 +248,7 @@ private val ScreenSaver: Saver<Screen, Any> = Saver(
             )
             is Screen.Settings -> mapOf("type" to "settings", "from" to screen.from.name)
             is Screen.BackupData -> mapOf("type" to "backup", "from" to screen.from.name)
-            is Screen.SettingsHistory -> mapOf("type" to "settings-history", "from" to screen.from.name)
             is Screen.TimerHistory -> mapOf("type" to "timer-history", "from" to screen.from.name)
-            is Screen.BodyHistory -> mapOf("type" to "body-history", "from" to screen.from.name)
             is Screen.PhotoDetail -> mapOf("type" to "photo-detail", "id" to screen.id)
             is Screen.About -> mapOf(
                 "type" to "about",
@@ -306,9 +306,7 @@ private val ScreenSaver: Saver<Screen, Any> = Saver(
             "pick-exercise" -> Screen.PickExercise(session(values))
             "settings" -> Screen.Settings(tab("from"))
             "backup" -> Screen.BackupData(tab("from"))
-            "settings-history" -> Screen.SettingsHistory(tab("from"))
             "timer-history" -> Screen.TimerHistory(tab("from"))
-            "body-history" -> Screen.BodyHistory(tab("from"))
             "photo-detail" -> Screen.PhotoDetail(values["id"] as? String ?: "")
             "about" -> Screen.About(
                 from = tab("from"),
@@ -368,9 +366,7 @@ private fun Screen.toRootTab(): RootTab = when (this) {
     Screen.Mine, is Screen.BodyRecord, is Screen.MuscleMap, Screen.PhotoWall, is Screen.PhotoDetail, Screen.PhotoEditor -> RootTab.Mine
     is Screen.Settings -> from
     is Screen.BackupData -> from
-    is Screen.SettingsHistory -> from
     is Screen.TimerHistory -> from
-    is Screen.BodyHistory -> from
     is Screen.About -> from
     is Screen.ReleaseNotes -> from
 }
@@ -384,7 +380,11 @@ private fun RootTab.toScreen(): Screen = when (this) {
 }
 
 @Composable
-fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
+fun GymLogApp(
+    viewModel: GymLogViewModel = viewModel(),
+    /** 点「正在训练」通知进入时 +1；0 表示普通启动。 */
+    openActiveWorkoutSignal: Int = 0,
+) {
     val app = LocalContext.current.applicationContext as GymLogApplication
     val sessions by viewModel.sessions.collectAsStateWithLifecycle()
     val exerciseMedia by viewModel.exerciseMedia.collectAsStateWithLifecycle()
@@ -412,6 +412,9 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
         mutableStateOf<Screen.SessionEditor?>(null)
     }
     var confirmDiscardActive by remember { mutableStateOf(false) }
+    // 冷启动是否已经查过草稿快照。用于两件事：判断「确实没有活动训练」，
+    // 以及点通知进来时等草稿恢复完再跳转，避免抢跑。
+    var snapshotChecked by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (activeDraft == null) {
             val snapshot = withContext(Dispatchers.IO) { app.sessionDraftStore.load() }
@@ -425,6 +428,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                 if (screen == Screen.Home) screen = Screen.Train
             }
         }
+        snapshotChecked = true
     }
     val activeEditorViewModel: SessionEditorViewModel? = activeDraft?.let { draft ->
         viewModel(
@@ -459,6 +463,90 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
             currentExerciseName = currentExerciseLabel(state.exercises),
             timerText = activeWorkoutTimerText,
         )
+    }
+
+    // ---- 「正在训练」系统通知：只反映现有状态，不参与计时 ----
+    // 只有新建草稿（sessionId == null）才挂通知；编辑历史记录不会出现。
+    val notificationDraft = activeDraft?.takeIf { it.sessionId == null }
+    val notificationPhase = activeEditorState?.let { state ->
+        when {
+            state.finishing -> WorkoutNotificationPhase.FINISHING
+            !state.totalTimerRunning -> WorkoutNotificationPhase.PAUSED
+            else -> WorkoutNotificationPhase.RUNNING
+        }
+    }
+    val notificationExercise = activeEditorState?.let { currentExerciseLabel(it.exercises) }
+    // 运行中不把这个值放进 key：秒数交给系统 chronometer，避免每秒重投通知
+    val notificationFrozenElapsed = activeEditorState
+        ?.takeIf { notificationPhase != WorkoutNotificationPhase.RUNNING }
+        ?.totalElapsedMillis
+    // 独立计时器（组歇 / 秒表）只是被展示，不参与任何计时计算。
+    // 运行中的秒数不进 key：那部分由服务按锚点每秒重绘，避免 UI 与服务重复投递。
+    val notificationClockRunning = activeEditorClock?.running == true
+    val notificationClockStarted = activeEditorClock?.started == true
+    val notificationClockMode = activeEditorClock?.mode
+    val notificationClockDuration = activeEditorClock?.timerDurationMillis
+    val notificationClockPausedMillis = activeEditorClock
+        ?.takeIf { !notificationClockRunning }
+        ?.displayMillis
+    LaunchedEffect(
+        notificationDraft?.draftKey,
+        notificationPhase,
+        notificationExercise,
+        notificationFrozenElapsed,
+        notificationClockMode,
+        notificationClockRunning,
+        notificationClockStarted,
+        notificationClockDuration,
+        notificationClockPausedMillis,
+        snapshotChecked,
+    ) {
+        val draft = notificationDraft
+        if (draft == null) {
+            if (snapshotChecked) ActiveWorkoutNotifier.clear(app, null)
+            return@LaunchedEffect
+        }
+        val phase = notificationPhase ?: return@LaunchedEffect
+        val clock = activeEditorClock?.let { value ->
+            WorkoutNotificationClock(
+                kind = if (value.mode == WorkoutClockMode.TIMER) {
+                    WorkoutClockKind.COUNTDOWN
+                } else {
+                    WorkoutClockKind.STOPWATCH
+                },
+                running = value.running,
+                started = value.started,
+                displayMillis = value.displayMillis,
+                durationMillis = value.timerDurationMillis,
+                anchoredAtElapsedRealtime = SystemClock.elapsedRealtime(),
+            )
+        }
+        ActiveWorkoutNotifier.publish(
+            context = app,
+            draftKey = draft.draftKey,
+            sessionId = draft.sessionId,
+            phase = phase,
+            elapsedMillis = activeEditorState?.totalElapsedMillis ?: 0L,
+            exerciseName = notificationExercise,
+            clock = clock,
+        )
+    }
+
+    // ---- 点通知回到同一场训练（等草稿就绪再跳，绝不新建草稿）----
+    var pendingOpenWorkout by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(openActiveWorkoutSignal) {
+        if (openActiveWorkoutSignal > 0) pendingOpenWorkout = true
+    }
+    LaunchedEffect(pendingOpenWorkout, activeDraft, snapshotChecked) {
+        if (!pendingOpenWorkout) return@LaunchedEffect
+        val draft = activeDraft
+        if (draft != null) {
+            screen = draft
+            pendingOpenWorkout = false
+        } else if (snapshotChecked) {
+            // 没有活动训练（通知已过期），安静落地到当前页面
+            pendingOpenWorkout = false
+        }
     }
     val density = LocalDensity.current
     val navigationBarBottom = with(density) {
@@ -751,6 +839,7 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                             onExitAfterSave = {
                                 if (activeDraft?.draftKey == current.draftKey) {
                                     activeDraft = null
+                                    ActiveWorkoutNotifier.clear(app, current.draftKey)
                                 }
                                 screen = current.returnTab.toScreen()
                             },
@@ -768,7 +857,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                             onBack = { screen = current.from.toScreen() },
                             onOpenAbout = { screen = Screen.About(current.from) },
                             onOpenBackup = { screen = Screen.BackupData(current.from) },
-                            onOpenHistory = { screen = Screen.SettingsHistory(current.from) },
                         )
                     }
 
@@ -783,17 +871,10 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                         )
                     }
 
-                    is Screen.SettingsHistory -> {
-                        SettingsHistoryScreen(
-                            onBack = { screen = Screen.Settings(current.from) },
-                            onOpenBody = { screen = Screen.BodyHistory(current.from) },
-                        )
-                    }
-
                     is Screen.TimerHistory -> {
                         TimerHistoryScreen(
                             viewModel = timerViewModel,
-                            onBack = { screen = Screen.SettingsHistory(current.from) },
+                            onBack = { screen = current.from.toScreen() },
                             onOpenSaved = { recordId ->
                                 screen = Screen.SavedTimer(
                                     recordId = recordId,
@@ -801,20 +882,6 @@ fun GymLogApp(viewModel: GymLogViewModel = viewModel()) {
                                     returnToTimerHistory = true,
                                 )
                             },
-                        )
-                    }
-
-                    is Screen.BodyHistory -> {
-                        val bodyViewModel: BodyRecordViewModel = viewModel(
-                            key = "body-$dataEpoch",
-                            factory = BodyRecordViewModel.factory(
-                                app.bodyRecordRepository,
-                                app.workoutRepository,
-                            ),
-                        )
-                        BodyRecordHistory(
-                            viewModel = bodyViewModel,
-                            onBack = { screen = Screen.SettingsHistory(current.from) },
                         )
                     }
 

@@ -23,7 +23,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
@@ -74,7 +73,6 @@ fun AppSettingsScreen(
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenBackup: () -> Unit,
-    onOpenHistory: () -> Unit,
 ) {
     val appearance by viewModel.appearance.collectAsStateWithLifecycle()
     val uiState by viewModel.state.collectAsStateWithLifecycle()
@@ -179,14 +177,6 @@ fun AppSettingsScreen(
                     subtitle = "导出或导入本地 JSON 备份",
                     icon = Icons.Filled.Backup,
                     onClick = onOpenBackup,
-                )
-            }
-            item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.settings_history),
-                    subtitle = "查看身体记录历史",
-                    icon = Icons.Filled.History,
-                    onClick = onOpenHistory,
                 )
             }
             item {

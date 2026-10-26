@@ -11,6 +11,13 @@
          permission to rely on for exact countdown delivery. -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
+    <!-- Ongoing "training in progress" notification.
+         specialUse is used instead of health: health additionally requires a
+         sensor-related runtime permission (ACTIVITY_RECOGNITION / BODY_SENSORS or the
+         HIGH_SAMPLING_RATE_SENSORS manifest declaration), and this app reads no sensors. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
     <application
         android:name=".GymLogApplication"
         android:allowBackup="false"
@@ -44,6 +51,18 @@
         </activity>
         <receiver
             android:name=".data.TimerAlarmReceiver"
+            android:exported="false" />
+        <!-- 只服务「正在训练」通知：点击回训练、划掉通知后的记录 -->
+        <service
+            android:name=".data.WorkoutNotificationService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="active_workout_session_timer" />
+        </service>
+        <receiver
+            android:name=".data.WorkoutNotificationReceiver"
             android:exported="false" />
     </application>
 

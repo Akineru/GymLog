@@ -1,14 +1,9 @@
 package com.example.gymlog.ui.photo
 
-import android.graphics.Rect
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +12,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -33,8 +27,6 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -45,7 +37,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,27 +45,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
-import com.example.gymlog.data.PhotoImage
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
-import kotlin.math.min
-import kotlin.math.roundToInt
 
+/**
+ * Single-photo editor: image stage plus tool panel, with the photo's date and
+ * note edited in place. Gesture handling lives in [PhotoEditorCanvas], the
+ * shared dialogs in [PhotoDialogs].
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PhotoEditorScreen(
@@ -99,15 +83,11 @@ fun PhotoEditorScreen(
         viewModel.skipOrCancel(onClose)
     })
     if (current == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(stringResource(R.string.photo_wall_opening))
         }
         return
     }
-    var viewSize by remember { mutableStateOf(IntSize.Zero) }
-    var dragStart by remember { mutableStateOf<Offset?>(null) }
-    var dragEnd by remember { mutableStateOf<Offset?>(null) }
-    var stroke by remember { mutableStateOf<List<Pair<Float, Float>>>(emptyList()) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -158,84 +138,19 @@ fun PhotoEditorScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 240.dp, max = 420.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF0E1726))
-                    .onSizeChanged { viewSize = it }
-                    .pointerInput(current.bitmap, current.tool, viewSize, pendingText) {
-                        if (current.tool == PhotoTool.TEXT && pendingText.isNotBlank()) {
-                            detectTapGestures { offset ->
-                                val point = imagePoint(offset.x, offset.y, viewSize, current.bitmap.width, current.bitmap.height)
-                                if (point != null) {
-                                    viewModel.placeText(pendingText, point.first, point.second)
-                                    pendingText = ""
-                                }
-                            }
-                        } else if (current.tool == PhotoTool.DRAW) {
-                            detectDragGestures(
-                                onDragStart = { offset ->
-                                    val point = imagePoint(offset.x, offset.y, viewSize, current.bitmap.width, current.bitmap.height)
-                                    stroke = listOfNotNull(point)
-                                },
-                                onDrag = { change, _ ->
-                                    val point = imagePoint(change.position.x, change.position.y, viewSize, current.bitmap.width, current.bitmap.height)
-                                    if (point != null) stroke = stroke + point
-                                },
-                                onDragEnd = {
-                                    viewModel.draw(stroke)
-                                    stroke = emptyList()
-                                },
-                            )
-                        } else {
-                            detectDragGestures(
-                                onDragStart = {
-                                    dragStart = it
-                                    dragEnd = it
-                                },
-                                onDrag = { change, _ -> dragEnd = change.position },
-                                onDragEnd = {
-                                    val start = dragStart
-                                    val end = dragEnd
-                                    dragStart = null
-                                    dragEnd = null
-                                    if (start == null || end == null) return@detectDragGestures
-                                    val rect = bitmapRect(start, end, viewSize, current.bitmap.width, current.bitmap.height) ?: return@detectDragGestures
-                                    when (current.tool) {
-                                        PhotoTool.CROP -> viewModel.crop(rect)
-                                        PhotoTool.MOSAIC -> viewModel.mosaic(rect)
-                                        PhotoTool.BLUR -> viewModel.blur(rect)
-                                        else -> Unit
-                                    }
-                                },
-                            )
-                        }
-                    },
-            ) {
-                Image(
-                    bitmap = current.bitmap.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
-                )
-                val start = dragStart
-                val end = dragEnd
-                if (start != null && end != null) {
-                    Canvas(Modifier.fillMaxSize()) {
-                        drawRect(
-                            color = Color(0x88FFFFFF),
-                            topLeft = Offset(minOf(start.x, end.x), minOf(start.y, end.y)),
-                            size = androidx.compose.ui.geometry.Size(
-                                kotlin.math.abs(end.x - start.x),
-                                kotlin.math.abs(end.y - start.y),
-                            ),
-                            style = Stroke(width = 3f),
-                        )
-                    }
-                }
-            }
+            PhotoEditorCanvas(
+                bitmap = current.bitmap,
+                tool = current.tool,
+                pendingText = pendingText,
+                onPlaceText = { x, y ->
+                    viewModel.placeText(pendingText, x, y)
+                    pendingText = ""
+                },
+                onDraw = viewModel::draw,
+                onCrop = viewModel::crop,
+                onMosaic = viewModel::mosaic,
+                onBlur = viewModel::blur,
+            )
             GymLogCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(horizontal = GymLogSpacing.sm, vertical = 10.dp),
@@ -423,87 +338,4 @@ fun PhotoEditorScreen(
             },
         )
     }
-}
-
-@Composable
-internal fun NoteDialog(
-    initial: String,
-    title: String = stringResource(R.string.photo_wall_note),
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
-) {
-    var text by remember(initial) { mutableStateOf(initial) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-            )
-        },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it.take(PhotoImage.NOTE_LIMIT) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                minLines = 2,
-            )
-        },
-        confirmButton = { TextButton(onClick = { onConfirm(text) }) { Text(stringResource(R.string.save)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun PhotoDateDialog(
-    initialEpochDay: Long,
-    onDismiss: () -> Unit,
-    onConfirm: (Long) -> Unit,
-) {
-    val picker = rememberDatePickerState(initialSelectedDateMillis = epochDayToUtcMillis(initialEpochDay))
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
-        confirmButton = {
-            TextButton(onClick = {
-                val millis = picker.selectedDateMillis
-                if (millis != null) onConfirm(utcMillisToEpochDay(millis))
-            }) { Text(stringResource(R.string.photo_wall_confirm_date)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    ) {
-        DatePicker(state = picker, title = { Text(stringResource(R.string.photo_wall_pick_date)) })
-    }
-}
-
-/** DatePicker uses UTC midnight. Keep the local calendar date by converting through UTC. */
-internal fun epochDayToUtcMillis(epochDay: Long): Long =
-    LocalDate.ofEpochDay(epochDay).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-
-internal fun utcMillisToEpochDay(millis: Long): Long =
-    Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate().toEpochDay()
-
-private fun imagePoint(x: Float, y: Float, view: IntSize, imageW: Int, imageH: Int): Pair<Float, Float>? {
-    if (view.width == 0 || view.height == 0) return null
-    val scale = min(view.width / imageW.toFloat(), view.height / imageH.toFloat())
-    val left = (view.width - imageW * scale) / 2f
-    val top = (view.height - imageH * scale) / 2f
-    val px = (x - left) / scale
-    val py = (y - top) / scale
-    if (px < 0f || py < 0f || px >= imageW || py >= imageH) return null
-    return px to py
-}
-
-private fun bitmapRect(start: Offset, end: Offset, view: IntSize, imageW: Int, imageH: Int): Rect? {
-    val a = imagePoint(start.x, start.y, view, imageW, imageH) ?: return null
-    val b = imagePoint(end.x, end.y, view, imageW, imageH) ?: return null
-    val left = minOf(a.first, b.first).roundToInt()
-    val top = minOf(a.second, b.second).roundToInt()
-    val right = maxOf(a.first, b.first).roundToInt()
-    val bottom = maxOf(a.second, b.second).roundToInt()
-    if (right - left < 2 || bottom - top < 2) return null
-    return Rect(left, top, right, bottom)
 }

@@ -17,6 +17,27 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.5.3",
+            date = "2026年10月27日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "训练记录",
+                    items = listOf(
+                        "每组的重量、次数可以直接点进去手动输入，重量支持 42.5 这样的小数。",
+                        "上下箭头照旧可用，重量步长 2.5 kg、次数步长 1，两种方式改的是同一个值。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "训练通知",
+                    items = listOf(
+                        "开始训练后通知栏常驻一条「正在训练」，退回桌面也能看到已练时长。",
+                        "通知里同步显示组歇与秒表的状态和剩余时间，暂停、归零都会跟着变。",
+                        "点通知直接回到同一场训练，动作和已经勾选的组都还在。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.5.2",
             date = "2026年10月24日",
             sections = listOf(
