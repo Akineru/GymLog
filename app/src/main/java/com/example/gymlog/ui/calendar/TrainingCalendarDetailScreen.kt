@@ -197,8 +197,8 @@ private fun DetailDayCell(
 ) {
     val fill = paint.fillColor()
     val ink = when {
-        fill != null && inMonth -> CalendarDayInk
-        fill != null -> CalendarDayInk.copy(alpha = 0.45f)
+        fill != null && inMonth -> fill.onColorInk()
+        fill != null -> fill.onColorInk().copy(alpha = 0.45f)
         !inMonth -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         else -> MaterialTheme.colorScheme.onSurface
     }

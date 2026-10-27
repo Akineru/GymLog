@@ -654,6 +654,24 @@ class SessionEditorViewModel(
 
     fun save() = saveFinal()
 
+    /**
+     * 应用内「定时器到点通知」开关变化时调用；不重启动计时。
+     * 关闭会取消已排队的系统闹钟；重新打开会按当前剩余时间恢复提醒。
+     */
+    fun setCountdownAlertsEnabled(enabled: Boolean) {
+        if (!enabled) {
+            timerAlarmScheduler?.cancel()
+            timerAlarmScheduler?.cancelAlerts()
+            return
+        }
+        val current = _clock.value
+        if (current.mode != WorkoutClockMode.TIMER || !current.running) return
+        val started = clockStartedAt ?: return
+        val elapsed = (elapsedRealtime() - started).coerceAtLeast(0L)
+        val remaining = (clockBaseRemainingMillis - elapsed).coerceAtLeast(0L)
+        if (remaining > 0L) timerAlarmScheduler?.scheduleCountdown(remaining)
+    }
+
     fun setClockMode(mode: WorkoutClockMode) {
         if (_clock.value.mode == mode) return
         clockStartedAt = null
@@ -739,7 +757,9 @@ class SessionEditorViewModel(
             _clock.update { it.copy(displayMillis = remaining) }
             if (remaining == 0L) {
                 clockStartedAt = null
-                timerAlarmScheduler?.cancel()
+                // 不要在这里 cancel 系统闹钟：后台时前台 clockFinished 收集器
+                // 不一定还活着，闹钟是唯一可靠的到点提醒来源。让它自己触发，
+                // 前台和后台最多共用同一个 notification id，不会重复打扰。
                 _clock.update { it.copy(running = false, displayMillis = 0L) }
                 _clockFinished.tryEmit(Unit)
             }

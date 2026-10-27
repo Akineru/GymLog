@@ -3,7 +3,6 @@ package com.example.gymlog.ui.settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,41 +16,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Backup
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
-import com.example.gymlog.data.ThemeMode
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 import java.time.LocalDate
@@ -69,18 +56,13 @@ fun SettingsTopBarAction(onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSettingsScreen(
-    viewModel: SettingsViewModel,
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenAppearance: () -> Unit,
+    onOpenNotifications: () -> Unit,
 ) {
-    val appearance by viewModel.appearance.collectAsStateWithLifecycle()
-    val uiState by viewModel.state.collectAsStateWithLifecycle()
-    var clearStep by rememberSaveable { mutableIntStateOf(0) }
-    val dialogOpen = clearStep != 0 || uiState.notice != null
-    BackHandler(enabled = uiState.notice != null) { viewModel.dismissNotice() }
-    BackHandler(enabled = uiState.notice == null && clearStep != 0) { clearStep = 0 }
-    BackHandler(enabled = !dialogOpen, onBack = onBack)
+    BackHandler(onBack = onBack)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -107,61 +89,27 @@ fun AppSettingsScreen(
         ) {
             item {
                 Text(
-                    text = stringResource(R.string.appearance_title),
+                    text = stringResource(R.string.preferences_title),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
                 )
             }
             item {
-                GymLogCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                        ) {
-                            ThemeMode.entries.forEachIndexed { index, mode ->
-                                SegmentedButton(
-                                    selected = appearance.themeMode == mode,
-                                    onClick = { viewModel.setThemeMode(mode) },
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = ThemeMode.entries.size,
-                                    ),
-                                    icon = {},
-                                    label = { Text(themeModeLabel(mode)) },
-                                )
-                            }
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(R.string.wallpaper_colors),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.wallpaper_colors_hint),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(top = 2.dp),
-                                    )
-                                }
-                                Switch(
-                                    checked = appearance.useWallpaperColors,
-                                    onCheckedChange = viewModel::setUseWallpaperColors,
-                                )
-                            }
-                        }
-                    }
-                }
+                SettingsLinkRow(
+                    title = stringResource(R.string.appearance_title),
+                    subtitle = "主题、壁纸与日历配色",
+                    icon = Icons.Filled.Palette,
+                    onClick = onOpenAppearance,
+                )
+            }
+            item {
+                SettingsLinkRow(
+                    title = stringResource(R.string.notification_entry_title),
+                    subtitle = stringResource(R.string.notification_entry_subtitle),
+                    icon = Icons.Filled.Notifications,
+                    onClick = onOpenNotifications,
+                )
             }
             item {
                 Text(
@@ -174,7 +122,7 @@ fun AppSettingsScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.data_backup),
-                    subtitle = "导出或导入本地 JSON 备份",
+                    subtitle = "导出、导入或清除本地数据",
                     icon = Icons.Filled.Backup,
                     onClick = onOpenBackup,
                 )
@@ -187,108 +135,8 @@ fun AppSettingsScreen(
                     onClick = onOpenAbout,
                 )
             }
-            item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.clear_data),
-                    subtitle = stringResource(R.string.clear_data_hint),
-                    icon = Icons.Filled.DeleteOutline,
-                    titleColor = MaterialTheme.colorScheme.error,
-                    enabled = !uiState.busy,
-                    onClick = { clearStep = 1 },
-                )
-            }
-            if (uiState.busy) {
-                item {
-                    Text(
-                        text = stringResource(R.string.clear_data_busy),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
         }
     }
-
-    if (clearStep == 1) {
-        AlertDialog(
-            onDismissRequest = { clearStep = 0 },
-            shape = RoundedCornerShape(24.dp),
-            title = { Text(stringResource(R.string.clear_data_understand_title)) },
-            text = { Text(stringResource(R.string.clear_data_understand_message)) },
-            confirmButton = {
-                TextButton(onClick = { clearStep = 2 }) {
-                    Text(stringResource(R.string.clear_data_understand_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { clearStep = 0 }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
-    }
-
-    if (clearStep == 2) {
-        AlertDialog(
-            onDismissRequest = { clearStep = 0 },
-            shape = RoundedCornerShape(24.dp),
-            title = { Text(stringResource(R.string.clear_data_confirm_title)) },
-            text = { Text(stringResource(R.string.clear_data_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        clearStep = 0
-                        viewModel.clearLocalData()
-                    },
-                ) {
-                    Text(
-                        text = stringResource(R.string.clear_data_confirm_action),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { clearStep = 0 }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
-    }
-
-    uiState.notice?.let { notice ->
-        AlertDialog(
-            onDismissRequest = viewModel::dismissNotice,
-            shape = RoundedCornerShape(24.dp),
-            title = { Text(stringResource(R.string.clear_data)) },
-            text = {
-                Text(
-                    stringResource(
-                        if (notice == ClearNotice.Cleared) {
-                            R.string.clear_data_done
-                        } else {
-                            R.string.clear_data_failed
-                        },
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = viewModel::dismissNotice) {
-                    Text(stringResource(R.string.ok))
-                }
-            },
-        )
-    }
-
-}
-
-@Composable
-private fun themeModeLabel(mode: ThemeMode): String {
-    return stringResource(
-        when (mode) {
-            ThemeMode.SYSTEM -> R.string.theme_system
-            ThemeMode.LIGHT -> R.string.theme_light
-            ThemeMode.DARK -> R.string.theme_dark
-        },
-    )
 }
 
 @Composable

@@ -32,6 +32,7 @@ object TimerAlerts {
 
     fun alert(context: Context) {
         val appContext = context.applicationContext
+        if (!NotificationSettingsStore(appContext).countdownAlertsEnabled.value) return
         ensureChannel(appContext)
         if (canPostNotifications(appContext)) {
             runCatching {

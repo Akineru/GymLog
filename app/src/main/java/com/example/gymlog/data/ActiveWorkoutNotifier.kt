@@ -8,9 +8,12 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.content.res.Configuration
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
+import android.view.View
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -93,7 +96,7 @@ object ActiveWorkoutNotifier {
         _state.value = next
         if (structuralChanged) dismissedByUser = false
         if (dismissedByUser) return
-        if (serviceForeground) post(app, next, force = structuralChanged) else startService(app)
+        if (serviceForeground) post(app, next, force = structuralChanged, tag = "publish") else startService(app)
     }
 
     /**
@@ -102,16 +105,15 @@ object ActiveWorkoutNotifier {
      * 返回 false 表示不需要再 tick（计时器已停 / 已归零 / 相位不是 RUNNING）。
      * 内容没变时 [post] 会自动跳过，所以不会重复打扰。
      */
-    fun tickClockText(context: Context): Boolean {
-        val current = _state.value ?: return false
-        if (current.phase != WorkoutNotificationPhase.RUNNING) return false
-        if (current.clock?.running != true) return false
-        if (!serviceForeground) return false
-        val app = context.applicationContext
-        post(app, current, force = false)
-        // 倒计时在后台走到 0：再重绘也不会有变化，停掉循环
-        val display = current.clock.resolve(SystemClock.elapsedRealtime())
-        return display?.state != WorkoutClockDisplayState.FINISHED
+    /**
+     * 倒计时到点时由服务调用一次：把「组歇 · 00:00」换成「组歇 · 00:00 · 已结束」。
+     *
+     * 只重投一次，不写任何业务状态；数字本身由系统 Chronometer 渲染，不依赖这次调用。
+     */
+    fun postClockEnd(context: Context) {
+        val current = _state.value ?: return
+        if (!serviceForeground) return
+        post(context.applicationContext, current, force = false, tag = "clockEnd")
     }
 
     /** 训练结束（保存成功 / 舍弃 / 删除）后调用，彻底清理。 */
@@ -215,7 +217,7 @@ object ActiveWorkoutNotifier {
         if (dismissedByUser) return
         val app = context.applicationContext
         if (!canPost(app)) return
-        if (serviceForeground) post(app, current, force = false) else startService(app)
+        if (serviceForeground) post(app, current, force = false, tag = "refresh") else startService(app)
     }
 
     /**
@@ -267,20 +269,52 @@ object ActiveWorkoutNotifier {
         context: Context,
         state: WorkoutNotificationState,
         force: Boolean,
-    ) {
-        if (!canPost(context)) return
+        tag: String = "",
+    ): String {
+        if (!canPost(context)) return "skip:notifications-disabled".also {
+        }
         val now = SystemClock.elapsedRealtime()
         val key = contentKey(context, state, now)
         // UI 每秒推一次、服务每秒重绘一次，这里统一按「渲染出来的内容」去重；
         // 同时挡住「用户划掉后又把通知弹回来」——独立计时器每秒刷新也必须走这道闸门。
-        if (!NotificationPostPolicy.shouldPost(dismissedByUser, force, key, lastPostedKey)) return
-        runCatching {
+        if (!NotificationPostPolicy.shouldPost(dismissedByUser, force, key, lastPostedKey)) {
+            val reason = if (dismissedByUser) "dismissed" else "same-key"
+            return "skip:$reason"
+        }
+        val result = runCatching {
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, build(context, state, now))
             lastPostedKey = key
         }
+        return result.fold(
+            onSuccess = {
+                "posted"
+            },
+            onFailure = { error ->
+                Log.w(TAG, "notify failed id=$NOTIFICATION_ID", error)
+                "failed:${error.javaClass.simpleName}"
+            },
+        )
     }
 
     /** 渲染指纹：只有「真正显示出来的文字」变了，才值得重新投递。 */
+    /** 通知文字颜色：跟随系统夜间模式（与通知栏底色一致），不跟 App 内的主题设置。 */
+    private fun notificationInk(context: Context): Pair<Int, Int> {
+        val night = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        return if (night) {
+            0xFFFFFFFF.toInt() to 0xFFB3FFFFFF.toInt()
+        } else {
+            0xDE000000.toInt() to 0x99000000.toInt()
+        }
+    }
+
+    /** 深浅色切换后重投一次，让自绘视图的配色跟上。 */
+    fun postThemeRefresh(context: Context) {
+        val current = _state.value ?: return
+        if (!serviceForeground) return
+        post(context.applicationContext, current, force = true, tag = "theme")
+    }
+
     private fun contentKey(context: Context, state: WorkoutNotificationState, now: Long): String {
         val clock = clockText(context, state, now).orEmpty()
         val action = state.exerciseName.orEmpty()
@@ -296,22 +330,15 @@ object ActiveWorkoutNotifier {
         now: Long = SystemClock.elapsedRealtime(),
     ): Notification {
         ensureChannel(context)
+        val running = state.phase == WorkoutNotificationPhase.RUNNING
         val elapsed = state.elapsedAt(now)
         val duration = durationText(context, elapsed)
         val name = state.exerciseName
-        // 训练已结束待保存时不再展示独立计时器：那一刻它没有指导意义
-        val clockLine = if (state.phase == WorkoutNotificationPhase.FINISHING) {
-            null
-        } else {
-            clockText(context, state, now)
-        }
-        val actionLine = name?.let { context.getString(R.string.workout_notification_running_named, it) }
         val title = when (state.phase) {
             WorkoutNotificationPhase.FINISHING -> context.getString(R.string.workout_notification_title_pending)
             else -> context.getString(R.string.workout_notification_title_running)
         }
-        // 折叠态只能露一行：优先给计时器（最有时效性），其次动作，最后退回通用文案
-        val body = when (state.phase) {
+        val actionText = when (state.phase) {
             WorkoutNotificationPhase.FINISHING ->
                 context.getString(R.string.workout_notification_pending_text, duration)
             WorkoutNotificationPhase.PAUSED -> if (name != null) {
@@ -319,24 +346,99 @@ object ActiveWorkoutNotifier {
             } else {
                 context.getString(R.string.workout_notification_paused, duration)
             }
-            // 运行中的秒数由标题右侧的系统 chronometer 负责。
-            // 正文若也写死一个数字，会在发布瞬间停住，反而误导用户。
-            WorkoutNotificationPhase.RUNNING -> clockLine ?: actionLine
-                ?: context.getString(R.string.workout_notification_running)
+            WorkoutNotificationPhase.RUNNING -> name?.let {
+                context.getString(R.string.workout_notification_running_named, it)
+            } ?: context.getString(R.string.workout_notification_running)
         }
-        // 展开态两行：动作 / 计时器，各自独立，不合并成一个数字
-        val expandedBody = when (state.phase) {
-            WorkoutNotificationPhase.FINISHING -> body
-            WorkoutNotificationPhase.PAUSED -> listOfNotNull(body, clockLine).joinToString("\n")
-            WorkoutNotificationPhase.RUNNING -> listOfNotNull(actionLine, clockLine)
-                .joinToString("\n")
-                .ifBlank { body }
+        // 训练已结束待保存时不再展示独立计时器：那一刻它没有指导意义
+        val display = if (state.phase == WorkoutNotificationPhase.FINISHING) {
+            null
+        } else {
+            state.clock?.resolve(now)
         }
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val clockLine = if (state.phase == WorkoutNotificationPhase.FINISHING) {
+            null
+        } else {
+            clockText(context, state, now)
+        }
+
+        val content = RemoteViews(context.packageName, R.layout.notification_workout_content)
+        // RemoteViews 用本 App 的主题充气，?attr/textColorPrimary 不会跟随通知栏的深浅色，
+        // 这里按系统夜间模式显式上色，保证深色通知栏里也是白字。
+        val (primaryInk, secondaryInk) = notificationInk(context)
+        content.setTextColor(R.id.notification_title, primaryInk)
+        content.setTextColor(R.id.notification_total, secondaryInk)
+        content.setTextColor(R.id.notification_action, secondaryInk)
+        content.setTextColor(R.id.notification_clock_label, primaryInk)
+        content.setTextColor(R.id.notification_clock_chronometer, primaryInk)
+        content.setTextColor(R.id.notification_clock_text, primaryInk)
+        content.setTextViewText(R.id.notification_title, title)
+        // 训练总时长：运行中由系统走秒；暂停 / 待保存用同一基准冻结在一处
+        content.setChronometerCountDown(R.id.notification_total, false)
+        content.setChronometer(
+            R.id.notification_total,
+            SystemClock.elapsedRealtime() - elapsed,
+            null,
+            running,
+        )
+        content.setTextViewText(R.id.notification_action, actionText)
+
+        if (display != null && display.state == WorkoutClockDisplayState.RUNNING) {
+            val countdown = display.kind == WorkoutClockKind.COUNTDOWN
+            content.setTextViewText(
+                R.id.notification_clock_label,
+                context.getString(
+                    if (countdown) {
+                        R.string.workout_notification_clock_countdown_label
+                    } else {
+                        R.string.workout_notification_clock_stopwatch_label
+                    },
+                ),
+            )
+            content.setViewVisibility(R.id.notification_clock_label, View.VISIBLE)
+            content.setViewVisibility(R.id.notification_clock_text, View.GONE)
+            content.setViewVisibility(R.id.notification_clock_chronometer, View.VISIBLE)
+            // 倒计时多一个「/ 02:00」的目标，让「已歇 00:35」读得出进度
+            if (countdown) {
+                content.setTextViewText(
+                    R.id.notification_clock_suffix,
+                    context.getString(
+                        R.string.workout_notification_clock_countdown_suffix,
+                        WorkoutClockLogic.formatClock(display.durationMillis),
+                    ),
+                )
+                content.setViewVisibility(R.id.notification_clock_suffix, View.VISIBLE)
+            } else {
+                content.setViewVisibility(R.id.notification_clock_suffix, View.GONE)
+            }
+            val spec = display.chronometerSpec(SystemClock.elapsedRealtime())
+            if (spec != null) {
+                content.setChronometerCountDown(R.id.notification_clock_chronometer, spec.countDown)
+                content.setChronometer(
+                    R.id.notification_clock_chronometer,
+                    spec.baseElapsedRealtime,
+                    null,
+                    true,
+                )
+            }
+        } else if (clockLine != null) {
+            // 暂停 / 已到点：显示冻结文本，不走秒
+            content.setViewVisibility(R.id.notification_clock_label, View.GONE)
+            content.setViewVisibility(R.id.notification_clock_chronometer, View.GONE)
+            content.setViewVisibility(R.id.notification_clock_suffix, View.GONE)
+            content.setViewVisibility(R.id.notification_clock_text, View.VISIBLE)
+            content.setTextViewText(R.id.notification_clock_text, clockLine)
+        } else {
+            content.setViewVisibility(R.id.notification_clock_row, View.GONE)
+        }
+
+        return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_timer)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(content)
+            .setCustomBigContentView(content)
             .setContentTitle(title)
-            .setContentText(body)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(expandedBody))
+            .setContentText(listOfNotNull(actionText, clockLine).joinToString(" · "))
             .setContentIntent(openIntent(context))
             .setDeleteIntent(dismissIntent(context))
             .setOngoing(true)
@@ -345,14 +447,9 @@ object ActiveWorkoutNotifier {
             .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        if (state.phase == WorkoutNotificationPhase.RUNNING) {
-            // 系统 chronometer 从 (现在 - 已累计时长) 起走，
-            // 与 SessionEditorViewModel.totalElapsed() 同一个基准
-            builder.setWhen(System.currentTimeMillis() - elapsed).setUsesChronometer(true)
-        } else {
-            builder.setShowWhen(false).setUsesChronometer(false)
-        }
-        return builder.build()
+            .setShowWhen(false)
+            .setUsesChronometer(false)
+            .build()
     }
 
     /** 独立计时器那一行；null 表示「未启动 / 已重置」——整行不显示。 */
@@ -362,21 +459,34 @@ object ActiveWorkoutNotifier {
         now: Long,
     ): String? {
         val display = state.clock?.resolve(now) ?: return null
-        val time = WorkoutClockLogic.formatClock(display.millis)
         return when (display.kind) {
-            WorkoutClockKind.COUNTDOWN -> when (display.state) {
-                WorkoutClockDisplayState.RUNNING ->
-                    context.getString(R.string.workout_notification_clock_countdown, time)
-                WorkoutClockDisplayState.PAUSED ->
-                    context.getString(R.string.workout_notification_clock_countdown_paused, time)
-                WorkoutClockDisplayState.FINISHED ->
-                    context.getString(R.string.workout_notification_clock_countdown_finished)
+            WorkoutClockKind.COUNTDOWN -> {
+                val target = WorkoutClockLogic.formatClock(display.durationMillis)
+                when (display.state) {
+                    // 跑着的时候数字由 Chronometer 画，这里只给折叠态/无障碍用的固定文案，
+                    // 也正因为不含秒数，contentKey 不会每秒变，避免「每秒重投 → 卡一秒再跳」。
+                    WorkoutClockDisplayState.RUNNING ->
+                        context.getString(R.string.workout_notification_clock_countdown_running, target)
+                    WorkoutClockDisplayState.PAUSED -> context.getString(
+                        R.string.workout_notification_clock_countdown_paused,
+                        WorkoutClockLogic.formatClock(display.elapsedMillis),
+                        target,
+                    )
+                    WorkoutClockDisplayState.FINISHED -> context.getString(
+                        R.string.workout_notification_clock_countdown_finished,
+                        target,
+                        target,
+                    )
+                }
             }
-            WorkoutClockKind.STOPWATCH -> when (display.state) {
-                WorkoutClockDisplayState.PAUSED ->
-                    context.getString(R.string.workout_notification_clock_stopwatch_paused, time)
-                // 秒表只增不减，不存在「结束」语义
-                else -> context.getString(R.string.workout_notification_clock_stopwatch, time)
+            WorkoutClockKind.STOPWATCH -> {
+                val time = WorkoutClockLogic.formatClock(display.millis)
+                when (display.state) {
+                    WorkoutClockDisplayState.PAUSED ->
+                        context.getString(R.string.workout_notification_clock_stopwatch_paused, time)
+                    // 秒表只增不减，不存在「结束」语义
+                    else -> context.getString(R.string.workout_notification_clock_stopwatch, time)
+                }
             }
         }
     }

@@ -2,9 +2,9 @@
 
 本地离线的 Android 力量训练记录应用。单 Activity，Kotlin + Jetpack Compose + Room。没有账号、没有网络同步。界面中文；启动器英文名是 Traivol（`values-en/strings.xml` 的 `app_name`），中文名是「练有所迹」。
 
-当前版本：`versionName` **1.5.3**，`versionCode` **13**。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **19**。
+当前版本：`versionName` **1.5.4**，`versionCode` **14**。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **19**。
 
-> 状态：这是当前开发版。下面的「1.5.1 发版」「1.5.2」和实际代码是当前口径；更早的 UI 阶段章节保留为历史记录，涉及页面结构时以本文件末尾的 1.5.2 节和实际代码为准。
+> 状态：这是当前开发版。下面的「外观与日历配色」「通知设置」「1.5.2」等章节和实际代码是当前口径；更早的 UI 阶段章节保留为历史记录。
 
 下一个实现者先读这份文档，再改代码。用户用简体中文沟通。版本说明写在 `ui/settings/ReleaseNotes.kt` 的 `ReleaseHistory.notes`，新版本插在列表最上面。关于页读安装包的 `versionName`。
 
@@ -279,8 +279,22 @@ PR 在写入前先把每组换成当天的有效重量。
   - 状态只存「快照显示值 + 单调时钟锚点」（`WorkoutNotificationClock`），渲染用与 `tickClock()` 相同的公式还原：倒计时 `base - (now - anchor)`、正计时 `base + (now - anchor)`。暂停/重置/±30s/切模式会推新锚点，所以它不是第二套计时。
   - 文案：`组歇 · 01:53`、`组歇 · 01:53 · 已暂停`、`组歇 · 00:00 · 已结束`、`秒表 · 00:42`、`秒表 · 00:42 · 已暂停`。**未启动 / 已重置整行不显示**，避免给出虚构的运行时间；进入保存页也不显示。
   - 判定依据是 `WorkoutClockUi.started`，**不再靠「显示值是否等于初始值」反推**——否则「开始后 100ms 内暂停」和「暂停时恰好停在初始时长」都会被误判成未启动。`started` 只是 UI 状态位，不参与任何计时计算：切模式 / 重置 / `setTimerDuration` 归 false，`toggleClock` 开跑置 true，暂停 / 继续 / ±30s 全部保留原值（走 `copy()`）；不进草稿快照、不进 Room、不进备份。
-  - 测试：`WorkoutNotificationClockTest`（14 例，含「开始后立即暂停仍是已暂停」「暂停在初始值仍是已暂停」「重置后加时仍是未启动」）与 `WorkoutNotificationPostPolicyTest`（6 例，划掉后不被每秒刷新弹回）。
-  - 侧边时间只有一个：系统 chronometer 永远给训练总时长，独立计时器只能是文本。文本由服务里的 1Hz 循环按锚点重绘（仅 `running && phase==RUNNING` 时跑，归零/暂停/进保存页立即停），所以后台也能继续倒数，且平时一秒都不会多唤醒。
+  - 测试：`WorkoutNotificationClockTest`（19 例，含「开始后立即暂停仍是已暂停」「暂停在初始值仍是已暂停」「重置后加时仍是未启动」「Chronometer 基准只跟单调时钟、不按刷新次数累加」）与 `WorkoutNotificationPostPolicyTest`（6 例，划掉后不被每秒刷新弹回）。
+  - **渲染方式（1.5.3 修复，重要）**：整条通知改成自绘内容区`notification_workout_content.xml` + `DecoratedCustomViewStyle`，其中**两块时间都是系统 `Chronometer`**——标题右侧是训练总时长，第二行是独立计时器。两种模式都向上走（`countDown=false`、`base = now - 已走过`，倒计时的「已走过」= 设定时长 − 剩余）；暂停 / 到点改成静态文本（`chronometerSpec()` 返回 null）。
+  - **为什么不再用「App 每秒 notify 一次文本」**：Android 15/16（尤其国产 ROM）在后台会冻结/限流普通进程，一旦 `delay(1000)` 的刷新协程停住，写死的文本就永久冻结，而系统 Chronometer 仍在走——表现就是「总时长在走、组歇/秒表停住、回前台时间又是对的」。改成系统渲染后，刷新任务被冻结也不影响数字，顺带把后台每秒一次的通知投递降为零（实测 15 秒 0 次投递，数字照走）。
+  - 服务只保留两件事：状态变化时重投一次；倒计时运行时排一个**一次性**「到点」动作（`scheduleCountdownEnd`，到点后把文案换成「已结束」）。秒表、暂停、保存页都不排任务。
+  - **倒计时改成向上走（1.5.3 定稿）**：`组歇 · 已歇 00:35 / 02:00`，不再是「倒数到 0」。
+    原因是在真机（OnePlus PJZ110 / Android 16）上实测：切后台 2 秒就被 `OplusHansManager` 冻结整个进程，
+    `OplusAlarmAdjustment` 把本应用所有闹钟（含 `setAlarmClock`）推迟 `+2d23h59m`，服务持 `PARTIAL_WAKE_LOCK` 也拦不住，
+    协程 `delay` 用的 `uptimeMillis` 在深睡期间同样不走。也就是说「到点那一刻由 App 去改通知」这条路在本机物理上走不通，
+    而向下的 `Chronometer` 越过零点没有下限，会一路走成 `-00:46`。
+    改成向上走之后：数字只增不减，任何时刻都不会为负；也不需要零点唤醒，服务里不再有任何定时任务、闹钟或唤醒锁。
+    超过目标时显示成 `01:04 / 00:30`，一眼能看出「已经超时」，但不会再出现负数。
+  - 两种模式都走同一个绑定：`countDown=false`、`base = now - 已走过`。倒计时的「已走过」= 设定时长 − 剩余，
+    与 `tickClock()` 用的是同一个锚点（`countdownElapsedTracksTheSameAnchorAsRemaining` 守住）。
+  - 折叠态/无障碍文案用固定串（`组歇 · 已歇中 / 02:00`），**不含秒数**，所以 `contentKey` 不会每秒变化，
+    也就不会出现「每秒重投 → Chronometer 视图重建 → 卡一秒再跳」。
+  - 暂停 / 到点仍是静态文本：`已歇 00:35 / 02:00 · 已暂停`、`已歇 02:00 / 02:00 · 已到点`。
   - 去重分两层：`signature`（结构变化，会清「用户划掉」标记）与 `contentKey`（含渲染文本，只用于避免重复投递）。**计时器每秒文本变化不能清划掉标记**，否则用户划掉后会被每秒弹回来。
   - 独立计时器本来就不进草稿快照，所以进程被杀后它随 App 一起归零，通知恢复时也不会凭空造出一行时间。
 - 清理只发生在 `activeDraft` 被清空时（保存成功、舍弃、删除）。保存失败（含照片保存失败）不会清理，草稿与通知都留着。
@@ -290,6 +304,45 @@ PR 在写入前先把每组换成当天的有效重量。
 - 用户划掉通知（Android 14+）：不立即重发，等下一次真实状态变化（暂停/继续/换动作/进保存页）再显示。Android 13 上 `setOngoing(true)` 使其不可划掉。
 - 通知权限被拒（Android 13+）：服务照常运行，但抽屉里看不到通知，只在「前台服务任务管理器」可见。训练中授予权限后，`MainActivity.onResume` 会调 `ActiveWorkoutNotifier.refresh()` 补投一次（用户主动划掉的不补）。
 - **服务必须满足 5 秒契约**：只要是通过 `startForegroundService()` 拉起的，`onStartCommand` 里无论有没有有效训练，都必须在 5 秒内调用 `startForeground()`。「没有有效训练 → 直接 `stopSelf()`」会让系统抛 `ForegroundServiceDidNotStartInTimeException` 杀掉进程，所以走 `fulfillForegroundStart()`：先挂一个占位通知，立刻 `STOP_FOREGROUND_REMOVE` 撤下。
+
+## 外观与日历配色（1.5.3）
+
+- 设置页「偏好设置」中的外观改为普通入口，进入独立 `AppearanceSettingsScreen`：主题、使用壁纸配色、日历配色。
+- `CalendarColorStore` 用 SharedPreferences `gymlog_calendar_colors` 保存模式和六部位自定义色，默认 `VIVID`；不进入备份 JSON。
+- 三种模式：
+  - `VIVID`：同色相最亮版本 `FF8A80 / 82B1FF / FFD740 / B9F6CA / EA80FC / CFD8DC`。
+  - `SOFT`：当前熟悉配色 `E57373 / 64B5F6 / FFB74D / 81C784 / BA68C8 / 90A4AE`。
+  - `CUSTOM`：六部位分别保存 ARGB；自定义页提供色相/饱和度圆盘、明度滑条、色值和恢复默认。
+  - 自定义色号支持 `#RRGGBB` 或 `RRGGBB`；非法输入显示红色错误提示并禁用「应用颜色」。
+- 选择「自定义」立即进入 `CalendarCustomColorsScreen`；颜色只影响日历/训练足迹的部位色，休息/放纵/偷懒固定色不变。
+- 日期数字按背景 `luminance` 自动切换深色/白色，避免自定义深色看不清。
+- 调色板通过 `LocalCalendarColorPalette` 从 `MainActivity` 提供，`CalendarMonthOverview`、`TrainingCalendarCard`、`TrainingCalendarDetailScreen` 和 `CalendarColorLegend` 共用；不再直接读枚举默认色。
+- 测试：65 类 / 308 测试通过；模拟器验证鲜明（最亮）与柔和（当前）切换实际应用到日历；非法色号 `#GG0000` 显示错误且应用按钮禁用，合法 `FF8A80` 恢复可用。Debug APK：`GymLog-1.5.3-notification-settings.apk`，167,246,892 B，SHA-256 `DDD3913CF910F00081A25A5A645DC0E7D4ED5F4F9AAA99BF54DCE3DDCF98D6CC`。
+
+## 通知设置（1.5.3）
+
+- 设置页顶部大类改为「偏好设置」，包含外观卡和「通知」入口；外观卡内补「外观」小标题，不新增二级页。
+- 设置页原「数据备份」改为「数据管理」；清除本地数据从设置首页移入数据管理页，仍保留原来的两步确认和清除逻辑。
+- 设置页新增「通知」入口，进入独立 `NotificationSettingsScreen`；页面含「定时器到点通知」开关、系统通知权限状态和打开系统设置入口。
+- 偏好存放在 `NotificationSettingsStore` 的 SharedPreferences `gymlog_notifications`，键 `countdown_alerts_enabled`，默认 **开启**；退出页面/重启应用保留。该偏好不属于备份 JSON，也不会进入 Room。
+- 开关只控制独立倒计时的到点提醒，不影响训练总时长、进行中训练通知、训练保存或独立训练计时器。
+- 开启：
+  - 新的倒计时正常排 `setAlarmClock` + `setExactAndAllowWhileIdle` 双闹钟。
+  - 如果倒计时正在运行，按当前剩余时间重新安排，不重新开始。
+- 关闭：
+  - 取消尚未触发的主/备闹钟。
+  - 清除已经投递的 `timer_finished` 通知和震动。
+  - 新的倒计时不再安排到点提醒。
+  - `TimerAlarms.alert()` 和 `TimerAlarmReceiver` 还会再次检查偏好，拦截已排队的旧 PendingIntent。
+- 自然归零仍保留系统闹钟，由 AlarmManager 负责后台触发；不能因为前台 `clockFinished` 收集器未运行就提前取消。
+- 主/备闹钟共享一次性 token，Receiver 只在同 token 的 3 秒内去重；新倒计时有新 token，不会被旧去重记录误伤。
+- 进程重建时 `GymLogApplication.onCreate` 会取消上一进程遗留的独立计时闹钟；独立倒计时本来就不跨进程恢复。
+- 打开开关时弹窗提示检查通知权限、应用耗电管理、睡眠待机优化；不自动请求权限，不声称已检查/修复厂商设置。
+- 「检查系统设置」优先打开 `ACTION_APP_NOTIFICATION_SETTINGS`，失败回退 `ACTION_APPLICATION_DETAILS_SETTINGS`；两者都失败时显示手动提示，不崩溃。Android 没有可靠的通用厂商耗电管理入口，因此不伪造跳转。
+- 系统通知权限状态用 `NotificationManagerCompat.areNotificationsEnabled()` 读取；它不能代表精确闹钟能力或厂商后台限制。
+- 验证：65 类 / 308 测试通过；模拟器验证关闭后新倒计时无闹钟、运行中关闭取消闹钟、运行中重新开启按剩余 13 秒恢复并在到点发出通知、开启引导弹窗和系统通知设置跳转。Debug APK：`GymLog-1.5.3-notification-settings.apk`，167,246,892 B，SHA-256 `DDD3913CF910F00081A25A5A645DC0E7D4ED5F4F9AAA99BF54DCE3DDCF98D6CC`。
+- 修改前备份：`C:\Users\75192\AndroidStudioProjects\GymLog-backups\notification-settings-20261027-225749`（含 `HEAD.txt`、`status.txt`、`working.diff`、`untracked.txt` 和工作区源码副本）。
+- 一加 ColorOS 若把「应用耗电管理」限制后台，仍会把系统闹钟整体推迟；应用只能提示用户检查，不能绕过。
 
 ## 计时器
 
@@ -587,8 +640,9 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 改法：把「到点」这件事交给系统闹钟，把「提醒」这件事交给通知。
 
-- `data/TimerAlarmScheduler.kt`：`scheduleCountdown(remainingMillis)` 用 `AlarmManager.setAlarmClock()` 注册一个精确闹钟（RTC_WAKEUP，可唤醒 CPU，且会在状态栏显示闹钟图标，系统优先级最高最不容易被 Doze 推迟）。`cancel()` 取消。请求码 `REQUEST_ALARM=9401`、`REQUEST_SHOW=9402`。
-- `data/TimerAlarmReceiver.kt`：静态注册的 `BroadcastReceiver`，收 `ACTION_TIMER_FINISHED`（`com.example.gymlog.action.TIMER_FINISHED`），`exported=false`。到点后调 `TimerAlerts.alert()`。
+- `data/TimerAlarmScheduler.kt`：`scheduleCountdown(remainingMillis)` 同时注册两条精确闹钟：主路径 `AlarmManager.setAlarmClock()`（RTC_WAKEUP，可唤醒 CPU，且会在状态栏显示闹钟图标），备用路径 `setExactAndAllowWhileIdle()`（部分 ROM 只延迟前者，不一定延迟后者）。`cancel()` 两条都取消。请求码 `REQUEST_ALARM=9401`、`REQUEST_SHOW=9402`、`REQUEST_FALLBACK=9404`。
+- `data/TimerAlarmReceiver.kt`：静态注册的 `BroadcastReceiver`，收 `ACTION_TIMER_FINISHED`（`com.example.gymlog.action.TIMER_FINISHED`），`exported=false`。到点后调 `TimerAlerts.alert()`；主/备闹钟可能同时到达，Receiver 用单调时钟做 3 秒去重，避免双提醒。
+- **自然归零时不能 cancel 系统闹钟**：`SessionEditorViewModel.tickClock()` 只把 UI 状态置零并发出 `clockFinished`，让 AlarmManager 自己触发；否则后台时钟协程先跑完时会把唯一可靠的系统提醒取消掉，表现就是「到点没有任何系统提示」。
 - `data/TimerAlerts.kt`：发一条通知（渠道 `timer_finished`、id 9401、`CATEGORY_ALARM`、`PRIORITY_MAX`、震动 `[0,600,400,600]`）；通知权限被拒时退回直接调 `Vibrator`。**后台震动只能靠通知渠道带出来，直接调 Vibrator 在后台无效。**
 - `AndroidManifest.xml`：`POST_NOTIFICATIONS`、`USE_EXACT_ALARM` 两个权限；注册 receiver。`USE_EXACT_ALARM` 是系统授予、不可撤销，比 `SCHEDULE_EXACT_ALARM` 省掉「用户去设置里手动授权」这一步。
 - `MainActivity.kt`：`RequestNotificationPermissionIfNeeded()` 在 API 33+ 首次进入时申请通知权限。
@@ -599,6 +653,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 已知边界（未做，需要时再说）：
 
+- **一加/ColorOS 会整体调整应用闹钟**。2026-10-27 在 OnePlus PJZ110 / Android 16 上实测：主 `setAlarmClock` 和备用 `setExactAndAllowWhileIdle` 都被 `OplusAlarmAdjustment` 推到 `+2d23h59m`，即使应用已加入 DeviceIdle 白名单、前台服务和通知都正常。此时代码无法从应用侧绕过，必须在系统设置里关闭「睡眠待机优化」/把应用设为「无限制」并允许后台活动。普通 Android 和模拟器已验证能准时弹出 `timer_finished` 通知。
 - **重启后闹钟会丢**。`AlarmManager` 的闹钟不跨开机。要做开机恢复得再加 `BOOT_COMPLETED` 的 receiver，把没跑完的倒计时重新注册，并且倒计时目标时间得先落盘。
 - **国产 ROM**（小米/华为/OPPO/vivo 等）默认限制后台唤醒，即使代码正确也可能不响。只能引导用户去「电池优化 / 自启动 / 锁定后台」里把应用加白名单，代码里加不了。
 - **Doze 深度待机**下 `setAlarmClock` 是少数还能准点的方式，但如果用户手动开了省电/飞行模式仍会不准。
@@ -709,11 +764,24 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 
 ## 1.5.2（已出可试安装包）
 
-- `versionCode = 12`，`versionName = 1.5.2`（2026-10-24 自 1.5.1 升上来，无数据库迁移）。
+- ersionCode = 12，ersionName = 1.5.2（2026-10-24 自 1.5.1 升上来，无数据库迁移）。
 - 包含四项功能：日历展开月历格子显示训练部位；底部迷你卡只显示当前动作；计时器后台/锁屏到点震动（见「计时器后台/锁屏震动提醒」）；训练迷你卡在定时器运行时第一行右侧同步显示倒计时/秒表时间（见「迷你卡在定时器运行时显示倒计时」）。另含一处 UI 修正：保存页删除重复的「训练照片」添加入口（保留大虚线框 + 已选图时的「更换/移除」，见「保存页删除重复的训练照片添加入口」）。
-- `ReleaseNotes.kt` 顶部新增 1.5.2 更新记录；`ReleaseHistoryTest` 首条断言同步改为 `1.5.2`。
-- 构建：`gradle :app:assembleDebug`（debug 证书自动签名，可直接 `adb install` 或拷到手机安装，用于试用）。最终单测：57 类 / 239 测试，0 失败、0 错误。
-- 产物：仓库根目录 `GymLog-1.5.2.apk`，166,734,143 B，SHA-256 `9942D152B8583ABCC862820740A4C43F989BFEC04963719698380F342AB30E7B`。
-- `aapt dump badging`：`com.example.gymlog`，versionCode 12，versionName 1.5.2，label「练有所迹」。
-- 签名：Android Debug 证书（`CN=Android Debug`，证书 SHA-256 `8dfbabfe94e907e2ebe5c0069ae31a868da7109219e564a7edbe04a01514b633`）；可覆盖旧预览包，但不是正式商店签名。
-- 已在模拟器 `adb install -r` + 冷启动验证，无 `FATAL EXCEPTION`。
+- ReleaseNotes.kt 顶部新增 1.5.2 更新记录；ReleaseHistoryTest 首条断言同步改为 1.5.2。
+- 构建：gradle :app:assembleDebug（debug 证书自动签名，可直接 db install 或拷到手机安装，用于试用）。最终单测：57 类 / 239 测试，0 失败、0 错误。
+- 产物：仓库根目录 GymLog-1.5.2.apk，166,734,143 B，SHA-256 9942D152B8583ABCC862820740A4C43F989BFEC04963719698380F342AB30E7B。
+- apt dump badging：com.example.gymlog，versionCode 12，versionName 1.5.2，label「练有所迹」。
+- 签名：Android Debug 证书（CN=Android Debug，证书 SHA-256 8dfbabfe94e907e2ebe5c0069ae31a868da7109219e564a7edbe04a01514b633）；可覆盖旧预览包，但不是正式商店签名。
+- 已在模拟器 db install -r + 冷启动验证，无 FATAL EXCEPTION。
+
+## 1.5.4 发版
+
+- ersionCode = 14，ersionName = 1.5.4（2026-10-28，自 1.5.3 升上来，无数据库迁移）。
+- 1.5.3 的训练记录分组改名为「bug修复」，保留重量/次数手动输入内容。
+- 外观改为独立设置页；新增日历配色：鲜明（最亮色）、柔和（当前色）、自定义（六部位 HSV 调色盘）。
+- 自定义配色支持 #RRGGBB / RRGGBB 色号输入；非法输入提示并禁用应用。
+- 新增通知设置：可关闭定时器到点通知；关闭取消主备闹钟和已投递提醒，重新开启按剩余时间恢复；开启时提示检查通知权限、耗电管理和睡眠待机优化。
+- 数据备份更名为数据管理，清除本地数据移入其中，保留两步确认。
+- 测试：65 类 / 308 测试，0 失败、0 错误。
+- Debug APK：GymLog-1.5.4.apk，166,199,844 B，SHA-256 494FF0FD40EAB626867A7087CB12E9B8A405EE5C1A23D8750A4D5F2590BC16D5。
+- apt dump badging：versionCode 14，versionName 1.5.4，label「练有所迹」；Android Debug 证书签名，不是正式商店签名。
+- 模拟器 install -r 后冷启动无 FATAL EXCEPTION。

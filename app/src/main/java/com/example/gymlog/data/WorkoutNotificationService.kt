@@ -3,14 +3,6 @@ package com.example.gymlog.data
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 /**
  * 只负责「让训练通知活着」的前台服务。
@@ -21,11 +13,16 @@ import kotlinx.coroutines.launch
  *
  * 服务类型用 `specialUse`（见 AndroidManifest）：本 App 不读取任何传感器，
  * `health` 要求的运行时权限与实际功能无关，因此不采用。
+ *
+ * **本服务不做任何定时刷新**：通知里两个时间都是系统 Chronometer（见
+ * `notification_workout_content.xml`），由 SystemUI 自己走秒。
+ * 早先的「每秒重绘」和后来的「到点闹钟 + 唤醒锁」都已移除 ——
+ * 实测（OnePlus / Android 16）切后台 2 秒就会被 `OplusHansManager` 冻结整个进程，
+ * 闹钟被 `OplusAlarmAdjustment` 推迟约 3 天，唤醒锁也拦不住。
+ * 所以显示必须做到「不依赖 App 在零点醒来」：倒计时改成向上走的「已歇 x / 目标」，
+ * 任何时刻都不会出现负数，也就不再需要到点唤醒。
  */
 class WorkoutNotificationService : Service() {
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var clockTicker: Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -52,51 +49,17 @@ class WorkoutNotificationService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        observeClock(state.clock?.running == true)
         // 尽力恢复：系统若愿意重启本服务，就按快照复原；不把它当成保证
         return START_STICKY
     }
 
-    /**
-     * 独立计时器在跑时，每秒按锚点重绘一次那一行文字。
-     *
-     * 这只做「显示更新」：时间值由 [WorkoutNotificationClock] 用与
-     * `SessionEditorViewModel.tickClock()` 相同的公式算出来，不产生第二套计时。
-     * 计时器停下 / 归零 / 进入保存页时循环自动退出，平时一秒钟也不会额外唤醒。
-     */
-    private fun observeClock(initialRunning: Boolean) {
-        var wasRunning = initialRunning
-        if (wasRunning) startTicker()
-        scope.launch {
-            ActiveWorkoutNotifier.state.collect { state ->
-                val running = state != null &&
-                    state.phase == WorkoutNotificationPhase.RUNNING &&
-                    state.clock?.running == true
-                if (running && !wasRunning) startTicker()
-                if (!running && wasRunning) stopTicker()
-                wasRunning = running
-            }
-        }
-    }
-
-    private fun startTicker() {
-        if (clockTicker?.isActive == true) return
-        clockTicker = scope.launch {
-            while (isActive) {
-                delay(1_000)
-                if (!ActiveWorkoutNotifier.tickClockText(this@WorkoutNotificationService)) break
-            }
-        }
-    }
-
-    private fun stopTicker() {
-        clockTicker?.cancel()
-        clockTicker = null
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // 深浅色切换会让自绘视图的配色失效，重投一次
+        ActiveWorkoutNotifier.postThemeRefresh(this)
     }
 
     override fun onDestroy() {
-        stopTicker()
-        scope.cancel()
         ActiveWorkoutNotifier.onServiceDestroyed()
         super.onDestroy()
     }

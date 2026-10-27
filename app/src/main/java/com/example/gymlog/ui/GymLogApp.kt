@@ -139,7 +139,11 @@ import com.example.gymlog.ui.settings.ReleaseNotesScreen
 import com.example.gymlog.ui.settings.AppSettingsScreen
 import com.example.gymlog.ui.settings.BackupDataScreen
 import com.example.gymlog.ui.settings.DataTransferViewModel
+import com.example.gymlog.ui.settings.AppearanceSettingsScreen
+import com.example.gymlog.ui.settings.CalendarColorSettingsScreen
+import com.example.gymlog.ui.settings.CalendarCustomColorsScreen
 import com.example.gymlog.ui.settings.MineScreen
+import com.example.gymlog.ui.settings.NotificationSettingsScreen
 import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.settings.SettingsViewModel
 import com.example.gymlog.ui.stats.BodyTrendScreen
@@ -193,6 +197,10 @@ private sealed interface Screen {
     ) : Screen
     data class PickExercise(val returnTo: SessionEditor) : Screen
     data class Settings(val from: RootTab) : Screen
+    data class Appearance(val from: RootTab) : Screen
+    data class CalendarColors(val from: RootTab) : Screen
+    data class CalendarCustomColors(val from: RootTab) : Screen
+    data class NotificationSettings(val from: RootTab) : Screen
     data class BackupData(val from: RootTab) : Screen
     data class TimerHistory(val from: RootTab) : Screen
     data object PhotoWall : Screen
@@ -247,6 +255,10 @@ private val ScreenSaver: Saver<Screen, Any> = Saver(
                 "returnTab" to screen.returnTo.returnTab.name,
             )
             is Screen.Settings -> mapOf("type" to "settings", "from" to screen.from.name)
+            is Screen.Appearance -> mapOf("type" to "appearance", "from" to screen.from.name)
+            is Screen.CalendarColors -> mapOf("type" to "calendar-colors", "from" to screen.from.name)
+            is Screen.CalendarCustomColors -> mapOf("type" to "calendar-custom-colors", "from" to screen.from.name)
+            is Screen.NotificationSettings -> mapOf("type" to "notification-settings", "from" to screen.from.name)
             is Screen.BackupData -> mapOf("type" to "backup", "from" to screen.from.name)
             is Screen.TimerHistory -> mapOf("type" to "timer-history", "from" to screen.from.name)
             is Screen.PhotoDetail -> mapOf("type" to "photo-detail", "id" to screen.id)
@@ -305,6 +317,10 @@ private val ScreenSaver: Saver<Screen, Any> = Saver(
             "session" -> session(values)
             "pick-exercise" -> Screen.PickExercise(session(values))
             "settings" -> Screen.Settings(tab("from"))
+            "appearance" -> Screen.Appearance(tab("from"))
+            "calendar-colors" -> Screen.CalendarColors(tab("from"))
+            "calendar-custom-colors" -> Screen.CalendarCustomColors(tab("from"))
+            "notification-settings" -> Screen.NotificationSettings(tab("from"))
             "backup" -> Screen.BackupData(tab("from"))
             "timer-history" -> Screen.TimerHistory(tab("from"))
             "photo-detail" -> Screen.PhotoDetail(values["id"] as? String ?: "")
@@ -365,6 +381,10 @@ private fun Screen.toRootTab(): RootTab = when (this) {
     Screen.Progress, Screen.TrainingTrend, Screen.BodyTrend -> RootTab.Progress
     Screen.Mine, is Screen.BodyRecord, is Screen.MuscleMap, Screen.PhotoWall, is Screen.PhotoDetail, Screen.PhotoEditor -> RootTab.Mine
     is Screen.Settings -> from
+    is Screen.Appearance -> from
+    is Screen.CalendarColors -> from
+    is Screen.CalendarCustomColors -> from
+    is Screen.NotificationSettings -> from
     is Screen.BackupData -> from
     is Screen.TimerHistory -> from
     is Screen.About -> from
@@ -848,15 +868,62 @@ fun GymLogApp(
                     }
 
                     is Screen.Settings -> {
+                        AppSettingsScreen(
+                            onBack = { screen = current.from.toScreen() },
+                            onOpenAbout = { screen = Screen.About(current.from) },
+                            onOpenBackup = { screen = Screen.BackupData(current.from) },
+                            onOpenAppearance = {
+                                screen = Screen.Appearance(current.from)
+                            },
+                            onOpenNotifications = {
+                                screen = Screen.NotificationSettings(current.from)
+                            },
+                        )
+                    }
+
+                    is Screen.Appearance -> {
                         val settingsViewModel: SettingsViewModel = viewModel(
                             key = "app-settings",
                             factory = SettingsViewModel.factory(app),
                         )
-                        AppSettingsScreen(
+                        AppearanceSettingsScreen(
                             viewModel = settingsViewModel,
-                            onBack = { screen = current.from.toScreen() },
-                            onOpenAbout = { screen = Screen.About(current.from) },
-                            onOpenBackup = { screen = Screen.BackupData(current.from) },
+                            calendarColorStore = app.calendarColorStore,
+                            onBack = { screen = Screen.Settings(current.from) },
+                            onOpenCalendarColors = {
+                                screen = Screen.CalendarColors(current.from)
+                            },
+                        )
+                    }
+
+                    is Screen.CalendarColors -> {
+                        CalendarColorSettingsScreen(
+                            store = app.calendarColorStore,
+                            onBack = { screen = Screen.Appearance(current.from) },
+                            onOpenCustom = {
+                                screen = Screen.CalendarCustomColors(current.from)
+                            },
+                        )
+                    }
+
+                    is Screen.CalendarCustomColors -> {
+                        CalendarCustomColorsScreen(
+                            store = app.calendarColorStore,
+                            onBack = { screen = Screen.CalendarColors(current.from) },
+                        )
+                    }
+
+                    is Screen.NotificationSettings -> {
+                        NotificationSettingsScreen(
+                            store = app.notificationSettingsStore,
+                            onBack = { screen = Screen.Settings(current.from) },
+                            onAlertsEnabledChange = { enabled ->
+                                activeEditorViewModel?.setCountdownAlertsEnabled(enabled)
+                                if (!enabled) {
+                                    app.timerAlarmScheduler.cancel()
+                                    app.timerAlarmScheduler.cancelAlerts()
+                                }
+                            },
                         )
                     }
 
@@ -865,8 +932,13 @@ fun GymLogApp(
                             key = "data-transfer",
                             factory = DataTransferViewModel.factory(app),
                         )
+                        val clearSettingsViewModel: SettingsViewModel = viewModel(
+                            key = "app-settings",
+                            factory = SettingsViewModel.factory(app),
+                        )
                         BackupDataScreen(
                             viewModel = transferViewModel,
+                            clearViewModel = clearSettingsViewModel,
                             onBack = { screen = Screen.Settings(current.from) },
                         )
                     }

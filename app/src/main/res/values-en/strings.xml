@@ -12,9 +12,12 @@
     <string name="workout_notification_paused_named">Paused · elapsed %1$s · %2$s</string>
     <string name="workout_notification_pending_text">This workout is %1$s long and still needs saving</string>
     <string name="workout_notification_duration">%1$dm %2$ds</string>
-    <string name="workout_notification_clock_countdown">Rest · %1$s</string>
-    <string name="workout_notification_clock_countdown_paused">Rest · %1$s · paused</string>
-    <string name="workout_notification_clock_countdown_finished">Rest · 00:00 · done</string>
     <string name="workout_notification_clock_stopwatch">Stopwatch · %1$s</string>
+    <string name="workout_notification_clock_countdown_label">Rest · </string>
+    <string name="workout_notification_clock_countdown_suffix"> / %1$s</string>
+    <string name="workout_notification_clock_countdown_running">Rest · in progress / %1$s</string>
+    <string name="workout_notification_clock_countdown_paused">Rest · %1$s of %2$s · paused</string>
+    <string name="workout_notification_clock_countdown_finished">Rest · %1$s of %2$s · done</string>
+    <string name="workout_notification_clock_stopwatch_label">Stopwatch ·</string>
     <string name="workout_notification_clock_stopwatch_paused">Stopwatch · %1$s · paused</string>
 </resources>

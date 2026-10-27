@@ -247,13 +247,14 @@ private fun MonthDayCircle(
     modifier: Modifier = Modifier,
 ) {
     val fill = when (paint) {
-        is CalendarDayPaint.Training -> Color(paint.category.argb)
+        is CalendarDayPaint.Training -> Color(LocalCalendarColorPalette.current.color(paint.category))
         is CalendarDayPaint.Special -> Color(paint.day.argb)
         CalendarDayPaint.Empty -> Color.Transparent
     }
     val ink = when {
         isSelected -> MaterialTheme.colorScheme.onPrimary
         !inMonth -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.32f)
+        fill != Color.Transparent -> fill.onColorInk()
         paint is CalendarDayPaint.Training -> Ink
         paint is CalendarDayPaint.Special -> Ink
         else -> MaterialTheme.colorScheme.onSurface

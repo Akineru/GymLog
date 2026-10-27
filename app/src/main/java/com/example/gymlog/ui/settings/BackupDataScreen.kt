@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.AlertDialog
@@ -24,6 +25,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,13 +39,19 @@ import java.time.LocalDate
 @Composable
 fun BackupDataScreen(
     viewModel: DataTransferViewModel,
+    clearViewModel: SettingsViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val clearState by clearViewModel.state.collectAsStateWithLifecycle()
+    var clearStep by rememberSaveable { mutableIntStateOf(0) }
+    val clearDialogOpen = clearStep != 0 || clearState.notice != null
+    BackHandler(enabled = clearState.notice != null) { clearViewModel.dismissNotice() }
+    BackHandler(enabled = clearState.notice == null && clearStep != 0) { clearStep = 0 }
     BackHandler(enabled = state.preview != null) { viewModel.cancelImport() }
     BackHandler(enabled = state.notice != null) { viewModel.dismissNotice() }
     BackHandler(
-        enabled = state.preview == null && state.notice == null,
+        enabled = state.preview == null && state.notice == null && !clearDialogOpen,
         onBack = onBack,
     )
     val exportLauncher = rememberLauncherForActivityResult(
@@ -111,6 +121,24 @@ fun BackupDataScreen(
                     )
                 }
             }
+            item {
+                SettingsLinkRow(
+                    title = stringResource(R.string.clear_data),
+                    subtitle = stringResource(R.string.clear_data_hint),
+                    icon = Icons.Filled.DeleteOutline,
+                    titleColor = MaterialTheme.colorScheme.error,
+                    enabled = !clearState.busy,
+                    onClick = { clearStep = 1 },
+                )
+            }
+            if (clearState.busy) {
+                item {
+                    Text(
+                        text = stringResource(R.string.clear_data_busy),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
         }
     }
 
@@ -149,6 +177,76 @@ fun BackupDataScreen(
             text = { Text(transferNoticeMessage(notice)) },
             confirmButton = {
                 TextButton(onClick = viewModel::dismissNotice) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+        )
+    }
+
+    if (clearStep == 1) {
+        AlertDialog(
+            onDismissRequest = { clearStep = 0 },
+            shape = RoundedCornerShape(24.dp),
+            title = { Text(stringResource(R.string.clear_data_understand_title)) },
+            text = { Text(stringResource(R.string.clear_data_understand_message)) },
+            confirmButton = {
+                TextButton(onClick = { clearStep = 2 }) {
+                    Text(stringResource(R.string.clear_data_understand_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { clearStep = 0 }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
+    if (clearStep == 2) {
+        AlertDialog(
+            onDismissRequest = { clearStep = 0 },
+            shape = RoundedCornerShape(24.dp),
+            title = { Text(stringResource(R.string.clear_data_confirm_title)) },
+            text = { Text(stringResource(R.string.clear_data_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        clearStep = 0
+                        clearViewModel.clearLocalData()
+                    },
+                ) {
+                    Text(
+                        text = stringResource(R.string.clear_data_confirm_action),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { clearStep = 0 }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
+    clearState.notice?.let { notice ->
+        AlertDialog(
+            onDismissRequest = clearViewModel::dismissNotice,
+            shape = RoundedCornerShape(24.dp),
+            title = { Text(stringResource(R.string.clear_data)) },
+            text = {
+                Text(
+                    stringResource(
+                        if (notice == ClearNotice.Cleared) {
+                            R.string.clear_data_done
+                        } else {
+                            R.string.clear_data_failed
+                        },
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = clearViewModel::dismissNotice) {
                     Text(stringResource(R.string.ok))
                 }
             },

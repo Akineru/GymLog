@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  活动训练通知的内容区（整块自绘，配合 DecoratedCustomViewStyle）。
+
+  两块时间都由系统 Chronometer 渲染：
+  - notification_total：训练总时长，始终显示；暂停/待保存时以 started=false 冻结；
+  - notification_clock_chronometer：独立计时器，只在运行中显示，由 SystemUI 走秒。
+  这样进程被系统冻结/限流时两个数字都照常走，也不需要每秒重新 notify。
+
+  **倒计时也是向上走的**（`已歇 00:35 / 02:00`），不是向下数到 0：
+  向下的 Chronometer 越过零点没有下限，会显示成 `-00:46`，而在会冻结进程的机器上
+  没法在零点重投一次去纠正（见 airead 里的实测）。向上走则任何时刻都不会为负，
+  也不再需要在零点唤醒 App。
+
+  行序：标题(含总时长) → 计时器 → 当前动作。
+  折叠态只露前两行，所以把最有时效性的计时器放第二行，动作放最后。
+  颜色用 notification 主题属性，浅色/深色由系统套用的主题决定。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="1dp"
+    android:paddingBottom="1dp">
+
+    <!--
+      标题行：标题靠左，总时长落在**整行的水平中点**。
+      做法是「左右各占一份权重、时长居中」：标题 weight=1、末尾留一个等权占位，
+      时长两侧的空白相等，它自然就被摆到 W/2 上，而不是贴着右边。
+    -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/notification_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"
+            android:textColor="?android:attr/textColorPrimary" />
+
+        <Chronometer
+            android:id="@+id/notification_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification"
+            android:textColor="?android:attr/textColorSecondary" />
+
+        <!-- 与标题等权的占位：把时长顶到行中点。
+             注意 RemoteViews 只认白名单里的控件，纯 android.view.View 会抛
+             InflateException 并让 App 崩溃，所以这里用空 TextView 当占位。 -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/notification_clock_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/notification_clock_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification"
+            android:textColor="?android:attr/textColorPrimary" />
+
+        <Chronometer
+            android:id="@+id/notification_clock_chronometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification"
+            android:textColor="?android:attr/textColorPrimary" />
+
+        <TextView
+            android:id="@+id/notification_clock_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification"
+            android:textColor="?android:attr/textColorPrimary"
+            android:visibility="gone" />
+
+        <!-- 倒计时专用：跟在「已歇 00:35」后面的「 / 02:00」 -->
+        <TextView
+            android:id="@+id/notification_clock_suffix"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification"
+            android:textColor="?android:attr/textColorSecondary"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/notification_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification"
+        android:textColor="?android:attr/textColorSecondary" />
+</LinearLayout>

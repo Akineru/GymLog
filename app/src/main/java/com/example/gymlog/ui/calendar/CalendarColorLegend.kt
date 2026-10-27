@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
@@ -25,8 +26,22 @@ import com.example.gymlog.ui.theme.Ink
 
 internal val CalendarDayInk = Ink
 
+/** Pick the higher-contrast ink for the actual painted color. */
+internal fun Color.onColorInk(): Color {
+    val l = luminance()
+    val blackContrast = (l + 0.05f) / 0.05f
+    val whiteContrast = 1.05f / (l + 0.05f)
+    return if (blackContrast >= whiteContrast) CalendarDayInk else Color.White
+}
+
+@Composable
 internal fun CalendarDayPaint.fillColor(): Color? {
-    val argb = argb() ?: return null
+    val palette = LocalCalendarColorPalette.current
+    val argb = when (this) {
+        is CalendarDayPaint.Training -> palette.color(category)
+        is CalendarDayPaint.Special -> day.argb
+        CalendarDayPaint.Empty -> return null
+    }
     return Color(argb)
 }
 
@@ -37,8 +52,9 @@ fun CalendarColorLegend(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val palette = LocalCalendarColorPalette.current
             CalendarColorCategory.entries.forEach { category ->
-                LegendItem(color = Color(category.argb), label = stringResource(category.labelRes()))
+                LegendItem(color = Color(palette.color(category)), label = stringResource(category.labelRes()))
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

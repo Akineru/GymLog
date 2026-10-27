@@ -161,4 +161,85 @@ class WorkoutNotificationClockTest {
         assertEquals("00:00", WorkoutClockLogic.formatClock(0L))
         assertEquals("01:00:05", WorkoutClockLogic.formatClock(3_605_000L))
     }
+
+    // ---- 交给系统 Chronometer 的绑定参数（本次修复的回归测试） ----
+
+    @Test
+    fun runningCountdownBindsCountUpChronometer() {
+        // 倒计时改成「已歇 x / 目标」：目标 120s、快照时剩余 113s => 已歇 7s，再过一个锚点差 1s => 8s。
+        // base = now - 已歇，SystemUI 自己往上加。向上走就永远不会出现负数。
+        val display = countdown(displayMillis = 113_000L, running = true, anchor = 1_000L)
+            .resolve(2_000L)!!
+        assertEquals(8_000L, display.elapsedMillis)
+        val spec = display.chronometerSpec(nowElapsedRealtime = 10_000L)!!
+        assertEquals(false, spec.countDown)
+        assertEquals(2_000L, spec.baseElapsedRealtime)
+    }
+
+    @Test
+    fun countdownElapsedTracksTheSameAnchorAsRemaining() {
+        // 剩余 30s / 目标 120s => 已走 90s；再过 5 秒 => 已走 95s、剩余 25s。
+        // 两者必须始终是「同一个锚点的两种写法」，不能各算一套。
+        val clock = countdown(displayMillis = 30_000L, durationMillis = 120_000L, running = true, anchor = 1_000L)
+        val atStart = clock.resolve(1_000L)!!
+        assertEquals(90_000L, atStart.elapsedMillis)
+        assertEquals(30_000L, atStart.millis)
+        val later = clock.resolve(6_000L)!!
+        assertEquals(95_000L, later.elapsedMillis)
+        assertEquals(25_000L, later.millis)
+    }
+
+    @Test
+    fun countdownElapsedNeverOverflowsTheTarget() {
+        // 倒计时停下后剩余恒为 0，「已歇」应停在目标值上，不会继续涨
+        val paused = countdown(displayMillis = 0L, durationMillis = 120_000L, running = false)
+            .resolve(99_999L)!!
+        assertEquals(120_000L, paused.elapsedMillis)
+        // 停下来就不再走秒
+        assertNull(paused.chronometerSpec(99_999L))
+    }
+
+    @Test
+    fun runningStopwatchBindsCountUpChronometer() {
+        val display = stopwatch(displayMillis = 42_000L, running = true, anchor = 1_000L)
+            .resolve(2_000L)!!
+        val spec = display.chronometerSpec(nowElapsedRealtime = 10_000L)!!
+        assertEquals(false, spec.countDown)
+        assertEquals(-33_000L, spec.baseElapsedRealtime)
+    }
+
+    @Test
+    fun pausedAndFinishedHaveNoChronometer() {
+        // 暂停：显示冻结文本，不走秒
+        assertNull(countdown(displayMillis = 73_000L).resolve(9_999L)!!.chronometerSpec(10_000L))
+        // 归零：显示「已结束」，也不走秒
+        assertNull(countdown(displayMillis = 0L).resolve(9_999L)!!.chronometerSpec(10_000L))
+        assertNull(stopwatch(displayMillis = 5_000L).resolve(9_999L)!!.chronometerSpec(10_000L))
+    }
+
+    @Test
+    fun chronometerBaseFollowsTheMonotonicClockNotTheTickCount() {
+        // 同一个快照，两次重投只差「当前单调时钟」，base 差值必须等于时间差，
+        // 也就是说显示的秒数不会因为刷新次数而累加或回退。
+        val display = stopwatch(displayMillis = 60_000L, running = true, anchor = 1_000L)
+            .resolve(2_000L)!!
+        val first = display.chronometerSpec(nowElapsedRealtime = 20_000L)!!
+        val later = display.chronometerSpec(nowElapsedRealtime = 26_000L)!!
+        assertEquals(false, first.countDown)
+        assertEquals(-41_000L, first.baseElapsedRealtime)
+        assertEquals(-35_000L, later.baseElapsedRealtime)
+        assertEquals(
+            later.baseElapsedRealtime - first.baseElapsedRealtime,
+            6_000L,
+        )
+    }
+
+    @Test
+    fun stoppedCountdownNeverBindsNegativeChronometer() {
+        // 已归零的倒计时不会给出「还在跑」的 chronometer，因此不会出现负数
+        val finished = countdown(displayMillis = 3_000L, running = true, anchor = 1_000L)
+            .resolve(99_000L)!!
+        assertEquals(WorkoutClockDisplayState.FINISHED, finished.state)
+        assertNull(finished.chronometerSpec(99_000L))
+    }
 }

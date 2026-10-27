@@ -17,11 +17,31 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.5.4",
+            date = "2026年10月28日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "外观",
+                    items = listOf(
+                        "外观改为独立设置页，新增日历配色。",
+                        "日历配色支持鲜明、柔和和自定义；自定义可逐部位调色并输入色号。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "设置",
+                    items = listOf(
+                        "新增通知设置，可关闭定时器到点通知；开启时提示检查通知权限与耗电管理。",
+                        "数据备份更名为数据管理，清除本地数据移入其中。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.5.3",
             date = "2026年10月27日",
             sections = listOf(
                 ReleaseSection(
-                    title = "训练记录",
+                    title = "bug修复",
                     items = listOf(
                         "每组的重量、次数可以直接点进去手动输入，重量支持 42.5 这样的小数。",
                         "上下箭头照旧可用，重量步长 2.5 kg、次数步长 1，两种方式改的是同一个值。",

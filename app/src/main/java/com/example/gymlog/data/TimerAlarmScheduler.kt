@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import androidx.core.content.getSystemService
 import com.example.gymlog.MainActivity
 
@@ -20,7 +21,10 @@ import com.example.gymlog.MainActivity
  * and not revocable by the user, which is what makes it the right choice over
  * SCHEDULE_EXACT_ALARM now that Android 14 denies the latter by default).
  */
-class TimerAlarmScheduler(private val appContext: Context) {
+class TimerAlarmScheduler(
+    private val appContext: Context,
+    private val settings: NotificationSettingsStore,
+) {
     private val alarmManager: AlarmManager? get() = appContext.getSystemService()
 
     /** Schedules the alert to fire after [remainingMillis]. Replaces any previous one. */
@@ -28,17 +32,42 @@ class TimerAlarmScheduler(private val appContext: Context) {
         cancel()
         val manager = alarmManager ?: return
         if (remainingMillis <= 0L) return
+        // 关闭应用内开关后，不再为新的倒计时安排任何系统提醒。
+        if (!settings.countdownAlertsEnabled.value) return
         val triggerAt = System.currentTimeMillis() + remainingMillis
+        // 同一次倒计时的主/备闹钟共享 token；新倒计时会得到新 token，
+        // 从而不会被 3 秒去重误伤。
+        val token = SystemClock.elapsedRealtime()
+        // 主路径：系统闹钟，标准 Android 上最准，也允许在深度 Doze 唤醒。
         runCatching {
             manager.setAlarmClock(
                 AlarmManager.AlarmClockInfo(triggerAt, statusBarIntent()),
-                alarmIntent(),
+                alarmIntent(REQUEST_ALARM, token),
             )
+        }
+        // 备用路径：部分 ROM（实测 OnePlus/ColorOS）会把 setAlarmClock
+        // 整体调整到 +2d23h59m，但 setExactAndAllowWhileIdle 不一定被同样处理。
+        // 两个 PendingIntent 的 requestCode 不同，互不覆盖；Receiver 会去重。
+        runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                manager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAt,
+                    alarmIntent(REQUEST_FALLBACK, token),
+                )
+            } else {
+                manager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAt,
+                    alarmIntent(REQUEST_FALLBACK, token),
+                )
+            }
         }
     }
 
     fun cancel() {
-        runCatching { alarmManager?.cancel(alarmIntent()) }
+        runCatching { alarmManager?.cancel(alarmIntent(REQUEST_ALARM, 0L)) }
+        runCatching { alarmManager?.cancel(alarmIntent(REQUEST_FALLBACK, 0L)) }
     }
 
     /** Clears a delivered finish notification and any vibration still running. */
@@ -51,10 +80,11 @@ class TimerAlarmScheduler(private val appContext: Context) {
         return alarmManager?.canScheduleExactAlarms() != false
     }
 
-    private fun alarmIntent(): PendingIntent {
+    private fun alarmIntent(requestCode: Int, token: Long): PendingIntent {
         val intent = Intent(appContext, TimerAlarmReceiver::class.java)
             .setAction(TimerAlarmReceiver.ACTION_TIMER_FINISHED)
-        return PendingIntent.getBroadcast(appContext, REQUEST_ALARM, intent, pendingFlags())
+            .putExtra(TimerAlarmReceiver.EXTRA_ALERT_TOKEN, token)
+        return PendingIntent.getBroadcast(appContext, requestCode, intent, pendingFlags())
     }
 
     private fun statusBarIntent(): PendingIntent {
@@ -75,5 +105,6 @@ class TimerAlarmScheduler(private val appContext: Context) {
     private companion object {
         const val REQUEST_ALARM = 9401
         const val REQUEST_SHOW = 9402
+        const val REQUEST_FALLBACK = 9404
     }
 }

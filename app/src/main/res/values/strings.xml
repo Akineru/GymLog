@@ -93,7 +93,45 @@
         <item>日</item>
     </string-array>
     <string name="settings_title">设置</string>
+    <string name="notification_entry_title">通知</string>
+    <string name="notification_entry_subtitle">定时器到点提醒与系统权限</string>
+    <string name="notification_settings_title">通知设置</string>
+    <string name="timer_end_notification_title">定时器到点通知</string>
+    <string name="timer_end_notification_description">训练中定时器倒计时结束，是否发送到点提醒。</string>
+    <string name="notification_permission_title">系统通知权限</string>
+    <string name="notification_permission_allowed">已允许</string>
+    <string name="notification_permission_denied">未允许</string>
+    <string name="notification_permission_hint">应用内开关不等于系统通知权限。未允许时，即使开关开启也可能收不到提醒。</string>
+    <string name="notification_open_system_settings">打开系统设置</string>
+    <string name="notification_scope_hint">此开关只控制独立倒计时的到点提醒，不影响训练总时长、训练进行中通知或训练保存。</string>
+    <string name="notification_guide_title">开启定时器到点通知</string>
+    <string name="notification_guide_body">为了让倒计时在后台也能及时提醒，请检查以下系统设置：\n\n1. 通知权限：允许练有所迹发送通知。\n2. 应用耗电管理：如果手机提供相关选项，建议设为“无限制”或允许后台活动。\n3. 睡眠待机优化：如果系统提供相关限制选项，可检查是否会限制后台闹钟。\n\n不同手机品牌和系统版本的设置名称可能不同。即使完成这些设置，也无法保证所有设备都绝对准时提醒。</string>
+    <string name="notification_guide_later">稍后设置</string>
+    <string name="notification_guide_check">检查系统设置</string>
+    <string name="notification_settings_open_failed">无法打开系统设置，请手动进入系统设置检查通知权限和耗电管理。</string>
     <string name="appearance_title">外观</string>
+    <string name="preferences_title">偏好设置</string>
+    <string name="theme_title">主题</string>
+    <string name="calendar_colors_title">日历配色</string>
+    <string name="calendar_colors_subtitle">%1$s · 6 个部位</string>
+    <string name="calendar_colors_note">只影响日历和训练足迹里的部位颜色；休息、放纵、偷懒三种特殊日颜色保持固定。</string>
+    <string name="calendar_color_mode_vivid">鲜明</string>
+    <string name="calendar_color_mode_soft">柔和</string>
+    <string name="calendar_color_mode_custom">自定义</string>
+    <string name="calendar_colors_preview">预览</string>
+    <string name="calendar_colors_vivid_hint">高饱和，部位更容易一眼区分。</string>
+    <string name="calendar_colors_soft_hint">低饱和，更安静，不压过文字。</string>
+    <string name="calendar_colors_custom_hint">逐部位选择颜色，仅在本机生效。</string>
+    <string name="calendar_custom_colors_title">自定义配色</string>
+    <string name="calendar_custom_colors_hint">点选一个部位，再在下方调整颜色。</string>
+    <string name="calendar_custom_selected">正在调整：%1$s</string>
+    <string name="calendar_color_hex_label">色号</string>
+    <string name="calendar_color_hex_hint">输入 6 位十六进制色号，例如 #E57373</string>
+    <string name="calendar_color_hex_invalid">色号格式不正确，请输入 6 位十六进制，例如 #E57373</string>
+    <string name="calendar_color_apply">应用颜色</string>
+    <string name="calendar_color_reset">恢复默认</string>
+    <string name="calendar_color_cancel">取消</string>
+    <string name="calendar_custom_reset_confirm">把六个部位恢复为鲜明默认色？</string>
     <string name="theme_system">跟随系统</string>
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
@@ -117,7 +155,7 @@
     <string name="settings_section_personal">个人数据</string>
     <string name="settings_section_training">训练数据</string>
     <string name="settings_section_data">数据</string>
-    <string name="data_backup">数据备份</string>
+    <string name="data_backup">数据管理</string>
     <string name="timer_history">计时记录</string>
     <string name="data_export">导出数据</string>
     <string name="data_import">导入数据</string>
@@ -475,9 +513,12 @@
     <string name="workout_notification_pending_text">本次训练 %1$s，等待保存</string>
     <string name="workout_notification_duration">%1$d分%2$d秒</string>
     <!-- 独立计时器（与训练总计时各归各，绝不合并） -->
-    <string name="workout_notification_clock_countdown">组歇 · %1$s</string>
-    <string name="workout_notification_clock_countdown_paused">组歇 · %1$s · 已暂停</string>
-    <string name="workout_notification_clock_countdown_finished">组歇 · 00:00 · 已结束</string>
     <string name="workout_notification_clock_stopwatch">秒表 · %1$s</string>
+    <string name="workout_notification_clock_countdown_label">组歇 · 已歇 </string>
+    <string name="workout_notification_clock_countdown_suffix"> / %1$s</string>
+    <string name="workout_notification_clock_countdown_running">组歇 · 已歇中 / %1$s</string>
+    <string name="workout_notification_clock_countdown_paused">组歇 · 已歇 %1$s / %2$s · 已暂停</string>
+    <string name="workout_notification_clock_countdown_finished">组歇 · 已歇 %1$s / %2$s · 已到点</string>
+    <string name="workout_notification_clock_stopwatch_label">秒表 ·</string>
     <string name="workout_notification_clock_stopwatch_paused">秒表 · %1$s · 已暂停</string>
 </resources>

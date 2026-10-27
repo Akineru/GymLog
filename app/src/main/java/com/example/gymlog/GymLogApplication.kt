@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.room.Room
 import com.example.gymlog.data.AppearanceStore
 import com.example.gymlog.data.BackupRepository
+import com.example.gymlog.data.CalendarColorStore
 import com.example.gymlog.data.BodyRecordRepository
 import com.example.gymlog.data.ExerciseRepository
 import com.example.gymlog.data.GymLogDatabase
@@ -35,6 +36,7 @@ import com.example.gymlog.data.ExerciseCatalogImporter
 import com.example.gymlog.data.ExerciseMediaRepository
 import com.example.gymlog.data.ProfileAvatarStore
 import com.example.gymlog.data.SessionDraftStore
+import com.example.gymlog.data.NotificationSettingsStore
 import com.example.gymlog.data.TimerAlarmScheduler
 import com.example.gymlog.data.TimerRecordRepository
 import com.example.gymlog.data.TrainingTimerStore
@@ -127,6 +129,10 @@ class GymLogApplication : Application() {
         AppearanceStore(this)
     }
 
+    val calendarColorStore: CalendarColorStore by lazy {
+        CalendarColorStore(this)
+    }
+
     val trainingTimerStore: TrainingTimerStore by lazy {
         TrainingTimerStore(this)
     }
@@ -139,8 +145,12 @@ class GymLogApplication : Application() {
         TimerRecordRepository(database.timerRecordDao())
     }
 
+    val notificationSettingsStore: NotificationSettingsStore by lazy {
+        NotificationSettingsStore(this)
+    }
+
     val timerAlarmScheduler: TimerAlarmScheduler by lazy {
-        TimerAlarmScheduler(this)
+        TimerAlarmScheduler(this, notificationSettingsStore)
     }
 
     val backupRepository: BackupRepository by lazy {
@@ -157,6 +167,9 @@ class GymLogApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // 独立倒计时不跨进程恢复；进程重建后不能留下上一进程排队的旧闹钟，
+        // 否则新会话和旧提醒会互相矛盾。总计时和训练草稿不受影响。
+        timerAlarmScheduler.cancel()
         appScope.launch {
             runCatching {
                 exerciseCatalogCoordinator.withLock {

@@ -12,8 +12,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.data.ActiveWorkoutNotifier
 import com.example.gymlog.data.ThemeMode
 import com.example.gymlog.ui.GymLogApp
+import com.example.gymlog.ui.calendar.LocalCalendarColorPalette
 import com.example.gymlog.ui.theme.GymLogTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,6 +39,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val app = application as GymLogApplication
             val appearance by app.appearanceStore.state.collectAsStateWithLifecycle()
+            val calendarColors by app.calendarColorStore.state.collectAsStateWithLifecycle()
+            val calendarPalette = remember(calendarColors) { calendarColors.palette() }
             val darkTheme = when (appearance.themeMode) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
@@ -45,8 +50,10 @@ class MainActivity : ComponentActivity() {
                 darkTheme = darkTheme,
                 dynamicColor = appearance.useWallpaperColors,
             ) {
-                RequestNotificationPermissionIfNeeded()
-                GymLogApp(openActiveWorkoutSignal = openActiveWorkoutSignal)
+                CompositionLocalProvider(LocalCalendarColorPalette provides calendarPalette) {
+                    RequestNotificationPermissionIfNeeded()
+                    GymLogApp(openActiveWorkoutSignal = openActiveWorkoutSignal)
+                }
             }
         }
     }

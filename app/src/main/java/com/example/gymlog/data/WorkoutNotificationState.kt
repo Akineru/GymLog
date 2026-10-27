@@ -30,7 +30,38 @@ enum class WorkoutClockDisplayState {
 data class WorkoutClockDisplay(
     val kind: WorkoutClockKind,
     val state: WorkoutClockDisplayState,
+    /** 倒计时：剩余；秒表：已走。 */
     val millis: Long,
+    /** 倒计时这一档的设定时长（秒表恒为 0），用来显示「已歇 x / 目标」。 */
+    val durationMillis: Long = 0L,
+) {
+    /** 这一行要显示的「已走过」时长。倒计时用「设定时长 - 剩余」，两者用的是同一个锚点。 */
+    val elapsedMillis: Long
+        get() = when (kind) {
+            WorkoutClockKind.COUNTDOWN -> (durationMillis - millis).coerceAtLeast(0L)
+            WorkoutClockKind.STOPWATCH -> millis
+        }
+
+    /**
+     * 交给系统 Chronometer 的绑定参数；null 表示这一刻不该走秒（暂停 / 未启动）。
+     *
+     * **两种模式都是「向上走」**：`base = now - 已走过`，SystemUI 自己去加。
+     * 倒计时不再用 `countDown=true` —— 那个模式越过零点没有下限，会一路走成 `-00:46`，
+     * 而冻结进程的国产 ROM 上没法在零点重投一次去纠正（见 airead）。
+     * 改成「已歇 x / 目标」后数字只增不减，任何时刻都不会出现负数，也不再需要在零点唤醒 App。
+     */
+    fun chronometerSpec(nowElapsedRealtime: Long): WorkoutClockChronometer? {
+        if (state != WorkoutClockDisplayState.RUNNING) return null
+        return WorkoutClockChronometer(
+            countDown = false,
+            baseElapsedRealtime = nowElapsedRealtime - elapsedMillis,
+        )
+    }
+}
+
+data class WorkoutClockChronometer(
+    val countDown: Boolean,
+    val baseElapsedRealtime: Long,
 )
 
 /**
@@ -70,14 +101,14 @@ data class WorkoutNotificationClock(
         if (running) {
             // 归零即结束，绝不显示负数，也不再显示「还在跑」
             if (kind == WorkoutClockKind.COUNTDOWN && millis <= 0L) {
-                return WorkoutClockDisplay(kind, WorkoutClockDisplayState.FINISHED, 0L)
+                return WorkoutClockDisplay(kind, WorkoutClockDisplayState.FINISHED, 0L, durationMillis)
             }
-            return WorkoutClockDisplay(kind, WorkoutClockDisplayState.RUNNING, millis)
+            return WorkoutClockDisplay(kind, WorkoutClockDisplayState.RUNNING, millis, durationMillis)
         }
         if (kind == WorkoutClockKind.COUNTDOWN && millis <= 0L) {
-            return WorkoutClockDisplay(kind, WorkoutClockDisplayState.FINISHED, 0L)
+            return WorkoutClockDisplay(kind, WorkoutClockDisplayState.FINISHED, 0L, durationMillis)
         }
-        return WorkoutClockDisplay(kind, WorkoutClockDisplayState.PAUSED, millis)
+        return WorkoutClockDisplay(kind, WorkoutClockDisplayState.PAUSED, millis, durationMillis)
     }
 }
 

@@ -225,9 +225,9 @@ private fun DayCell(
             else -> MaterialTheme.colorScheme.onSurface
         }
     } else if (inMonth) {
-        CalendarDayInk
+        fill.onColorInk()
     } else {
-        CalendarDayInk.copy(alpha = 0.45f)
+        fill.onColorInk().copy(alpha = 0.45f)
     }
     val numberModifier = when {
         fill == null && isSelected && inMonth -> Modifier
