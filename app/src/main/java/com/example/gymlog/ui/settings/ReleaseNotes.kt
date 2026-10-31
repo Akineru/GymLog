@@ -17,6 +17,42 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.5.5",
+            date = "2026年10月31日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "动作详情页",
+                    items = listOf(
+                        "点击动作卡片进入详情页，总览、历史记录、要点三个页面左右滑动切换。",
+                        "总览里有动作 GIF、主要与次要肌群、可切换正反面的肌群图和 PR 记录。",
+                        "历史记录按日期列出每次训练的容量和每组明细；要点页可查看动作怎么做和细节。",
+                        "右上角菜单可以编辑别名与要点，自定义动作还能编辑肌群映射。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "收藏",
+                    items = listOf(
+                        "动作卡片右上角有星标，点一下收藏、再点取消，收藏的固定排在最前面。",
+                        "收藏状态会保存，也包含在备份里。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "别名搜索",
+                    items = listOf(
+                        "动作支持多个别名，动作库和添加训练都能用别名搜到，不用记正式名称。",
+                        "编辑资料时可以实时看到将保存的别名。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "交互优化",
+                    items = listOf(
+                        "双击左侧部位分类，或点一下器械筛选（自重、杠铃、哑铃等），列表自动回到顶部。",
+                        "PR 的日期改为 2026.10.09 这样的格式并移到行尾。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.5.4",
             date = "2026年10月28日",
             sections = listOf(
