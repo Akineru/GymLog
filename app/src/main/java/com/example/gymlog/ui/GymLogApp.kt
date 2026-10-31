@@ -118,6 +118,8 @@ import com.example.gymlog.ui.body.BodyRecordViewModel
 import com.example.gymlog.ui.calendar.DayKindSelector
 import com.example.gymlog.ui.calendar.CalendarMonthOverview
 import com.example.gymlog.ui.calendar.TrainingCalendarDetailScreen
+import com.example.gymlog.ui.exercise.ExerciseDetailScreen
+import com.example.gymlog.ui.exercise.ExerciseDetailViewModel
 import com.example.gymlog.ui.exercise.ExerciseLibraryScreen
 import com.example.gymlog.ui.exercise.ExerciseLibraryViewModel
 import com.example.gymlog.ui.exercise.ExerciseThumbnail
@@ -144,6 +146,8 @@ import com.example.gymlog.ui.settings.CalendarColorSettingsScreen
 import com.example.gymlog.ui.settings.CalendarCustomColorsScreen
 import com.example.gymlog.ui.settings.MineScreen
 import com.example.gymlog.ui.settings.NotificationSettingsScreen
+import com.example.gymlog.ui.settings.TrainingPreferencesScreen
+import com.example.gymlog.ui.settings.TrainingPreferencesViewModel
 import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.settings.SettingsViewModel
 import com.example.gymlog.ui.stats.BodyTrendScreen
@@ -180,6 +184,7 @@ private sealed interface Screen {
     data object CalendarExpanded : Screen
     data object Train : Screen
     data object ExerciseLibrary : Screen
+    data class ExerciseDetail(val exerciseId: String) : Screen
     data object Progress : Screen
     data object Mine : Screen
     data class BodyRecord(val returnTab: RootTab = RootTab.Mine) : Screen
@@ -201,6 +206,7 @@ private sealed interface Screen {
     data class CalendarColors(val from: RootTab) : Screen
     data class CalendarCustomColors(val from: RootTab) : Screen
     data class NotificationSettings(val from: RootTab) : Screen
+    data class TrainingPreferences(val from: RootTab) : Screen
     data class BackupData(val from: RootTab) : Screen
     data class TimerHistory(val from: RootTab) : Screen
     data object PhotoWall : Screen
@@ -259,9 +265,14 @@ private val ScreenSaver: Saver<Screen, Any> = Saver(
             is Screen.CalendarColors -> mapOf("type" to "calendar-colors", "from" to screen.from.name)
             is Screen.CalendarCustomColors -> mapOf("type" to "calendar-custom-colors", "from" to screen.from.name)
             is Screen.NotificationSettings -> mapOf("type" to "notification-settings", "from" to screen.from.name)
+            is Screen.TrainingPreferences -> mapOf("type" to "training-preferences", "from" to screen.from.name)
             is Screen.BackupData -> mapOf("type" to "backup", "from" to screen.from.name)
             is Screen.TimerHistory -> mapOf("type" to "timer-history", "from" to screen.from.name)
             is Screen.PhotoDetail -> mapOf("type" to "photo-detail", "id" to screen.id)
+            is Screen.ExerciseDetail -> mapOf(
+                "type" to "exercise-detail",
+                "id" to screen.exerciseId,
+            )
             is Screen.About -> mapOf(
                 "type" to "about",
                 "from" to screen.from.name,
@@ -321,9 +332,11 @@ private val ScreenSaver: Saver<Screen, Any> = Saver(
             "calendar-colors" -> Screen.CalendarColors(tab("from"))
             "calendar-custom-colors" -> Screen.CalendarCustomColors(tab("from"))
             "notification-settings" -> Screen.NotificationSettings(tab("from"))
+            "training-preferences" -> Screen.TrainingPreferences(tab("from"))
             "backup" -> Screen.BackupData(tab("from"))
             "timer-history" -> Screen.TimerHistory(tab("from"))
             "photo-detail" -> Screen.PhotoDetail(values["id"] as? String ?: "")
+            "exercise-detail" -> Screen.ExerciseDetail(values["id"] as? String ?: "")
             "about" -> Screen.About(
                 from = tab("from"),
                 openedFromSettings = values["openedFromSettings"] as? Boolean ?: true,
@@ -378,6 +391,7 @@ private fun Screen.toRootTab(): RootTab = when (this) {
     Screen.Home -> RootTab.Home
     Screen.Calendar, Screen.CalendarExpanded, is Screen.SavedTimer, is Screen.SessionEditor, is Screen.PickExercise -> RootTab.Calendar
     Screen.Train, Screen.ExerciseLibrary, Screen.TrainingTimer -> RootTab.Train
+    is Screen.ExerciseDetail -> RootTab.Train
     Screen.Progress, Screen.TrainingTrend, Screen.BodyTrend -> RootTab.Progress
     Screen.Mine, is Screen.BodyRecord, is Screen.MuscleMap, Screen.PhotoWall, is Screen.PhotoDetail, Screen.PhotoEditor -> RootTab.Mine
     is Screen.Settings -> from
@@ -385,6 +399,7 @@ private fun Screen.toRootTab(): RootTab = when (this) {
     is Screen.CalendarColors -> from
     is Screen.CalendarCustomColors -> from
     is Screen.NotificationSettings -> from
+    is Screen.TrainingPreferences -> from
     is Screen.BackupData -> from
     is Screen.TimerHistory -> from
     is Screen.About -> from
@@ -829,6 +844,9 @@ fun GymLogApp(
                                 app.workoutRepository,
                                 app.exerciseRepository,
                                 app.bodyRecordRepository,
+                                workingPrMinRepsProvider = {
+                                    app.trainingPreferencesStore.workingPrMinRepsValue()
+                                },
                             ),
                         )
                         TrainingTrendScreen(
@@ -878,6 +896,9 @@ fun GymLogApp(
                             onOpenNotifications = {
                                 screen = Screen.NotificationSettings(current.from)
                             },
+                            onOpenTrainingPreferences = {
+                                screen = Screen.TrainingPreferences(current.from)
+                            },
                         )
                     }
 
@@ -924,6 +945,20 @@ fun GymLogApp(
                                     app.timerAlarmScheduler.cancelAlerts()
                                 }
                             },
+                        )
+                    }
+
+                    is Screen.TrainingPreferences -> {
+                        val trainingPreferencesViewModel: TrainingPreferencesViewModel = viewModel(
+                            key = "training-preferences",
+                            factory = TrainingPreferencesViewModel.factory(
+                                app.trainingPreferencesStore,
+                                app.workoutRepository,
+                            ),
+                        )
+                        TrainingPreferencesScreen(
+                            viewModel = trainingPreferencesViewModel,
+                            onBack = { screen = Screen.Settings(current.from) },
                         )
                     }
 
@@ -1014,6 +1049,25 @@ fun GymLogApp(
                             onBack = { screen = Screen.Train },
                             onPick = {},
                             showBack = true,
+                            onOpenDetail = { exerciseId ->
+                                screen = Screen.ExerciseDetail(exerciseId)
+                            },
+                        )
+                    }
+
+                    is Screen.ExerciseDetail -> {
+                        val detailViewModel: ExerciseDetailViewModel = viewModel(
+                            key = "exercise-detail-${current.exerciseId}",
+                            factory = ExerciseDetailViewModel.factory(
+                                exerciseId = current.exerciseId,
+                                repository = app.exerciseRepository,
+                                mediaRepository = app.exerciseMediaRepository,
+                                bodyRecordRepository = app.bodyRecordRepository,
+                            ),
+                        )
+                        ExerciseDetailScreen(
+                            viewModel = detailViewModel,
+                            onBack = { screen = Screen.ExerciseLibrary },
                         )
                     }
 

@@ -8,6 +8,7 @@ import com.example.gymlog.data.ExerciseClassification
 import com.example.gymlog.data.ExerciseEntity
 import com.example.gymlog.data.ExerciseRepository
 import com.example.gymlog.data.PerformedSet
+import com.example.gymlog.data.PersonalRecordLogic
 import com.example.gymlog.data.TrendLogic
 import com.example.gymlog.data.TrendPoint
 import com.example.gymlog.data.WeightLogic
@@ -48,6 +49,10 @@ class TrainingTrendViewModel(
     workoutRepository: WorkoutRepository,
     exerciseRepository: ExerciseRepository,
     bodyRecordRepository: BodyRecordRepository,
+    /** 做组 PR 的当前最低次数，取自训练偏好；极限 PR 不使用它。 */
+    private val workingPrMinRepsProvider: () -> Int = {
+        PersonalRecordLogic.DEFAULT_MIN_WORKING_REPS
+    },
 ) : ViewModel() {
     private val selection = MutableStateFlow(TrendSelection())
 
@@ -92,7 +97,11 @@ class TrainingTrendViewModel(
         }
         val points = when (selected.metric) {
             TrainingTrendMetric.VOLUME -> TrendLogic.exerciseVolumeSeries(sets)
-            TrainingTrendMetric.WORKING_PR -> TrendLogic.runningPrSeries(sets, maxEffort = false)
+            TrainingTrendMetric.WORKING_PR -> TrendLogic.runningPrSeries(
+                sets = sets,
+                maxEffort = false,
+                minWorkingReps = workingPrMinRepsProvider(),
+            )
             TrainingTrendMetric.MAX_PR -> TrendLogic.runningPrSeries(sets, maxEffort = true)
         }
         TrainingTrendUiState(
@@ -130,6 +139,9 @@ class TrainingTrendViewModel(
             workoutRepository: WorkoutRepository,
             exerciseRepository: ExerciseRepository,
             bodyRecordRepository: BodyRecordRepository,
+            workingPrMinRepsProvider: () -> Int = {
+                PersonalRecordLogic.DEFAULT_MIN_WORKING_REPS
+            },
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
@@ -138,6 +150,7 @@ class TrainingTrendViewModel(
                         workoutRepository,
                         exerciseRepository,
                         bodyRecordRepository,
+                        workingPrMinRepsProvider,
                     ) as T
                 }
             }

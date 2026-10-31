@@ -1,5 +1,6 @@
 package com.example.gymlog.data
 
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -39,6 +40,17 @@ class WorkoutRepository(
     private val exerciseDao: ExerciseDao,
     private val bodyRecordDao: BodyRecordDao,
     private val exerciseDurationDao: ExerciseDurationDao? = null,
+    /**
+     * 做组 PR 的最低次数，默认取 [PersonalRecordLogic.DEFAULT_MIN_WORKING_REPS]。
+     *
+     * 传的是取值函数而不是 Int：保存 PR 时（训练保存、删除、全量重建）都要读**当下**的设置，
+     * 用户改完门槛马上点「刷新成绩」也能立刻生效，不会用到构造时的旧值。
+     */
+    private val workingPrMinRepsProvider: () -> Int = {
+        PersonalRecordLogic.DEFAULT_MIN_WORKING_REPS
+    },
+    /** 仅用于把批量 PR 写入放进一个事务；单测里可以传 null。 */
+    private val database: GymLogDatabase? = null,
 ) {
     fun observeHistory(): Flow<List<SessionDetail>> {
         val durations = exerciseDurationDao?.observeAll() ?: flowOf(emptyList())
@@ -183,27 +195,55 @@ class WorkoutRepository(
         refreshPersonalRecords(exerciseIds)
     }
 
-    suspend fun rebuildAllPersonalRecords() {
-        val rows = sessionDao.getAllSetsForPr()
-        val byExercise = rows.groupBy { it.exerciseId }
-        exerciseDao.allIds().forEach { exerciseId ->
-            writePersonalRecords(exerciseId, byExercise[exerciseId].orEmpty())
+    /**
+     * 按当前规则重算**所有**动作的 PR —— 「刷新成绩」按钮和升级后的自愈都走这里。
+     *
+     * 分两步：先只读地把结果全算出来，再统一写回。
+     * - 计算阶段抛异常 ⇒ 一条都不写，旧 PR 原样保留；
+     * - 写入阶段有 [database] 时包在一个事务里 ⇒ 不会出现「一半动作是新规则、一半是旧规则」。
+     *
+     * 只写真正发生变化的动作，重复点击不会产生多余写入。
+     *
+     * @return 实际发生变化的动作数量（用于「刷新成绩」的结果提示）。
+     */
+    suspend fun rebuildAllPersonalRecords(): Int {
+        val byExercise = sessionDao.getAllSetsForPr().groupBy { it.exerciseId }
+        val measurements = bodyRecordDao.listMeasurements()
+        val threshold = workingPrMinRepsProvider()
+        val pending = exerciseDao.allExercises().mapNotNull { exercise ->
+            val computed = computeRecords(byExercise[exercise.id].orEmpty(), measurements, threshold)
+            if (computed.matches(exercise)) null else PrWrite(exercise.id, computed)
         }
+        if (pending.isEmpty()) return 0
+        val write: suspend () -> Unit = {
+            pending.forEach { item -> item.writeTo(exerciseDao) }
+        }
+        val db = database
+        if (db != null) db.withTransaction { write() } else write()
+        return pending.size
     }
 
     private suspend fun refreshPersonalRecords(exerciseIds: List<String>) {
         val ids = exerciseIds.distinct()
         if (ids.isEmpty()) return
-        val rows = sessionDao.getSetsForPr(ids).groupBy { it.exerciseId }
+        val byExercise = sessionDao.getSetsForPr(ids).groupBy { it.exerciseId }
+        val measurements = bodyRecordDao.listMeasurements()
+        val threshold = workingPrMinRepsProvider()
         ids.forEach { exerciseId ->
-            writePersonalRecords(exerciseId, rows[exerciseId].orEmpty())
+            PrWrite(
+                exerciseId,
+                computeRecords(byExercise[exerciseId].orEmpty(), measurements, threshold),
+            ).writeTo(exerciseDao)
         }
     }
 
-    private suspend fun writePersonalRecords(exerciseId: String, rows: List<SetForPrRow>) {
-        val measurements = bodyRecordDao.listMeasurements()
-        val computed = PersonalRecordLogic.fromSessions(
-            rows.mapNotNull { row ->
+    private fun computeRecords(
+        rows: List<SetForPrRow>,
+        measurements: List<BodyMeasurementEntity>,
+        minWorkingReps: Int,
+    ): ExercisePersonalRecords {
+        return PersonalRecordLogic.fromSessions(
+            sets = rows.mapNotNull { row ->
                 val reps = row.reps ?: return@mapNotNull null
                 val bodyWeight = WeightLogic.bodyWeightKg(measurements, row.dateEpochDay)
                 PerformedSet(
@@ -218,18 +258,55 @@ class WorkoutRepository(
                     weightMode = row.weightMode,
                 )
             },
+            minWorkingReps = minWorkingReps,
         )
-        exerciseDao.updatePersonalRecords(
-            id = exerciseId,
-            workingPrWeightKg = computed.working?.weightKg,
-            workingPrReps = computed.working?.reps,
-            workingPrWeightMode = computed.working?.weightMode,
-            workingPrDateEpochDay = computed.working?.dateEpochDay,
-            maxPrWeightKg = computed.max?.weightKg,
-            maxPrReps = computed.max?.reps,
-            maxPrWeightMode = computed.max?.weightMode,
-            maxPrDateEpochDay = computed.max?.dateEpochDay,
+    }
+
+    /** 一次 PR 写入的最小单元，避免把参数顺序写错。 */
+    private data class PrWrite(
+        val exerciseId: String,
+        val records: ExercisePersonalRecords,
+    ) {
+        suspend fun writeTo(dao: ExerciseDao) {
+            dao.updatePersonalRecords(
+                id = exerciseId,
+                workingPrWeightKg = records.working?.weightKg,
+                workingPrReps = records.working?.reps,
+                workingPrWeightMode = records.working?.weightMode,
+                workingPrDateEpochDay = records.working?.dateEpochDay,
+                maxPrWeightKg = records.max?.weightKg,
+                maxPrReps = records.max?.reps,
+                maxPrWeightMode = records.max?.weightMode,
+                maxPrDateEpochDay = records.max?.dateEpochDay,
+            )
+        }
+    }
+
+    private fun ExercisePersonalRecords.matches(exercise: ExerciseEntity): Boolean {
+        return working.sameAs(
+            exercise.workingPrWeightKg,
+            exercise.workingPrReps,
+            exercise.workingPrWeightMode,
+            exercise.workingPrDateEpochDay,
+        ) && max.sameAs(
+            exercise.maxPrWeightKg,
+            exercise.maxPrReps,
+            exercise.maxPrWeightMode,
+            exercise.maxPrDateEpochDay,
         )
+    }
+
+    private fun PersonalRecord?.sameAs(
+        weightKg: Double?,
+        reps: Int?,
+        weightMode: String?,
+        dateEpochDay: Long?,
+    ): Boolean {
+        if (this == null) return weightKg == null && reps == null && dateEpochDay == null
+        return this.weightKg == weightKg &&
+            this.reps == reps &&
+            this.weightMode == weightMode &&
+            this.dateEpochDay == dateEpochDay
     }
 
     private suspend fun List<SessionWithSets>.toDetails(

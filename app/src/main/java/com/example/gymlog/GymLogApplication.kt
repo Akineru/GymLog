@@ -8,6 +8,7 @@ import com.example.gymlog.data.BackupRepository
 import com.example.gymlog.data.CalendarColorStore
 import com.example.gymlog.data.BodyRecordRepository
 import com.example.gymlog.data.ExerciseRepository
+import com.example.gymlog.data.TrainingPreferencesStore
 import com.example.gymlog.data.GymLogDatabase
 import com.example.gymlog.data.MIGRATION_1_2
 import com.example.gymlog.data.MIGRATION_2_3
@@ -29,6 +30,8 @@ import com.example.gymlog.data.MIGRATION_15_16
 import com.example.gymlog.data.MIGRATION_16_17
 import com.example.gymlog.data.MIGRATION_17_18
 import com.example.gymlog.data.MIGRATION_18_19
+import com.example.gymlog.data.MIGRATION_19_20
+import com.example.gymlog.data.MIGRATION_20_21
 import com.example.gymlog.data.PhotoStore
 import com.example.gymlog.data.PhotoWallRepository
 import com.example.gymlog.data.ExerciseCatalogCoordinator
@@ -74,6 +77,8 @@ class GymLogApplication : Application() {
                 MIGRATION_16_17,
                 MIGRATION_17_18,
                 MIGRATION_18_19,
+                MIGRATION_19_20,
+                MIGRATION_20_21,
             )
             .build()
     }
@@ -102,12 +107,18 @@ class GymLogApplication : Application() {
         BodyRecordRepository(database.bodyRecordDao())
     }
 
+    val trainingPreferencesStore: TrainingPreferencesStore by lazy {
+        TrainingPreferencesStore(this)
+    }
+
     val workoutRepository: WorkoutRepository by lazy {
         WorkoutRepository(
             database.sessionDao(),
             database.exerciseDao(),
             database.bodyRecordDao(),
             database.exerciseDurationDao(),
+            workingPrMinRepsProvider = { trainingPreferencesStore.workingPrMinRepsValue() },
+            database = database,
         )
     }
 

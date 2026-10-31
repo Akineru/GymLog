@@ -47,9 +47,25 @@ object TrendLogic {
             }
     }
 
-    fun runningPrSeries(sets: List<PerformedSet>, maxEffort: Boolean): List<TrendPoint> {
+    fun runningPrSeries(
+        sets: List<PerformedSet>,
+        maxEffort: Boolean,
+        minWorkingReps: Int = PersonalRecordLogic.DEFAULT_MIN_WORKING_REPS,
+    ): List<TrendPoint> {
+        // 与 PersonalRecordLogic.fromSessions 共用同一套候选规则，避免两处口径不一致
+        val kind = if (maxEffort) {
+            PersonalRecordLogic.PrKind.MAX
+        } else {
+            PersonalRecordLogic.PrKind.WORKING
+        }
         val relevant = sets
-            .filter { set -> if (maxEffort) set.reps == 1 else set.reps >= 2 }
+            .filter { set ->
+                if (maxEffort) {
+                    PersonalRecordLogic.isMaxCandidate(set)
+                } else {
+                    PersonalRecordLogic.isWorkingCandidate(set, minWorkingReps)
+                }
+            }
             .sortedWith(compareBy({ it.dateEpochDay }, { it.sessionId }))
         var best: PersonalRecord? = null
         val points = ArrayList<TrendPoint>()
@@ -60,7 +76,7 @@ object TrendLogic {
                 weightMode = set.weightMode,
                 dateEpochDay = set.dateEpochDay,
             )
-            val next = PersonalRecordLogic.keepHigher(best, candidate) ?: return@forEach
+            val next = PersonalRecordLogic.keepHigher(best, candidate, kind) ?: return@forEach
             if (next !== best) {
                 best = next
                 val value = chartValue(next) ?: return@forEach

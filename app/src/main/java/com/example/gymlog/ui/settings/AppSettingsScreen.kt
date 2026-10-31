@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
@@ -61,6 +62,7 @@ fun AppSettingsScreen(
     onOpenBackup: () -> Unit,
     onOpenAppearance: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenTrainingPreferences: () -> Unit,
 ) {
     BackHandler(onBack = onBack)
 
@@ -101,6 +103,14 @@ fun AppSettingsScreen(
                     subtitle = "主题、壁纸与日历配色",
                     icon = Icons.Filled.Palette,
                     onClick = onOpenAppearance,
+                )
+            }
+            item {
+                SettingsLinkRow(
+                    title = stringResource(R.string.training_preferences_title),
+                    subtitle = stringResource(R.string.training_preferences_subtitle),
+                    icon = Icons.Filled.FitnessCenter,
+                    onClick = onOpenTrainingPreferences,
                 )
             }
             item {

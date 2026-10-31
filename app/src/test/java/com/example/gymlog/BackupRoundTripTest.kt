@@ -141,6 +141,11 @@ class BackupRoundTripTest {
         assertNull(curl.workingPrReps)
         assertEquals(1, after.exercises.size)
         assertTrue(after.exercises.none { it.id.startsWith("preset_") })
+        // 新增字段必须原样往返，否则恢复备份后优先级和要点会丢
+        assertEquals(10, curl.priority)
+        assertTrue(curl.isFavorite)
+        assertEquals("站直，弯举哑铃。", curl.howTo)
+        assertEquals("肘部贴紧身体。", curl.cues)
     }
 
     @Test
@@ -643,6 +648,11 @@ class BackupRoundTripTest {
             aliases = "curl",
             createdAt = 2L,
             archived = false,
+            // v20 新增字段：带上非默认值，第 117 行的 snapshot 相等断言即可覆盖备份往返
+            priority = 10,
+            isFavorite = true,
+            howTo = "站直，弯举哑铃。",
+            cues = "肘部贴紧身体。",
         )
     }
 }

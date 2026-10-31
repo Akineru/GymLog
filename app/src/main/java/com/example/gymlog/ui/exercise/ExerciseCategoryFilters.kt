@@ -3,6 +3,7 @@ package com.example.gymlog.ui.exercise
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,9 +22,12 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,6 +37,8 @@ import com.example.gymlog.data.ExerciseClassification
 fun BodyCategoryRail(
     selected: ExerciseClassification.BodyCategory,
     onSelect: (ExerciseClassification.BodyCategory) -> Unit,
+    /** 双击分类时回调（通常是「右侧列表滚回顶部」）；null 则只响应单击。 */
+    onDoubleClick: (() -> Unit)? = null,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -42,6 +48,10 @@ fun BodyCategoryRail(
     ) {
         items(ExerciseClassification.bodyUi, key = { it.id }) { part ->
             val isSelected = part.id == selected.id
+            // 回调放进 rememberUpdatedState：第一次点击会触发 onSelect → 状态更新 → 重组，
+            // 若直接把回调当 pointerInput 的 key，重组会取消手势、吞掉双击的第二次点击。
+            val currentOnSelect by rememberUpdatedState(onSelect)
+            val currentOnDoubleClick by rememberUpdatedState(onDoubleClick)
             Box(
                 modifier = Modifier
                     .padding(horizontal = 6.dp, vertical = 3.dp)
@@ -64,7 +74,14 @@ fun BodyCategoryRail(
                         },
                         RoundedCornerShape(14.dp),
                     )
-                    .clickable(role = Role.Button, onClick = { onSelect(part) }),
+                    .pointerInput(part.id) {
+                        // 不用 combinedClickable：detectTapGestures 的语义和需求一致——
+                        // 每次点按都触发 onSelect（单击换分类），双击在此基础上再滚回顶部。
+                        detectTapGestures(
+                            onTap = { currentOnSelect(part) },
+                            onDoubleTap = currentOnDoubleClick?.let { cb -> { cb() } },
+                        )
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

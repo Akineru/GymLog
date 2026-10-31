@@ -95,7 +95,8 @@ class TrendLogicTest {
     }
 
     @Test
-    fun maxPrUsesOneRepSetsOnly() {
+    fun maxPrSeriesUsesHeaviestValidSetRegardlessOfReps() {
+        // 极限 PR 不再只看 1 次：120kg×5 就是最重的一组成绩
         val points = TrendLogic.runningPrSeries(
             listOf(
                 set("a", 100.0, 1, date = 10),
@@ -104,10 +105,9 @@ class TrendLogicTest {
             ),
             maxEffort = true,
         )
-        assertEquals(listOf(10L, 12L), points.map { it.dateEpochDay })
+        assertEquals(listOf(10L, 11L), points.map { it.dateEpochDay })
         assertEquals(100.0, points[0].value, 0.0)
-        assertEquals(110.0, points[1].value, 0.0)
-        assertTrue(points.none { it.value == 120.0 })
+        assertEquals(120.0, points[1].value, 0.0)
     }
 
     private fun measurement(

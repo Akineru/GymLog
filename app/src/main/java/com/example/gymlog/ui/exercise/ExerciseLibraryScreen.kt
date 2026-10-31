@@ -26,12 +26,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,9 +54,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -60,6 +67,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
 import com.example.gymlog.ui.settings.SettingsTopBarAction
@@ -88,6 +96,8 @@ fun ExerciseLibraryScreen(
     onPick: (ExerciseEntity) -> Unit,
     showBack: Boolean = true,
     onOpenSettings: (() -> Unit)? = null,
+    /** 浏览态点击动作卡片时进入详情页；选择器模式下仍然直接返回所选动作。 */
+    onOpenDetail: ((String) -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var searchField by remember {
@@ -99,20 +109,10 @@ fun ExerciseLibraryScreen(
         }
     }
     var showAddDialog by remember { mutableStateOf(false) }
-    var pendingDelete by remember { mutableStateOf<ExerciseEntity?>(null) }
-    var selected by remember { mutableStateOf<ExerciseEntity?>(null) }
-    var editingMuscles by remember { mutableStateOf(false) }
-    val libraryDialogOpen = showAddDialog || pendingDelete != null || selected != null
-    BackHandler(enabled = libraryDialogOpen) {
-        when {
-            editingMuscles -> editingMuscles = false
-            pendingDelete != null -> pendingDelete = null
-            else -> {
-                showAddDialog = false
-                selected = null
-            }
-        }
-    }
+    val libraryDialogOpen = showAddDialog
+    BackHandler(enabled = libraryDialogOpen) { showAddDialog = false }
+    val gridState = rememberLazyGridState()
+    val scope = rememberCoroutineScope()
     if (showBack) {
         BackHandler(enabled = !libraryDialogOpen, onBack = onBack)
     }
@@ -211,11 +211,19 @@ fun ExerciseLibraryScreen(
                 BodyCategoryRail(
                     selected = state.bodyPart,
                     onSelect = viewModel::onBodyPartSelected,
+                    // 双击分类 = 换分类（onSelect 已处理）+ 右侧列表滚回顶部
+                    onDoubleClick = {
+                        scope.launch { gridState.animateScrollToItem(0) }
+                    },
                 )
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     EquipmentCategoryBar(
                         selected = state.equipmentType,
-                        onSelect = viewModel::onEquipmentSelected,
+                        // 换器械筛选同样把右侧列表滚回顶部，和双击分类的行为保持一致
+                        onSelect = { type ->
+                            viewModel.onEquipmentSelected(type)
+                            scope.launch { gridState.animateScrollToItem(0) }
+                        },
                     )
                     Text(
                         text = if (state.searchingAll) {
@@ -234,37 +242,20 @@ fun ExerciseLibraryScreen(
                     )
                     ExerciseBrowsePane(
                         state = state,
+                        listState = gridState,
+                        onToggleFavorite = viewModel::setFavorite,
                         onOpen = { exercise ->
-                            if (pickerMode) onPick(exercise) else selected = exercise
+                            when {
+                                pickerMode -> onPick(exercise)
+                                onOpenDetail != null -> onOpenDetail(exercise.id)
+                                // 没有提供详情入口时保持原有的「不响应」行为，避免误触
+                                else -> Unit
+                            }
                         },
                     )
                 }
             }
         }
-    }
-
-    pendingDelete?.let { exercise ->
-        AlertDialog(
-            onDismissRequest = { pendingDelete = null },
-            title = { Text(stringResource(R.string.confirm_delete_exercise_title)) },
-            text = { Text(stringResource(R.string.confirm_delete_exercise_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteExercise(exercise.id)
-                        pendingDelete = null
-                        selected = null
-                    },
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
     }
 
     if (showAddDialog) {
@@ -276,35 +267,14 @@ fun ExerciseLibraryScreen(
             },
         )
     }
-
-    selected?.let { exercise ->
-        val links = MuscleMapLogic.linksFor(exercise.id, exercise.isCustom, state.storedLinks)
-        if (editingMuscles && exercise.isCustom) {
-            MuscleEditorDialog(
-                initial = links,
-                onDismiss = { editingMuscles = false },
-                onConfirm = { muscles ->
-                    viewModel.replaceCustomMuscles(exercise.id, muscles)
-                    editingMuscles = false
-                },
-            )
-        } else {
-            ExerciseMuscleDialog(
-                exercise = exercise,
-                links = links,
-                media = state.media[exercise.id],
-                onDismiss = { selected = null },
-                onEdit = { editingMuscles = true },
-                onDelete = { pendingDelete = exercise },
-            )
-        }
-    }
 }
 
 @Composable
 private fun ExerciseBrowsePane(
     state: ExerciseLibraryUiState,
+    listState: LazyGridState,
     onOpen: (ExerciseEntity) -> Unit,
+    onToggleFavorite: (String, Boolean) -> Unit,
 ) {
     if (!state.ready) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -328,6 +298,7 @@ private fun ExerciseBrowsePane(
     }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -339,6 +310,7 @@ private fun ExerciseBrowsePane(
                 media = state.media[exercise.id],
                 muscles = muscleSummary(exercise, state.storedLinks),
                 onOpen = { onOpen(exercise) },
+                onToggleFavorite = { onToggleFavorite(exercise.id, !exercise.isFavorite) },
             )
         }
         item(key = "exercise-art-credit", span = { GridItemSpan(2) }) {
@@ -353,6 +325,7 @@ private fun ExerciseGridCard(
     media: ExerciseMediaView?,
     muscles: String,
     onOpen: () -> Unit,
+    onToggleFavorite: () -> Unit,
 ) {
     val customLabel = stringResource(R.string.exercise_custom)
     val classificationLabel = when (exercise.classificationStatus) {
@@ -379,13 +352,46 @@ private fun ExerciseGridCard(
             .clickable(role = Role.Button, onClick = onOpen),
     ) {
         Column(modifier = Modifier.padding(GymLogSpacing.sm)) {
-            ExerciseThumbnail(
-                exercise = exercise,
-                media = media,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(108.dp),
-            )
+            Box {
+                ExerciseThumbnail(
+                    exercise = exercise,
+                    media = media,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(108.dp),
+                )
+                // 收藏星标：自己的 clickable 会消费点击，不会冒泡触发卡片的 onOpen
+                val favoriteLabel = stringResource(
+                    if (exercise.isFavorite) {
+                        R.string.exercise_favorite_remove
+                    } else {
+                        R.string.exercise_favorite_add
+                    },
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(30.dp)
+                        .clickable(onClick = onToggleFavorite, role = Role.Button)
+                        .semantics { contentDescription = favoriteLabel },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = if (exercise.isFavorite) {
+                            Icons.Filled.Star
+                        } else {
+                            Icons.Outlined.StarOutline
+                        },
+                        contentDescription = null,
+                        tint = if (exercise.isFavorite) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.size(17.dp),
+                    )
+                }
+            }
             Text(
                 text = exercise.name,
                 style = MaterialTheme.typography.titleSmall,
@@ -539,175 +545,13 @@ private fun <T> FlowChipBlock(
     }
 }
 
-private fun bodyPartLabel(value: String): String {
-    return ExerciseClassification.body(value)?.labelZh
-        ?: ExerciseClassification.bodyForLegacy(value).labelZh
-}
-
 private fun equipmentLabel(value: String): String {
     return ExerciseClassification.equipment(value)?.labelZh
         ?: ExerciseClassification.equipmentForLegacy(value).labelZh
 }
 
 @Composable
-private fun ExerciseMuscleDialog(
-    exercise: ExerciseEntity,
-    links: List<MuscleLink>,
-    media: ExerciseMediaView?,
-    onDismiss: () -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit,
-) {
-    val highlights = links.map { link ->
-        MuscleHighlight(muscleId = link.muscleId, role = link.role, exercises = emptyList())
-    }
-    val primary = namesFor(links, MuscleRole.PRIMARY)
-    val secondary = namesFor(links, MuscleRole.SECONDARY)
-    val none = stringResource(R.string.pr_none)
-    var tab by remember { mutableIntStateOf(0) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
-        title = {
-            Text(
-                text = exercise.displayName(),
-                style = MaterialTheme.typography.titleLarge,
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = "${bodyPartLabel(exercise.bodyCategoryId ?: exercise.bodyPart)} · " +
-                    "${equipmentLabel(exercise.equipmentCategoryId ?: exercise.equipmentType)}" +
-                        if (exercise.isCustom) " · " + stringResource(R.string.exercise_custom) else "",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (exercise.classificationStatus == ExerciseClassification.STATUS_AMBIGUOUS) {
-                    Text(
-                        text = stringResource(R.string.exercise_classification_ambiguous),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                } else if (exercise.classificationStatus == ExerciseClassification.STATUS_UNMAPPED) {
-                    Text(
-                        text = stringResource(R.string.exercise_classification_unmapped),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(
-                    text = stringResource(
-                        R.string.pr_working,
-                        exercise.workingPr()?.let(PersonalRecordLogic::displayWorking)
-                            ?: stringResource(R.string.pr_none),
-                    ),
-                )
-                Text(
-                    text = stringResource(
-                        R.string.pr_max,
-                        exercise.maxPr()?.let(PersonalRecordLogic::displayMax)
-                            ?: stringResource(R.string.pr_none),
-                    ),
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        6.dp,
-                        Alignment.CenterHorizontally,
-                    ),
-                ) {
-                    FilterChip(
-                        selected = tab == 0,
-                        onClick = { tab = 0 },
-                        label = { Text(stringResource(R.string.exercise_demo)) },
-                    )
-                    FilterChip(
-                        selected = tab == 1,
-                        onClick = { tab = 1 },
-                        label = { Text(stringResource(R.string.exercise_muscles_front)) },
-                    )
-                    FilterChip(
-                        selected = tab == 2,
-                        onClick = { tab = 2 },
-                        label = { Text(stringResource(R.string.exercise_muscles_back)) },
-                    )
-                }
-                when (tab) {
-                    0 -> {
-                        ExerciseGifPlayer(
-                            media = media,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(260.dp),
-                        )
-                        media?.attribution?.let { attribution ->
-                            Text(
-                                text = attribution,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    else -> {
-                        if (links.isNotEmpty()) {
-                            MuscleFigure(
-                                highlights = highlights,
-                                onRegionClick = {},
-                                boundedHeight = 280.dp,
-                                forcedFront = tab == 1,
-                                showSwitch = false,
-                            )
-                        }
-                    }
-                }
-                if (links.isNotEmpty()) {
-                    Text(stringResource(R.string.muscle_primary) + "：" + primary.ifEmpty { none })
-                    Text(stringResource(R.string.muscle_secondary) + "：" + secondary.ifEmpty { none })
-                    val hidden = links.mapNotNull { MuscleCatalog.find(it.muscleId) }
-                        .filter { !it.visualSupported }
-                        .map { it.nameZh }
-                    if (hidden.isNotEmpty()) {
-                        Text(stringResource(R.string.muscle_unsupported_list, hidden.joinToString("、")))
-                    }
-                } else {
-                    Text(stringResource(R.string.muscle_unconfigured))
-                }
-            }
-        },
-        confirmButton = {
-            if (exercise.isCustom) {
-                TextButton(onClick = onEdit) {
-                    Text(stringResource(R.string.muscle_edit))
-                }
-            } else {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
-        },
-        dismissButton = {
-            Row {
-                TextButton(onClick = onDelete) {
-                    Text(
-                        text = stringResource(R.string.delete_exercise),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                if (exercise.isCustom) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-            }
-        },
-    )
-}
-
-@Composable
-private fun MuscleEditorDialog(
+internal fun MuscleEditorDialog(
     initial: List<MuscleLink>,
     onDismiss: () -> Unit,
     onConfirm: (List<MuscleLink>) -> Unit,
@@ -808,12 +652,6 @@ private fun linksFrom(primary: Set<String>, secondary: Set<String>): List<Muscle
         MuscleLink(exerciseId = "", muscleId = id, role = MuscleRole.SECONDARY, sortOrder = 0)
     }
     return primaryLinks + secondaryLinks
-}
-
-private fun namesFor(links: List<MuscleLink>, role: MuscleRole): String {
-    return links.filter { it.role == role }
-        .mapNotNull { MuscleCatalog.find(it.muscleId)?.nameZh }
-        .joinToString("、")
 }
 
 private fun muscleSummary(exercise: ExerciseEntity, stored: List<MuscleLink>): String {

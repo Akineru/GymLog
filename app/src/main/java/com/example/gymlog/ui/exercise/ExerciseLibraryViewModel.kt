@@ -129,6 +129,13 @@ class ExerciseLibraryViewModel(
         }
     }
 
+    /** 收藏 / 取消收藏：isFavorite 与 priority（10/0）由仓库层同一条 UPDATE 联动。 */
+    fun setFavorite(id: String, favorite: Boolean) {
+        viewModelScope.launch {
+            repository.setFavorite(id, favorite)
+        }
+    }
+
     fun clearError() {
         errorMessage.value = null
     }

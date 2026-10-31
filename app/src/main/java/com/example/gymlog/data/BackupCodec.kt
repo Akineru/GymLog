@@ -127,6 +127,11 @@ private fun ExerciseEntity.toJson(): JSONObject {
         .putNullable("equipmentCategoryId", equipmentCategoryId)
         .put("classificationStatus", classificationStatus)
         .put("classificationVersion", classificationVersion)
+        // v20 新增字段。旧备份里没有这几项，读取时都会回落到默认值。
+        .put("priority", priority)
+        .put("isFavorite", isFavorite)
+        .putNullable("howTo", howTo)
+        .putNullable("cues", cues)
 }
 
 private fun JSONObject.toExercise(): ExerciseEntity {
@@ -161,6 +166,11 @@ private fun JSONObject.toExercise(): ExerciseEntity {
             .takeIf { it.isNotBlank() }
             ?: ExerciseClassification.STATUS_UNMIGRATED,
         classificationVersion = optInt("classificationVersion", 0),
+        // v21 起优先级合法范围 0–10；旧备份里可能还有 0–100 的值，恢复时钳回合法区间
+        priority = optInt("priority", ExercisePriority.DEFAULT).coerceIn(ExercisePriority.MIN, ExercisePriority.MAX),
+        isFavorite = optBoolean("isFavorite", false),
+        howTo = optStringOrNull("howTo"),
+        cues = optStringOrNull("cues"),
     )
 }
 

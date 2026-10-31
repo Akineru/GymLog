@@ -11,6 +11,8 @@ import com.example.gymlog.data.MIGRATION_15_16
 import com.example.gymlog.data.MIGRATION_16_17
 import com.example.gymlog.data.MIGRATION_17_18
 import com.example.gymlog.data.MIGRATION_18_19
+import com.example.gymlog.data.MIGRATION_19_20
+import com.example.gymlog.data.MIGRATION_20_21
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -27,7 +29,7 @@ class DayKindMigrationTest {
         val name = "migrate-day-kind.db"
         context.deleteDatabase(name)
         val created = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
+            .addMigrations(MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
             .build()
         created.openHelper.writableDatabase.execSQL(
             "INSERT INTO day_notes (dateEpochDay, message) VALUES (20, '记下')",
@@ -37,7 +39,7 @@ class DayKindMigrationTest {
         created.close()
 
         val upgraded = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
+            .addMigrations(MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
             .build()
         assertEquals("记下", upgraded.backupDao().allDayNotes().single().message)
         upgraded.dayKindDao().upsert(DayKindEntity(dateEpochDay = 20, kind = DayKind.REST.name))

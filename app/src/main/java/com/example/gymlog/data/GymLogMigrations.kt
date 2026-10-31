@@ -5,6 +5,59 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+val MIGRATION_20_21 = object : Migration(20, 21) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 新增「收藏」字段；优先级从 0–100 收窄为 0–10。
+        // 旧值转换规则：1–10 保持不变；11–100 按 十分之一 缩放（95→9、80→8、42→4、100→10），
+        // 保留用户的相对排序意图；负值（不应存在）钳到 0。收藏状态独立记录，一律默认未收藏。
+        val columns = db.query("PRAGMA table_info(`exercises`)").use { cursor ->
+            val names = HashSet<String>()
+            while (cursor.moveToNext()) names.add(cursor.getString(1))
+            names
+        }
+        if ("isFavorite" !in columns) {
+            db.execSQL(
+                "ALTER TABLE `exercises` ADD COLUMN `isFavorite` INTEGER NOT NULL DEFAULT 0",
+            )
+        }
+        db.execSQL(
+            """
+            UPDATE `exercises` SET `priority` = CASE
+                WHEN `priority` < 0 THEN 0
+                WHEN `priority` > 10 THEN `priority` * 10 / 100
+                ELSE `priority`
+            END
+            """.trimIndent(),
+        )
+        // 极端兜底：万一缩放后仍越界（不可能，但迁移必须保证值域）
+        db.execSQL("UPDATE `exercises` SET `priority` = 10 WHERE `priority` > 10")
+        db.execSQL("UPDATE `exercises` SET `priority` = 0 WHERE `priority` < 0")
+    }
+}
+
+val MIGRATION_19_20 = object : Migration(19, 20) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 动作新增「优先级 / 要点（怎么做、细节）」三个字段。
+        // 全部带安全默认值，旧动作升级后仍在、顺序不变（priority 默认 0 时不会改变任何排序）。
+        val columns = db.query("PRAGMA table_info(`exercises`)").use { cursor ->
+            val names = HashSet<String>()
+            while (cursor.moveToNext()) names.add(cursor.getString(1))
+            names
+        }
+        if ("priority" !in columns) {
+            db.execSQL(
+                "ALTER TABLE `exercises` ADD COLUMN `priority` INTEGER NOT NULL DEFAULT 0",
+            )
+        }
+        if ("howTo" !in columns) {
+            db.execSQL("ALTER TABLE `exercises` ADD COLUMN `howTo` TEXT")
+        }
+        if ("cues" !in columns) {
+            db.execSQL("ALTER TABLE `exercises` ADD COLUMN `cues` TEXT")
+        }
+    }
+}
+
 val MIGRATION_18_19 = object : Migration(18, 19) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(

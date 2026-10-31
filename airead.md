@@ -124,6 +124,7 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 | 16→17 | 删除 `body_measurements.armCm`：重建表并保留其他身体数据；旧单侧臂围数据不再存在 |
 | 17→18 | `workout_sessions.durationMillis`：训练总时长，老会话默认 0 |
 | 18→19 | `exercise_durations`：每次训练每个动作的动作用时；外键关联 session/exercise，不参与当天总时长 |
+| 19→20 | `exercises` 增加 `priority`（INTEGER NOT NULL DEFAULT 0）、`howTo`、`cues`（TEXT 可空）。只加列、不动旧数据 |
 
 表：
 
@@ -148,6 +149,14 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 - `timer_laps`：该条计时的计次。`intervalMillis` 是这一段，`elapsedMillis` 是累计。
 
 进行中的秒表不在 Room 里。它在 SharedPreferences `gymlog_timer`，由 `TrainingTimerStore` 读写。开机次数用 `Settings.Global.BOOT_COUNT`：次数变了，或 `elapsedRealtime` 倒退，就把 `RUNNING` 收成 `PAUSED`，并标 `recoveredAfterReboot`。这段状态不进备份，清除本地数据也不会擦掉它。
+
+动作库与「添加训练」的选择页共用 `ExerciseBrowsePane`：**双击左侧竖排分类（`BodyCategoryRail`）= 选中该分类 + 右侧动作网格平滑滚回顶部；**单击器械筛选行（`EquipmentCategoryBar`）也回顶****（`gridState.animateScrollToItem(0)`，页面级 `rememberLazyGridState` 提升）。手势用 `detectTapGestures(onTap, onDoubleTap)` 而非 `combinedClickable`；注意两个坑：① 回调必须经 `rememberUpdatedState` 再读，否则第一次点击触发重组后 `pointerInput` 若以 lambda 为 key 会被取消重启、吞掉第二次点击；② `pointerInput` 的 key 只留 `part.id`。
+
+动作详情页（`ui/exercise/ExerciseDetailScreen.kt`）三页共用同一个 `ExerciseDetailViewModel`，动作 ID 由导航参数固定，切换 tab 不重新选动作，不存在串数据。顶部是等宽三段标签栏 + 下划线指示条，内容用 `HorizontalPager` 承载：可以点标签跳、也可以左右滑动切页；指示条的偏移用 `pagerState.currentPageOffsetFraction` 插值，拖动过程中跟着手指走，不是松手后才跳。纵向滚动由各页自己的 `verticalScroll`/`LazyColumn` 处理，与横滑不冲突。历史记录按 `exerciseId` 精确 JOIN（`ExerciseDao.observeHistoryForExercise`），不按名称匹配；容量走 `WeightLogic.effectiveKg × reps`，与统计页、日历配色同一口径；各组次数不一致或缺失时，摘要显示「4 组 · 10/10/8/7 次」而不是假装统一。每组序号用「第几组」的位置序号，不依赖 `setIndex` 的起始值（历史数据从 1 开始存）。
+
+**别名、动作怎么做、动作细节这三处内容一律用中文**（专有名词里的字母如「T 杠」保留），不要在数据里写英文别名或英文说明：界面上这三处和动作名是并排展示的，混进英文会显得突兀。`PresetExercises` 的 89 条旧预置动作别名已全部改成中文说法（如「平板卧推, 平板杠铃卧推, 卧推」）。
+
+动作的三个新字段：`priority` **由收藏功能统一管理，前台不显示也不可编辑**——收藏 = 10、取消 = 0，两者在 `ExerciseDao.setFavorite` 的同一条 UPDATE 里落库，`isFavorite`（v21 新增）独立记录收藏状态；0–10 是合法范围，0 等于维持原来的「练得多 → 最近练 → 名称」顺序（v20 及之前的 0–100 由 MIGRATION_20_21 缩放：1–10 不变、11–100 除十取整）；`howTo` / `cues` 是两段纯文本（怎么做 / 细节），空表示未维护；`aliases` 沿用已有列，多个别名用逗号分隔，读取走 `ExerciseAliases.parse`。这四项都通过详情页右上角「编辑资料」维护，写入只走 `ExerciseRepository.updateTrainingFields`，不碰名称、分类和肌群映射。
 
 肌群目录在 `MuscleCatalog`（稳定 `muscleId`）。图用 `drawable-nodpi` 里的 `muscle_front_base` / `muscle_back_base`，再叠 `assets/muscle_masks/{front|back}/<muscle_id>.png`。底图和遮罩都是 1024×1536，必须画在同一个目标矩形里。坐标换算、frame 和点击反算统一在 `MuscleFigureGeometry`。遮罩按透明度命中；命中优先使用当前实际绘制的层，`quadriceps` 合并遮罩被绘制时整块命中 `quadriceps`，只绘制子头时命中子头，不再出现“画合并、点中某个子头”的错位。未训练的空白区域按最小遮罩命中，用于选中查看。深层肌（菱形肌、肱肌、腹内斜肌、腹横肌）对应遮罩是空的，不拿邻近肌肉代替；缝匠肌正面有独立遮罩。高亮只表示「这段时间的训练记录涉及」，不表示刺激量或恢复。训练主要/次要仍用红色系；用户选中用当前主题的 `primary`（蓝色）叠加，未训练的选中不会看成已训练。同一肌群当天只高亮一次；任一动作为主要则显示主要色。`MuscleAssetCache` 按面懒加载：身体数据页只加载正面，肌群图切到背面再加载背面；加载失败时保留底图并显示重试，身体数据与肌群图共用进程缓存。
 
@@ -188,8 +197,23 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 
 PR 在写入前先把每组换成当天的有效重量。
 
-- 1 次：极限 PR，只比重量，再比日期。
-- 2 次及以上：做组 PR，比重量再比次数。
+- **极限 PR**：所有有效组里有效重量最大的那一组，**不看次数**，也不用任何公式推算；
+  同为最重时取更晚的日期。纯自重组（有效重量 0）不参与，避免出现「极限 PR 0 kg」。
+- **做组 PR**：次数达到「做组 PR 最低次数」（默认 6，可设 1–30）的有效组里，比重量再比次数再比日期。
+  门槛存在 `TrainingPreferencesStore`（`gymlog_training_prefs` / `working_pr_min_reps`），
+  计算时通过 `workingPrMinRepsProvider` 现读，改完立即生效。
+- 两套候选规则集中在 `PersonalRecordLogic.isMaxCandidate / isWorkingCandidate`，
+  仓库写入和趋势曲线（`TrendLogic.runningPrSeries`）共用，不允许各写一套。
+- 「设置 → 训练偏好 → 刷新成绩」调用 `WorkoutRepository.rebuildAllPersonalRecords()`：
+  先只读算出全部动作的新 PR，再在一个事务里写回，只写真正变化的动作，返回变化的动作数。
+  不碰训练记录本身。App 启动时也会跑一次，用于把旧规则存下的 PR 迁移到新规则。
+- 训练偏好页（`TrainingPreferencesScreen`）的版式约定：卡片里只放标题、控件和校验错误，
+  **不放解释性灰字**——所有说明统一收进**卡片标题行右侧的小问号**（`Icons.Outlined.HelpOutline`，
+  32dp 视觉尺寸）里的说明对话框；问号跟着卡片走，以后每张偏好卡各自带一个、只解释本卡内容，
+  避免灰字越堆越多、卡片越来越长。
+- 「刷新成绩」与步进器同排（`BoxWithConstraints` 量卡片内容宽度：≥ 292dp 并排、按钮 `weight(1f)`
+  吃满剩余宽度；更窄则整行折到下一行）。按钮文字用 `labelMedium` 且 `maxLines = 1`，
+  2 倍系统字体下也不会被截断。
 - 只有更高才覆盖。相同成绩（重量和次数都相同）保留更晚的日期。
 - 趋势里的 PR 曲线仍只在成绩提高时出现新点，相同成绩换到更晚日期不会新增点。
 - 删除训练后，用剩下的组重算受影响动作的 PR。保存身体记录后重算全部 PR，因为自重有效重量变了。
@@ -336,6 +360,12 @@ PR 在写入前先把每组换成当天的有效重量。
   - `TimerAlarms.alert()` 和 `TimerAlarmReceiver` 还会再次检查偏好，拦截已排队的旧 PendingIntent。
 - 自然归零仍保留系统闹钟，由 AlarmManager 负责后台触发；不能因为前台 `clockFinished` 收集器未运行就提前取消。
 - 主/备闹钟共享一次性 token，Receiver 只在同 token 的 3 秒内去重；新倒计时有新 token，不会被旧去重记录误伤。
+- **提前到点（1.5.3 修复）**：备用闹钟 `setExactAndAllowWhileIdle` 在 ColorOS 上会被按批处理窗口**提前**投递，实测 03:00 的组歇在 02:31 就弹了「计时结束」——因为 `TimerAlarmReceiver` 原来是「收到即提醒」，没有任何到点校验。
+  - 修法：排闹钟时把目标时刻记进 Intent（`EXTRA_ALERT_AT`，`SystemClock.elapsedRealtime()` 基准，与倒计时同一时钟），接收器先用 `TimerAlertGate.evaluate(at, now, retried)` 复核：
+    - 明显提前（剩余 > 1 秒容差且未补排过）→ **不提醒**，按真实剩余时间补排一次（`retried=true`）；
+    - 已到点 / 容差内 / 晚到 / 补排后仍提前 / 没有目标时刻（老 PendingIntent）→ 照常提醒，绝不吞掉。
+  - 补排走同一个 `scheduleCountdown`，会先 `cancel()` 掉原来的主/备闹钟，所以不会与真正的到点重复。
+  - `TimerAlertGateTest` 6 个用例锁死这套判定（提前/准点/容差内/晚到/二次提前/缺目标时刻）。
 - 进程重建时 `GymLogApplication.onCreate` 会取消上一进程遗留的独立计时闹钟；独立倒计时本来就不跨进程恢复。
 - 打开开关时弹窗提示检查通知权限、应用耗电管理、睡眠待机优化；不自动请求权限，不声称已检查/修复厂商设置。
 - 「检查系统设置」优先打开 `ACTION_APP_NOTIFICATION_SETTINGS`，失败回退 `ACTION_APPLICATION_DETAILS_SETTINGS`；两者都失败时显示手动提示，不崩溃。Android 没有可靠的通用厂商耗电管理入口，因此不伪造跳转。

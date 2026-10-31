@@ -119,10 +119,12 @@ class PersonalRecordUpdateTest {
                 ),
             ),
         )
+        // 2 次不再达到做组 PR 门槛（默认 6），所以做组 PR 仍是 80×8；
+        // 但 90×2 参与极限 PR 的比较，只是不如 100 重，极限 PR 不变。
         val afterTwoReps = db.exerciseDao().getById("bench")!!
         assertEquals(100.0, afterTwoReps.maxPrWeightKg!!, 0.0)
-        assertEquals(90.0, afterTwoReps.workingPrWeightKg!!, 0.0)
-        assertEquals(2, afterTwoReps.workingPrReps)
+        assertEquals(80.0, afterTwoReps.workingPrWeightKg!!, 0.0)
+        assertEquals(8, afterTwoReps.workingPrReps)
 
         repository.saveSession(
             sessionId = null,
@@ -138,10 +140,11 @@ class PersonalRecordUpdateTest {
                 ),
             ),
         )
+        // 70×6 达到门槛但不如 80×8；90×1 只影响极限 PR，且仍不如 100
         val afterLower = db.exerciseDao().getById("bench")!!
         assertEquals(100.0, afterLower.maxPrWeightKg!!, 0.0)
-        assertEquals(90.0, afterLower.workingPrWeightKg!!, 0.0)
-        assertEquals(2, afterLower.workingPrReps)
+        assertEquals(80.0, afterLower.workingPrWeightKg!!, 0.0)
+        assertEquals(8, afterLower.workingPrReps)
     }
 
     @Test
@@ -181,9 +184,10 @@ class PersonalRecordUpdateTest {
             ),
         )
 
+        // 删掉 100×1 之后，极限 PR 回落到剩下的最重有效单组 80×8（不再要求 1 次）
         val afterDelete = db.exerciseDao().getById("bench")!!
-        assertNull(afterDelete.maxPrWeightKg)
-        assertNull(afterDelete.maxPrReps)
+        assertEquals(80.0, afterDelete.maxPrWeightKg!!, 0.0)
+        assertEquals(8, afterDelete.maxPrReps)
         assertEquals(80.0, afterDelete.workingPrWeightKg!!, 0.0)
         assertEquals(8, afterDelete.workingPrReps)
     }
