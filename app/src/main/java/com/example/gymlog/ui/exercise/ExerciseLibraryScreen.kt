@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -371,6 +372,8 @@ private fun ExerciseGridCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
+                        // 尽量贴卡片右上角：越过缩略图的 12dp 内边距（卡片 shape 不裁剪这个量）
+                        .offset(x = 8.dp, y = (-8).dp)
                         .size(30.dp)
                         .clickable(onClick = onToggleFavorite, role = Role.Button)
                         .semantics { contentDescription = favoriteLabel },
