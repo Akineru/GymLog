@@ -20,8 +20,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,11 +89,13 @@ fun CalendarMonthOverview(
     val today = LocalDate.now()
     // 左右滑动翻月：pager 页 ↔ 月份状态双向联动
     val pagerState = rememberPagerState(initialPage = pageOfMonth(month)) { PAGE_COUNT }
+    // collect 闭包长驻，必须用 rememberUpdatedState 读最新月份，否则比较的是组合时的旧值
+    val currentMonth by rememberUpdatedState(month)
     LaunchedEffect(pagerState) {
         // 手势结束落定的页 → 更新月份（settled 不会打断拖动）
         snapshotFlow { pagerState.settledPage }.collect { page ->
             val m = monthOfPage(page)
-            if (m != month) onMonthChange(m)
+            if (m != currentMonth) onMonthChange(m)
         }
     }
     LaunchedEffect(month) {
