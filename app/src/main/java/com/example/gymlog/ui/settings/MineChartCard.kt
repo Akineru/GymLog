@@ -84,40 +84,36 @@ fun MineWeeklyChartCard(
     val currentMetric = metrics[pagerState.currentPage]
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        // Box 叠加布局：范围切换相对整行绝对居中，不受左侧数字宽度影响
+        Box(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = headerValue(currentMetric, bars, durationUnit, volumeUnit),
                 style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.align(Alignment.CenterStart),
             )
-            // 中间：范围切换真正居中
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                MineChartDropdown(
-                    label = range.label,
-                    options = MineChartRange.entries.map { it.label },
-                    selectedIndex = MineChartRange.entries.indexOf(range),
-                    onSelect = { onRangeChange(MineChartRange.entries[it]) },
+            MineChartDropdown(
+                label = range.label,
+                options = MineChartRange.entries.map { it.label },
+                selectedIndex = MineChartRange.entries.indexOf(range),
+                onSelect = { onRangeChange(MineChartRange.entries[it]) },
+                modifier = Modifier.align(Alignment.Center),
+            )
+            when (currentMetric) {
+                MineChartMetric.DURATION -> MineChartDropdown(
+                    label = durationUnit.label,
+                    options = MineDurationUnitOption.entries.map { it.label },
+                    selectedIndex = MineDurationUnitOption.entries.indexOf(durationUnit),
+                    onSelect = { durationUnit = MineDurationUnitOption.entries[it] },
+                    modifier = Modifier.align(Alignment.CenterEnd),
                 )
-            }
-            // 右侧：单位切换（天数没有可切单位，占位保持范围居中）
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                when (currentMetric) {
-                    MineChartMetric.DURATION -> MineChartDropdown(
-                        label = durationUnit.label,
-                        options = MineDurationUnitOption.entries.map { it.label },
-                        selectedIndex = MineDurationUnitOption.entries.indexOf(durationUnit),
-                        onSelect = { durationUnit = MineDurationUnitOption.entries[it] },
-                    )
-                    MineChartMetric.VOLUME -> MineChartDropdown(
-                        label = volumeUnit.label,
-                        options = MineVolumeUnitOption.entries.map { it.label },
-                        selectedIndex = MineVolumeUnitOption.entries.indexOf(volumeUnit),
-                        onSelect = { volumeUnit = MineVolumeUnitOption.entries[it] },
-                    )
-                    MineChartMetric.DAYS -> Unit
-                }
+                MineChartMetric.VOLUME -> MineChartDropdown(
+                    label = volumeUnit.label,
+                    options = MineVolumeUnitOption.entries.map { it.label },
+                    selectedIndex = MineVolumeUnitOption.entries.indexOf(volumeUnit),
+                    onSelect = { volumeUnit = MineVolumeUnitOption.entries[it] },
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                )
+                MineChartMetric.DAYS -> Unit
             }
         }
         HorizontalPager(
@@ -223,10 +219,11 @@ private fun MineChartDropdown(
     options: List<String>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
     // Box 即按钮的边界，DropdownMenu 锚定其左下角，与按钮对齐
-    Box {
+    Box(modifier = modifier) {
         TextButton(onClick = { expanded = true }) {
             Text(label, style = MaterialTheme.typography.labelLarge)
             Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
