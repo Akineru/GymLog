@@ -17,6 +17,38 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.5.6",
+            date = "2026年11月1日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "动作详情页改版",
+                    items = listOf(
+                        "总览顶部改为通宽动作横幅，动作名与分类一目了然。",
+                        "新增按周统计：累计组数、累计容量、最近训练，一眼看到你和这个动作的关系。",
+                        "肌群图与肌群信息左右并排，要点页为空时可以一键去补充。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "我的页统计图表",
+                    items = listOf(
+                        "新增按周柱状图，支持最近1个月、3个月、1年和全期切换。",
+                        "时长、训练量、训练天数三个指标左右滑动切换，时长支持小时/分钟，训练量支持 KG/T。",
+                        "训练量超过四位数自动显示为 15k 这样的格式。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "界面优化",
+                    items = listOf(
+                        "动作库筛选摘要不再显示重复的「全部」，只显示选中的分类和数量。",
+                        "我的页新增数据快捷入口：身体数据、照片墙、数据管理、关于。",
+                        "设置页同组选项合并展示，「关于」独立分组。",
+                        "首页与我的页的训练天数口径更清晰：本周训练 / 累计训练。",
+                        "收藏星标更容易点中，点亮时有轻弹动效。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.5.5",
             date = "2026年10月31日",
             sections = listOf(
