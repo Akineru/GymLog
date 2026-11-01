@@ -104,21 +104,18 @@ fun AppSettingsScreen(
                     Column {
                         SettingsRowFlat(
                             title = stringResource(R.string.appearance_title),
-                            subtitle = "主题、壁纸与日历配色",
                             icon = Icons.Filled.Palette,
                             onClick = onOpenAppearance,
                         )
                         SettingsGroupDivider()
                         SettingsRowFlat(
                             title = stringResource(R.string.training_preferences_title),
-                            subtitle = stringResource(R.string.training_preferences_subtitle),
                             icon = Icons.Filled.FitnessCenter,
                             onClick = onOpenTrainingPreferences,
                         )
                         SettingsGroupDivider()
                         SettingsRowFlat(
                             title = stringResource(R.string.notification_entry_title),
-                            subtitle = stringResource(R.string.notification_entry_subtitle),
                             icon = Icons.Filled.Notifications,
                             onClick = onOpenNotifications,
                         )
@@ -137,7 +134,6 @@ fun AppSettingsScreen(
                 GymLogCard(modifier = Modifier.fillMaxWidth()) {
                     SettingsRowFlat(
                         title = stringResource(R.string.data_backup),
-                        subtitle = "导出、导入或清除本地数据",
                         icon = Icons.Filled.Backup,
                         onClick = onOpenBackup,
                     )
@@ -156,7 +152,6 @@ fun AppSettingsScreen(
                 GymLogCard(modifier = Modifier.fillMaxWidth()) {
                     SettingsRowFlat(
                         title = stringResource(R.string.about_title),
-                        subtitle = "版本信息与更新记录",
                         icon = Icons.Filled.Info,
                         onClick = onOpenAbout,
                     )
@@ -180,7 +175,6 @@ private fun SettingsGroupDivider() {
 private fun SettingsRowFlat(
     title: String,
     onClick: () -> Unit,
-    subtitle: String? = null,
     icon: ImageVector? = null,
 ) {
     Row(
@@ -210,19 +204,11 @@ private fun SettingsRowFlat(
             modifier = Modifier
                 .weight(1f)
                 .padding(start = if (icon != null) GymLogSpacing.sm else 0.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
             )
-            subtitle?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

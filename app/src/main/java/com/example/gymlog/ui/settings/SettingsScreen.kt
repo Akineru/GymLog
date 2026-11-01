@@ -143,25 +143,21 @@ fun MineScreen(
                         QuickEntry(
                             icon = Icons.Filled.Accessibility,
                             title = stringResource(R.string.mine_body_title),
-                            hint = stringResource(R.string.mine_body_hint),
                             onClick = onOpenBodyRecord,
                         ),
                         QuickEntry(
                             icon = Icons.Filled.Photo,
                             title = stringResource(R.string.photo_wall_title),
-                            hint = stringResource(R.string.photo_wall_hint),
                             onClick = onOpenPhotoWall,
                         ),
                         QuickEntry(
                             icon = Icons.Filled.Backup,
                             title = stringResource(R.string.data_backup),
-                            hint = stringResource(R.string.mine_quick_backup_hint),
                             onClick = onOpenBackup,
                         ),
                         QuickEntry(
                             icon = Icons.Filled.Info,
                             title = stringResource(R.string.about_title),
-                            hint = stringResource(R.string.mine_quick_about_hint),
                             onClick = onOpenAbout,
                         ),
                     ),
@@ -398,11 +394,10 @@ private fun DarkStatItem(
 private data class QuickEntry(
     val icon: ImageVector,
     val title: String,
-    val hint: String,
     val onClick: () -> Unit,
 )
 
-/** 2×2 快捷入口网格：图标圆底 + 标题 + 一行副标题，填我的页下半屏。 */
+/** 2×2 快捷入口网格：图标圆底 + 标题，紧凑风格。 */
 @Composable
 private fun QuickEntryGrid(entries: List<QuickEntry>) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -411,7 +406,7 @@ private fun QuickEntryGrid(entries: List<QuickEntry>) {
                 rowEntries.forEach { entry ->
                     DashboardCard(onClick = entry.onClick, modifier = Modifier.weight(1f)) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Box(
@@ -433,14 +428,6 @@ private fun QuickEntryGrid(entries: List<QuickEntry>) {
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.padding(top = 8.dp),
-                            )
-                            Text(
-                                text = entry.hint,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(top = 2.dp),
                             )
                         }
                     }
