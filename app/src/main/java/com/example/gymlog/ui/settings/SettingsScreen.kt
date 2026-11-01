@@ -129,6 +129,14 @@ fun MineScreen(
                 )
             }
             item {
+                // 按周统计柱状图：时长/训练量/天数可滑动切换
+                MineWeeklyChartCard(
+                    bars = state.weeklyBars,
+                    range = state.chartRange,
+                    onRangeChange = viewModel::setChartRange,
+                )
+            }
+            item {
                 // 数据快捷入口网格：填下半屏空白，高频入口前移
                 QuickEntryGrid(
                     entries = listOf(
