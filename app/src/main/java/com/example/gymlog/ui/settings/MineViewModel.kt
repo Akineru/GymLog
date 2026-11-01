@@ -58,11 +58,23 @@ class MineViewModel(
     timerRecordRepository: TimerRecordRepository,
     private val bodyRecordRepository: BodyRecordRepository,
     private val avatarStore: ProfileAvatarStore,
+    private val chartPrefsStore: com.example.gymlog.data.MineChartPrefsStore,
 ) : ViewModel() {
-    private val chartRange = MutableStateFlow(MineChartRange.M3)
+    // 时间段持久化：初始值来自上次保存的选择
+    private val chartRange = MutableStateFlow(readRange(chartPrefsStore.chartRangeName.value))
+
+    init {
+        viewModelScope.launch {
+            chartPrefsStore.chartRangeName.collect { chartRange.value = readRange(it) }
+        }
+    }
 
     fun setChartRange(range: MineChartRange) {
-        chartRange.value = range
+        chartPrefsStore.setChartRangeName(range.name)
+    }
+
+    private fun readRange(name: String): MineChartRange {
+        return runCatching { MineChartRange.valueOf(name) }.getOrDefault(MineChartRange.M3)
     }
 
     val state: StateFlow<MineUiState> = combine(
@@ -168,6 +180,7 @@ class MineViewModel(
             timerRecordRepository: TimerRecordRepository,
             bodyRecordRepository: BodyRecordRepository,
             avatarStore: ProfileAvatarStore,
+            chartPrefsStore: com.example.gymlog.data.MineChartPrefsStore,
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
@@ -177,6 +190,7 @@ class MineViewModel(
                         timerRecordRepository,
                         bodyRecordRepository,
                         avatarStore,
+                        chartPrefsStore,
                     ) as T
                 }
             }

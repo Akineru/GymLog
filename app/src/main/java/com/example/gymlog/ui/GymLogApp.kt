@@ -680,6 +680,7 @@ fun GymLogApp(
                         app.timerRecordRepository,
                         app.bodyRecordRepository,
                         app.profileAvatarStore,
+                        com.example.gymlog.data.MineChartPrefsStore(app),
                     ),
                 )
                 MineScreen(
