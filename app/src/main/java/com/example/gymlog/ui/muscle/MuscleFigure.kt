@@ -381,9 +381,10 @@ private fun ViewSwitch(
 
 @Composable
 private fun SwitchSegment(text: String, selected: Boolean, onClick: () -> Unit) {
-    val background = if (selected) MaterialTheme.colorScheme.inverseSurface else Color.Transparent
+    // 选中态用主色实底，与全 App 的「选中=主色」语言保持一致（原来是 inverseSurface 黑底）
+    val background = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
     val foreground = if (selected) {
-        MaterialTheme.colorScheme.inverseOnSurface
+        MaterialTheme.colorScheme.onPrimary
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
@@ -391,7 +392,7 @@ private fun SwitchSegment(text: String, selected: Boolean, onClick: () -> Unit) 
         Text(
             text = text,
             color = foreground,
-            fontWeight = if (selected) FontWeight.Normal else FontWeight.Normal,
+            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp),
         )
     }

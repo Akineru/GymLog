@@ -148,7 +148,17 @@ object WeightLogic {
     }
 
     fun displayVolume(volume: Double): String {
-        return "${formatKg(volume)} kg"
+        // 容量数值大，整数部分加千分位（13,077.7 kg）；
+        // 重量输入等场景的 formatKg 不动，避免影响输入解析。
+        val rounded = Math.round(volume * 10.0) / 10.0
+        val whole = rounded.toLong()
+        val fraction = (rounded - whole) * 10
+        val wholeText = String.format(java.util.Locale.US, "%,d", whole)
+        return if (fraction == 0.0) {
+            "$wholeText kg"
+        } else {
+            "$wholeText.${fraction.toInt()} kg"
+        }
     }
 
     fun displaySet(weightKg: Double?): String {

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -98,28 +99,31 @@ fun AppSettingsScreen(
                 )
             }
             item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.appearance_title),
-                    subtitle = "主题、壁纸与日历配色",
-                    icon = Icons.Filled.Palette,
-                    onClick = onOpenAppearance,
-                )
-            }
-            item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.training_preferences_title),
-                    subtitle = stringResource(R.string.training_preferences_subtitle),
-                    icon = Icons.Filled.FitnessCenter,
-                    onClick = onOpenTrainingPreferences,
-                )
-            }
-            item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.notification_entry_title),
-                    subtitle = stringResource(R.string.notification_entry_subtitle),
-                    icon = Icons.Filled.Notifications,
-                    onClick = onOpenNotifications,
-                )
+                // 偏好组：同组行合并为一张卡，行间用分隔线（iOS 风格分组列表）
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    Column {
+                        SettingsRowFlat(
+                            title = stringResource(R.string.appearance_title),
+                            subtitle = "主题、壁纸与日历配色",
+                            icon = Icons.Filled.Palette,
+                            onClick = onOpenAppearance,
+                        )
+                        SettingsGroupDivider()
+                        SettingsRowFlat(
+                            title = stringResource(R.string.training_preferences_title),
+                            subtitle = stringResource(R.string.training_preferences_subtitle),
+                            icon = Icons.Filled.FitnessCenter,
+                            onClick = onOpenTrainingPreferences,
+                        )
+                        SettingsGroupDivider()
+                        SettingsRowFlat(
+                            title = stringResource(R.string.notification_entry_title),
+                            subtitle = stringResource(R.string.notification_entry_subtitle),
+                            icon = Icons.Filled.Notifications,
+                            onClick = onOpenNotifications,
+                        )
+                    }
+                }
             }
             item {
                 Text(
@@ -130,22 +134,101 @@ fun AppSettingsScreen(
                 )
             }
             item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.data_backup),
-                    subtitle = "导出、导入或清除本地数据",
-                    icon = Icons.Filled.Backup,
-                    onClick = onOpenBackup,
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    SettingsRowFlat(
+                        title = stringResource(R.string.data_backup),
+                        subtitle = "导出、导入或清除本地数据",
+                        icon = Icons.Filled.Backup,
+                        onClick = onOpenBackup,
+                    )
+                }
+            }
+            item {
+                Text(
+                    text = stringResource(R.string.settings_section_other),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
                 )
             }
             item {
-                SettingsLinkRow(
-                    title = stringResource(R.string.about_title),
-                    subtitle = "版本信息与更新记录",
-                    icon = Icons.Filled.Info,
-                    onClick = onOpenAbout,
+                // 「关于」语义上不属于数据，单独一组
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    SettingsRowFlat(
+                        title = stringResource(R.string.about_title),
+                        subtitle = "版本信息与更新记录",
+                        icon = Icons.Filled.Info,
+                        onClick = onOpenAbout,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 分组卡内的行间分隔线：左端缩进与图标对齐。 */
+@Composable
+private fun SettingsGroupDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(start = 62.dp),
+        color = MaterialTheme.colorScheme.outlineVariant,
+    )
+}
+
+/** 不带卡片外框的一行设置项，放进 SettingsGroupCard 内使用。 */
+@Composable
+private fun SettingsRowFlat(
+    title: String,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    icon: ImageVector? = null,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = GymLogSpacing.md, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        icon?.let {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = if (icon != null) GymLogSpacing.sm else 0.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            subtitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

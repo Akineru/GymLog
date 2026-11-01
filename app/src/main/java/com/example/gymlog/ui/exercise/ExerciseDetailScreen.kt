@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -41,6 +42,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -53,6 +55,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import com.example.gymlog.R
 import com.example.gymlog.data.ExerciseAliases
+import com.example.gymlog.data.ExerciseClassification
 import com.example.gymlog.data.ExerciseEntity
 import com.example.gymlog.data.ExerciseHistoryEntry
 import com.example.gymlog.data.ExerciseHistorySetView
@@ -117,11 +122,7 @@ fun ExerciseDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = exercise?.displayName().orEmpty(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    // 标题由总览页的头部横幅承担，顶栏留空避免动作名出现两次
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -253,12 +254,14 @@ fun ExerciseDetailScreen(
                             TAB_CUES -> CuesTab(
                                 exercise = exercise,
                                 media = state.media,
+                                onEdit = { showEdit = true },
                                 modifier = Modifier.fillMaxSize(),
                             )
                             else -> OverviewTab(
                                 exercise = exercise,
                                 media = state.media,
                                 links = state.muscleLinks,
+                                history = state.history,
                                 modifier = Modifier.fillMaxSize(),
                             )
                         }
@@ -386,6 +389,7 @@ private fun OverviewTab(
     exercise: ExerciseEntity,
     media: com.example.gymlog.data.ExerciseMediaView?,
     links: List<MuscleLink>,
+    history: List<ExerciseHistoryEntry>,
     modifier: Modifier = Modifier,
 ) {
     val none = stringResource(R.string.pr_none)
@@ -396,104 +400,265 @@ private fun OverviewTab(
 
     Column(
         modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
     ) {
-        Text(
-            text = exercise.displayName(),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        if (aliases.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.exercise_detail_aliases) + "：" + aliases,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        ExerciseDemoGif(media = media)
-
-        GymLogCard(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(GymLogSpacing.md),
-                verticalArrangement = Arrangement.spacedBy(GymLogSpacing.xs),
-            ) {
-                InfoLine(
-                    label = stringResource(R.string.muscle_primary),
-                    value = primary,
+        // 头部横幅：通宽 GIF + 底部渐变压暗，动作名与分类标签叠加在图上
+        ExerciseHeaderBanner(exercise = exercise, media = media)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+        ) {
+            // 快捷数据带：一眼看到「我和这个动作的关系」
+            StatsStrip(history = history)
+            if (aliases.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.exercise_detail_aliases) + "：" + aliases,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                InfoLine(
-                    label = stringResource(R.string.muscle_secondary),
-                    value = secondary,
-                )
-                if (hidden.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.muscle_unsupported_list, hidden.joinToString("、")),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+
+            // 个人纪录卡
+            GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(GymLogSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GymLogSpacing.xs),
+                ) {
+                    PrRow(
+                        label = stringResource(R.string.pr_working_prefix),
+                        detail = exercise.workingPr()?.let(PersonalRecordLogic::displayWorking),
+                        dateEpochDay = exercise.workingPr()?.dateEpochDay,
+                    )
+                    PrRow(
+                        label = stringResource(R.string.pr_max_prefix),
+                        detail = exercise.maxPr()?.let(PersonalRecordLogic::displayMax),
+                        dateEpochDay = exercise.maxPr()?.dateEpochDay,
                     )
                 }
-                if (links.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.muscle_unconfigured),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+
+            if (links.isNotEmpty()) {
+                // 肌群图收窄与肌群文字并排（左图右文），总览一屏能看到更多内容
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    MuscleFigure(
+                        highlights = links.map { link ->
+                            MuscleHighlight(
+                                muscleId = link.muscleId,
+                                role = link.role,
+                                exercises = emptyList(),
+                            )
+                        },
+                        onRegionClick = {},
+                        boundedHeight = 240.dp,
+                        showSwitch = true,
+                        modifier = Modifier.weight(0.52f),
                     )
+                    Column(
+                        modifier = Modifier
+                            .weight(0.48f)
+                            .padding(start = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(GymLogSpacing.xs),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.muscle_map_title),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        InfoLine(
+                            label = stringResource(R.string.muscle_primary),
+                            value = primary,
+                        )
+                        InfoLine(
+                            label = stringResource(R.string.muscle_secondary),
+                            value = secondary,
+                        )
+                        if (hidden.isNotEmpty()) {
+                            Text(
+                                text = stringResource(R.string.muscle_unsupported_list, hidden.joinToString("、")),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
-                HorizontalDivider(modifier = Modifier.padding(vertical = GymLogSpacing.xxs))
-                PrRow(
-                    label = stringResource(R.string.pr_working_prefix),
-                    detail = exercise.workingPr()?.let(PersonalRecordLogic::displayWorking),
-                    dateEpochDay = exercise.workingPr()?.dateEpochDay,
-                )
-                PrRow(
-                    label = stringResource(R.string.pr_max_prefix),
-                    detail = exercise.maxPr()?.let(PersonalRecordLogic::displayMax),
-                    dateEpochDay = exercise.maxPr()?.dateEpochDay,
+            } else {
+                // 未配置肌群时保留说明卡
+                GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(GymLogSpacing.md),
+                        verticalArrangement = Arrangement.spacedBy(GymLogSpacing.xs),
+                    ) {
+                        InfoLine(
+                            label = stringResource(R.string.muscle_primary),
+                            value = primary,
+                        )
+                        InfoLine(
+                            label = stringResource(R.string.muscle_secondary),
+                            value = secondary,
+                        )
+                        Text(
+                            text = stringResource(R.string.muscle_unconfigured),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(GymLogSpacing.md))
+            // GIF 版权说明弱化放在页面最底部
+            media?.attribution?.let { attribution ->
+                Text(
+                    text = attribution,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
+    }
+}
 
-        if (links.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.muscle_map_title),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = GymLogSpacing.xs),
+/**
+ * 快捷数据带：累计组数 / 累计容量 / 最近训练。
+ * 数据直接从已加载的历史记录汇总，不额外查库；没有历史时各项显示「—」。
+ */
+@Composable
+private fun StatsStrip(history: List<ExerciseHistoryEntry>) {
+    val totalSets = history.sumOf { it.setCount }
+    val totalVolume = history.sumOf { it.volumeKg }
+    val lastDay = history.maxOfOrNull { it.dateEpochDay }
+    val today = LocalDate.now().toEpochDay()
+    val lastText = when {
+        lastDay == null -> "—"
+        lastDay >= today -> stringResource(R.string.exercise_stats_today)
+        else -> stringResource(R.string.exercise_stats_days_ago, today - lastDay)
+    }
+    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = GymLogSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            StatCell(
+                modifier = Modifier.weight(1f),
+                value = if (totalSets > 0) totalSets.toString() else "—",
+                label = stringResource(R.string.exercise_stats_total_sets),
             )
-            // 复用现有肌群图：showSwitch 自带正面/背面切换，高亮沿用同一套 MuscleHighlight。
-            MuscleFigure(
-                highlights = links.map { link ->
-                    MuscleHighlight(
-                        muscleId = link.muscleId,
-                        role = link.role,
-                        exercises = emptyList(),
-                    )
-                },
-                onRegionClick = {},
-                boundedHeight = 320.dp,
-                showSwitch = true,
+            StatDivider()
+            StatCell(
+                modifier = Modifier.weight(1f),
+                value = if (totalVolume > 0.0) WeightLogic.displayVolume(totalVolume) else "—",
+                label = stringResource(R.string.exercise_stats_total_volume),
+            )
+            StatDivider()
+            StatCell(
+                modifier = Modifier.weight(1f),
+                value = lastText,
+                label = stringResource(R.string.exercise_stats_last),
             )
         }
-        Spacer(Modifier.height(GymLogSpacing.md))
     }
 }
 
 @Composable
-private fun ExerciseDemoGif(media: com.example.gymlog.data.ExerciseMediaView?) {
-    ExerciseGifPlayer(
-        media = media,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
-    )
-    media?.attribution?.let { attribution ->
+private fun StatCell(modifier: Modifier, value: String, label: String) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = attribution,
+            text = value,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+        )
+        Text(
+            text = label,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+@Composable
+private fun StatDivider() {
+    Box(
+        modifier = Modifier
+            .width(1.dp)
+            .height(28.dp)
+            .background(MaterialTheme.colorScheme.outlineVariant),
+    )
+}
+
+/**
+ * 头部横幅：GIF 完整显示（不裁切，全身可见），底部压一层暗色渐变，
+ * 动作名 + 部位/器械小胶囊叠加在左下角，做出「动作名片」的第一眼。
+ */
+@Composable
+private fun ExerciseHeaderBanner(
+    exercise: ExerciseEntity,
+    media: com.example.gymlog.data.ExerciseMediaView?,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp),
+    ) {
+        // 完整显示动作 GIF（不裁切），两侧由相近底色补齐；裁切模式会切掉全身动作的头脚
+        ExerciseGifPlayer(
+            media = media,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.65f)),
+                        startY = 140f,
+                    ),
+                ),
+        )
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = exercise.displayName(),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = Color.White,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                BannerChip(text = bodyPartLabel(exercise))
+                BannerChip(
+                    text = equipmentLabel(
+                        exercise.equipmentCategoryId ?: exercise.equipmentType,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BannerChip(text: String) {
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = Color.Black.copy(alpha = 0.35f),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+        )
+    }
+}
+
+private fun bodyPartLabel(exercise: ExerciseEntity): String {
+    return ExerciseClassification.body(exercise.bodyCategoryId)?.labelZh
+        ?: exercise.bodyPartDetail?.takeIf { it.isNotBlank() }
+        ?: com.example.gymlog.data.BodyPart.entries.find { it.name == exercise.bodyPart }?.labelZh
+        ?: exercise.bodyPart
 }
 
 @Composable
@@ -535,7 +700,10 @@ private fun HistoryTab(
     }
 }
 
-/** PR 行：标签和成绩在左，日期用纯数字格式贴最右。没有 PR 时只显示「暂无」。 */
+/**
+ * PR 行：左侧只留标签；成绩（加粗）与日期（灰色小号）并为一组贴右，
+ * 两段信息距离近，不用左右来回扫视。没有 PR 时右侧显示「暂无」。
+ */
 @Composable
 private fun PrRow(
     label: String,
@@ -547,18 +715,25 @@ private fun PrRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = if (detail != null && dateEpochDay != null) {
-                "$label $detail"
-            } else {
-                label + " " + stringResource(R.string.pr_none)
-            },
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
         )
+        Spacer(Modifier.weight(1f))
         if (detail != null && dateEpochDay != null) {
-            Spacer(Modifier.weight(1f))
+            Text(
+                text = detail,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            )
+            Spacer(Modifier.width(6.dp))
             Text(
                 text = PersonalRecordLogic.formatDate(dateEpochDay),
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Text(
+                text = stringResource(R.string.pr_none),
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -666,6 +841,7 @@ private fun setLine(set: ExerciseHistorySetView): String {
 private fun CuesTab(
     exercise: ExerciseEntity,
     media: com.example.gymlog.data.ExerciseMediaView?,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val howTo = exercise.howTo?.trim().orEmpty()
@@ -683,16 +859,28 @@ private fun CuesTab(
                 .height(180.dp),
         )
         if (howTo.isEmpty() && cues.isEmpty()) {
-            Text(
-                text = stringResource(R.string.exercise_detail_cues_empty),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = GymLogSpacing.sm),
-            )
-            Text(
-                text = stringResource(R.string.exercise_detail_cues_empty_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = GymLogSpacing.sm),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(R.string.exercise_detail_cues_empty),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    text = stringResource(R.string.exercise_detail_cues_empty_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = GymLogSpacing.xs),
+                )
+                // 空态给一条直达编辑的路径，不用绕顶栏菜单
+                Button(
+                    onClick = onEdit,
+                    modifier = Modifier.padding(top = GymLogSpacing.sm),
+                ) {
+                    Text(stringResource(R.string.exercise_detail_cues_go_edit))
+                }
+            }
             return@Column
         }
         CuesSection(

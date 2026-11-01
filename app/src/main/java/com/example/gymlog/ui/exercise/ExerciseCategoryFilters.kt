@@ -128,3 +128,40 @@ fun EquipmentCategoryBar(
         }
     }
 }
+
+/**
+ * 筛选摘要行：无筛选只显示「N 个动作」，避免出现双「全部」；
+ * 有筛选时显示「部位 · 器械 · N 个动作」（只带已选中的维度）。
+ */
+@Composable
+fun ExerciseSummaryText(
+    count: Int,
+    bodyPart: ExerciseClassification.BodyCategory,
+    equipmentType: ExerciseClassification.EquipmentCategory,
+    searchingAll: Boolean,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.titleSmall,
+) {
+    Text(
+        text = if (searchingAll) {
+            androidx.compose.ui.res.stringResource(com.example.gymlog.R.string.library_search_count, count)
+        } else {
+            val filters = listOf(
+                bodyPart.takeIf { it.id.isNotBlank() }?.labelZh,
+                equipmentType.takeIf { it.id.isNotBlank() }?.labelZh,
+            ).filterNotNull()
+            if (filters.isEmpty()) {
+                androidx.compose.ui.res.stringResource(com.example.gymlog.R.string.library_count_plain, count)
+            } else {
+                androidx.compose.ui.res.stringResource(
+                    com.example.gymlog.R.string.library_section_count,
+                    filters.joinToString(" · "),
+                    count,
+                )
+            }
+        },
+        style = style,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier,
+    )
+}

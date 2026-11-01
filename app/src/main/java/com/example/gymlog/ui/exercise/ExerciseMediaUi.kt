@@ -27,6 +27,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -78,6 +79,8 @@ fun ExerciseThumbnail(
 fun ExerciseGifPlayer(
     media: ExerciseMediaView?,
     modifier: Modifier = Modifier,
+    /** true = 等比放大裁切填满容器（头部横幅用）；默认 false = 完整放入留边。 */
+    fill: Boolean = false,
 ) {
     val context = LocalContext.current
     val path = media?.gifPath
@@ -111,13 +114,18 @@ fun ExerciseGifPlayer(
     }
     Canvas(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(if (fill) RectangleShape else RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
         frameTick
         val width = loaded.width().coerceAtLeast(1)
         val height = loaded.height().coerceAtLeast(1)
-        val scale = min(size.width / width, size.height / height)
+        // fill 用 max 放大到填满再由画布裁掉溢出；否则取 min 完整显示
+        val scale = if (fill) {
+            max(size.width / width, size.height / height)
+        } else {
+            min(size.width / width, size.height / height)
+        }
         val left = (size.width - width * scale) / 2f
         val top = (size.height - height * scale) / 2f
         drawIntoCanvas { canvas ->

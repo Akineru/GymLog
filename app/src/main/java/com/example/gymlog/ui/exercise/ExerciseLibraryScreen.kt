@@ -226,19 +226,11 @@ fun ExerciseLibraryScreen(
                             scope.launch { gridState.animateScrollToItem(0) }
                         },
                     )
-                    Text(
-                        text = if (state.searchingAll) {
-                            stringResource(R.string.library_search_count, state.exercises.size)
-                        } else {
-                            stringResource(
-                                R.string.library_section_count,
-                                state.bodyPart.labelZh,
-                                state.equipmentType.labelZh,
-                                state.exercises.size,
-                            )
-                        },
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ExerciseSummaryText(
+                        count = state.exercises.size,
+                        bodyPart = state.bodyPart,
+                        equipmentType = state.equipmentType,
+                        searchingAll = state.searchingAll,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                     ExerciseBrowsePane(
@@ -548,7 +540,7 @@ private fun <T> FlowChipBlock(
     }
 }
 
-private fun equipmentLabel(value: String): String {
+internal fun equipmentLabel(value: String): String {
     return ExerciseClassification.equipment(value)?.labelZh
         ?: ExerciseClassification.equipmentForLegacy(value).labelZh
 }

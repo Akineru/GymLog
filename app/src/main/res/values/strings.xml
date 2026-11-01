@@ -62,7 +62,7 @@
     <string name="home_this_month">本月</string>
     <string name="home_previous_period">上一周期</string>
     <string name="home_next_period">下一周期</string>
-    <string name="home_stat_days">训练天数</string>
+    <string name="home_stat_days">本周训练</string>
     <string name="home_stat_sets">训练总组数</string>
     <string name="home_stat_volume">训练容量</string>
     <string name="home_unit_day">天</string>
@@ -173,7 +173,15 @@
     <string name="train_hero_subtitle">从一个动作开始。训练会自动记录时长、组数和容量。</string>
     <string name="train_library_hint">按部位和器械查找、添加动作</string>
     <string name="training_resume">继续训练</string>
-    <string name="library_section_count">%1$s · %2$s · %3$d 个动作</string>
+    <string name="library_section_count">%1$s · %2$d 个动作</string>
+    <string name="library_count_plain">%1$d 个动作</string>
+    <string name="exercise_stats_total_sets">累计组数</string>
+    <string name="exercise_stats_total_volume">累计容量</string>
+    <string name="exercise_stats_last">最近训练</string>
+    <string name="exercise_stats_days_ago">%1$d 天前</string>
+    <string name="exercise_stats_today">今天</string>
+    <string name="exercise_detail_cues_go_edit">去补充</string>
+    <string name="settings_section_other">其他</string>
     <string name="library_search_banner">正在搜索全部动作。</string>
     <string name="library_search_count">全部动作 · %1$d 个结果</string>
     <string name="library_empty_category">这个分类里还没有动作。可以换一个器械分类，或新增动作。</string>
@@ -289,7 +297,7 @@
     <string name="body_trend_title">身体变化趋势</string>
     <string name="mine_profile_empty">点击填写性别和身体数据</string>
     <string name="mine_age">%1$d 岁</string>
-    <string name="mine_stat_days">训练天数</string>
+    <string name="mine_stat_days">累计训练</string>
     <string name="mine_stat_years">训练年限</string>
     <string name="mine_stat_duration">累计时长</string>
     <string name="mine_stat_fat">体脂率</string>

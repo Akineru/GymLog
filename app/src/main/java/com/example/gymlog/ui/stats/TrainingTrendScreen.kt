@@ -1,6 +1,7 @@
 package com.example.gymlog.ui.stats
 
 import androidx.activity.compose.BackHandler
+import com.example.gymlog.ui.exercise.ExerciseSummaryText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -97,15 +98,13 @@ fun TrainingTrendScreen(
                         selected = state.equipmentType,
                         onSelect = viewModel::onEquipmentSelected,
                     )
-                    Text(
-                        text = stringResource(
-                            R.string.library_section_count,
-                            state.bodyPart.labelZh,
-                            state.equipmentType.labelZh,
-                            state.exercises.size,
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
+                    ExerciseSummaryText(
+                        count = state.exercises.size,
+                        bodyPart = state.bodyPart,
+                        equipmentType = state.equipmentType,
+                        searchingAll = false,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                         if (state.exercises.isEmpty()) {

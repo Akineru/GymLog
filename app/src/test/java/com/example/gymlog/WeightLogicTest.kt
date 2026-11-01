@@ -98,7 +98,8 @@ class WeightLogicTest {
             ),
         )
         assertEquals(2000.0, fourSets, 0.0)
-        assertEquals("2000 kg", WeightLogic.displayVolume(fourSets))
+        assertEquals("2,000 kg", WeightLogic.displayVolume(fourSets))
+        assertEquals("13,077.7 kg", WeightLogic.displayVolume(13077.7))
         assertEquals(0.0, WeightLogic.setVolume(null, 8), 0.0)
     }
 
