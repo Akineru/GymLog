@@ -687,6 +687,8 @@ fun GymLogApp(
                     onOpenBodyRecord = { screen = Screen.BodyRecord() },
                     onOpenPhotoWall = { screen = Screen.PhotoWall },
                     onOpenSettings = { screen = Screen.Settings(RootTab.Mine) },
+                    onOpenBackup = { screen = Screen.BackupData(RootTab.Mine) },
+                    onOpenAbout = { screen = Screen.About(RootTab.Mine) },
                 )
             }
         }

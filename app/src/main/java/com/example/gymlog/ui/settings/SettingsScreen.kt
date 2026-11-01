@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +31,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Female
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Percent
@@ -85,6 +88,8 @@ fun MineScreen(
     onOpenBodyRecord: () -> Unit,
     onOpenPhotoWall: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenBackup: () -> Unit = {},
+    onOpenAbout: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var editingProfile by remember { mutableStateOf(false) }
@@ -124,10 +129,35 @@ fun MineScreen(
                 )
             }
             item {
-                BodyRecordEntry(onClick = onOpenBodyRecord)
-            }
-            item {
-                PhotoWallEntry(onClick = onOpenPhotoWall)
+                // 数据快捷入口网格：填下半屏空白，高频入口前移
+                QuickEntryGrid(
+                    entries = listOf(
+                        QuickEntry(
+                            icon = Icons.Filled.Accessibility,
+                            title = stringResource(R.string.mine_body_title),
+                            hint = stringResource(R.string.mine_body_hint),
+                            onClick = onOpenBodyRecord,
+                        ),
+                        QuickEntry(
+                            icon = Icons.Filled.Photo,
+                            title = stringResource(R.string.photo_wall_title),
+                            hint = stringResource(R.string.photo_wall_hint),
+                            onClick = onOpenPhotoWall,
+                        ),
+                        QuickEntry(
+                            icon = Icons.Filled.Backup,
+                            title = stringResource(R.string.data_backup),
+                            hint = stringResource(R.string.mine_quick_backup_hint),
+                            onClick = onOpenBackup,
+                        ),
+                        QuickEntry(
+                            icon = Icons.Filled.Info,
+                            title = stringResource(R.string.about_title),
+                            hint = stringResource(R.string.mine_quick_about_hint),
+                            onClick = onOpenAbout,
+                        ),
+                    ),
+                )
             }
         }
     }
@@ -356,104 +386,62 @@ private fun DarkStatItem(
     }
 }
 
-@Composable
-private fun PhotoWallEntry(onClick: () -> Unit) {
-    DashboardCard(onClick = onClick) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Photo,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.photo_wall_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = stringResource(R.string.photo_wall_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
+/** 快捷入口数据。 */
+private data class QuickEntry(
+    val icon: ImageVector,
+    val title: String,
+    val hint: String,
+    val onClick: () -> Unit,
+)
 
+/** 2×2 快捷入口网格：图标圆底 + 标题 + 一行副标题，填我的页下半屏。 */
 @Composable
-private fun BodyRecordEntry(onClick: () -> Unit) {
-    DashboardCard(onClick = onClick) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Accessibility,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+private fun QuickEntryGrid(entries: List<QuickEntry>) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        entries.chunked(2).forEach { rowEntries ->
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                rowEntries.forEach { entry ->
+                    DashboardCard(onClick = entry.onClick, modifier = Modifier.weight(1f)) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = entry.icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                            Text(
+                                text = entry.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(top = 8.dp),
+                            )
+                            Text(
+                                text = entry.hint,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(top = 2.dp),
+                            )
+                        }
+                    }
+                }
+                // 单数行时补空位保持两列对齐
+                if (rowEntries.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.mine_body_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = stringResource(R.string.mine_body_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -461,10 +449,11 @@ private fun BodyRecordEntry(onClick: () -> Unit) {
 @Composable
 private fun DashboardCard(
     onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         shape = dashboardCardShape(),

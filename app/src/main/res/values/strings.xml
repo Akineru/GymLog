@@ -182,6 +182,8 @@
     <string name="exercise_stats_today">今天</string>
     <string name="exercise_detail_cues_go_edit">去补充</string>
     <string name="settings_section_other">其他</string>
+    <string name="mine_quick_backup_hint">备份与恢复</string>
+    <string name="mine_quick_about_hint">版本与更新</string>
     <string name="library_search_banner">正在搜索全部动作。</string>
     <string name="library_search_count">全部动作 · %1$d 个结果</string>
     <string name="library_empty_category">这个分类里还没有动作。可以换一个器械分类，或新增动作。</string>
