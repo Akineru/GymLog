@@ -91,18 +91,18 @@ fun MineWeeklyChartCard(
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        // Box 叠加布局：范围切换相对整行绝对居中，不受左侧数字宽度影响
+        // Box 叠加布局：数值是主角居中，范围切换靠左、单位切换靠右
         Box(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = headerValue(currentMetric, bars, durationUnit, volumeUnit),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.align(Alignment.CenterStart),
-            )
             MineChartDropdown(
                 label = range.label,
                 options = MineChartRange.entries.map { it.label },
                 selectedIndex = MineChartRange.entries.indexOf(range),
                 onSelect = { onRangeChange(MineChartRange.entries[it]) },
+                modifier = Modifier.align(Alignment.CenterStart),
+            )
+            Text(
+                text = headerValue(currentMetric, bars, durationUnit, volumeUnit),
+                style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.align(Alignment.Center),
             )
             when (currentMetric) {
