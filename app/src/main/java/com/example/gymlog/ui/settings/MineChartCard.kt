@@ -463,7 +463,7 @@ private fun WeeklyBarChart(
     }
 }
 
-/** 气泡里的完整数值：比 Y 轴标签多带单位。 */
+/** 气泡里的数值：不带单位（单位已由头部大数表达），纯数字最干净。 */
 private fun fullValueLabelOf(
     metric: MineChartMetric,
     durationUnit: MineDurationUnitOption,
@@ -471,18 +471,18 @@ private fun fullValueLabelOf(
     v: Double,
 ): String = when (metric) {
     MineChartMetric.DURATION -> when (durationUnit) {
-        MineDurationUnitOption.HOURS -> stripTrailingZero(v) + "小时"
-        MineDurationUnitOption.MINUTES -> v.toInt().toString() + "分钟"
+        MineDurationUnitOption.HOURS -> stripTrailingZero(v)
+        MineDurationUnitOption.MINUTES -> v.toInt().toString()
     }
     MineChartMetric.VOLUME -> when (volumeUnit) {
-        MineVolumeUnitOption.KG -> formatVolumeCompact(v) + "kg"
+        MineVolumeUnitOption.KG -> formatVolumeCompact(v)
         MineVolumeUnitOption.T -> when {
-            v == 0.0 -> "0T"
-            v >= 10.0 -> Math.round(v).toString() + "T"
-            else -> String.format("%.1f", v) + "T"
+            v == 0.0 -> "0"
+            v >= 10.0 -> Math.round(v).toString()
+            else -> String.format("%.1f", v)
         }
     }
-    MineChartMetric.DAYS -> v.toInt().toString() + "天"
+    MineChartMetric.DAYS -> v.toInt().toString()
 }
 
 /** 取比数据最大值略大的「好看」刻度：1/2/5 × 10^n。 */
