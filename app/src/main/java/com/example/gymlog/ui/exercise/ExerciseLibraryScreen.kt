@@ -59,6 +59,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
@@ -361,12 +362,21 @@ private fun ExerciseGridCard(
                         R.string.exercise_favorite_add
                     },
                 )
+                // 点亮时缩放弹跳：1 → 1.2 → 1，给收藏一个轻量的「按下感」
+                val starScale = remember { androidx.compose.animation.core.Animatable(1f) }
+                LaunchedEffect(exercise.isFavorite) {
+                    if (exercise.isFavorite) {
+                        starScale.snapTo(1f)
+                        starScale.animateTo(1.2f, androidx.compose.animation.core.tween(75))
+                        starScale.animateTo(1f, androidx.compose.animation.core.tween(75))
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        // 尽量贴卡片右上角：越过缩略图的 12dp 内边距（卡片 shape 不裁剪这个量）
-                        .offset(x = 8.dp, y = (-8).dp)
-                        .size(30.dp)
+                        // 触摸区 44dp（无障碍建议值），用 offset 抵消尺寸变化让星星视觉位置不变
+                        .offset(x = 1.dp, y = (-15).dp)
+                        .size(44.dp)
                         .clickable(onClick = onToggleFavorite, role = Role.Button)
                         .semantics { contentDescription = favoriteLabel },
                     contentAlignment = Alignment.Center,
@@ -383,7 +393,9 @@ private fun ExerciseGridCard(
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier
+                            .size(17.dp)
+                            .scale(starScale.value),
                     )
                 }
             }
