@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,11 +42,19 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 private val monthFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy年M月", Locale.CHINA)
 private val dayFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("M月d日", Locale.CHINA)
+
+/** Pager 页与月份的换算：第 0 页 = 1970年1月，共 1600 页（约到 2103 年）。 */
+private const val PAGE_COUNT = 1600
+private fun pageOfMonth(month: YearMonth): Int =
+    ((month.year - 1970) * 12 + month.monthValue - 1).coerceIn(0, PAGE_COUNT - 1)
+private fun monthOfPage(page: Int): YearMonth =
+    YearMonth.of(1970, 1).plusMonths(page.toLong())
 
 @Composable
 fun CalendarMonthOverview(
@@ -70,8 +84,27 @@ fun CalendarMonthOverview(
             listOf(detail).partVolumes(measurements).sumOf { (_, volume) -> volume }
         }
     }
-    val cells = remember(month) { calendarCells(month) }
     val today = LocalDate.now()
+    // 左右滑动翻月：pager 页 ↔ 月份状态双向联动
+    val pagerState = rememberPagerState(initialPage = pageOfMonth(month)) { PAGE_COUNT }
+    LaunchedEffect(pagerState) {
+        // 手势结束落定的页 → 更新月份（settled 不会打断拖动）
+        snapshotFlow { pagerState.settledPage }.collect { page ->
+            val m = monthOfPage(page)
+            if (m != month) onMonthChange(m)
+        }
+    }
+    LaunchedEffect(month) {
+        // 外部（按钮/点击其他月日期）改月份 → 同步翻到对应页
+        val target = pageOfMonth(month)
+        if (pagerState.settledPage != target) pagerState.scrollToPage(target)
+    }
+    val pagerScope = rememberCoroutineScope()
+    val turnPage: (Int) -> Unit = { delta ->
+        // ‹ › 按钮也走 pager 翻页动画
+        val target = (pagerState.settledPage + delta).coerceIn(0, PAGE_COUNT - 1)
+        pagerScope.launch { pagerState.animateScrollToPage(target) }
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -146,7 +179,7 @@ fun CalendarMonthOverview(
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .clip(RoundedCornerShape(6.dp))
-                            .clickable { onMonthChange(month.minusMonths(1)) }
+                            .clickable { turnPage(-1) }
                             .padding(horizontal = 7.dp, vertical = 2.dp),
                     )
                     Text(
@@ -156,19 +189,26 @@ fun CalendarMonthOverview(
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .clip(RoundedCornerShape(6.dp))
-                            .clickable { onMonthChange(month.plusMonths(1)) }
+                            .clickable { turnPage(1) }
                             .padding(horizontal = 7.dp, vertical = 2.dp),
                     )
                 }
-                MonthGrid(
-                    cells = cells,
-                    month = month,
-                    today = today,
-                    selectedDate = selectedDate,
-                    dayPaints = dayPaints,
-                    onMonthChange = onMonthChange,
-                    onDayClick = onDayClick,
-                )
+                // 月份网格左右滑动切换，自带滑动动画
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { page ->
+                    val pageMonth = monthOfPage(page)
+                    MonthGrid(
+                        cells = remember(pageMonth) { calendarCells(pageMonth) },
+                        month = pageMonth,
+                        today = today,
+                        selectedDate = selectedDate,
+                        dayPaints = dayPaints,
+                        onMonthChange = onMonthChange,
+                        onDayClick = onDayClick,
+                    )
+                }
             }
         }
     }
