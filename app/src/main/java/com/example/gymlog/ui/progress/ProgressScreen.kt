@@ -59,17 +59,8 @@ fun ProgressScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
-                Text(
-                    text = "训练与身体变化",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 2.dp),
-                )
-            }
-            item {
                 ProgressRow(
                     title = stringResource(R.string.stats_training_title),
-                    description = stringResource(R.string.stats_training_hint),
                     icon = Icons.AutoMirrored.Filled.TrendingUp,
                     onClick = onOpenTrainingTrend,
                 )
@@ -77,7 +68,6 @@ fun ProgressScreen(
             item {
                 ProgressRow(
                     title = stringResource(R.string.stats_body_title),
-                    description = stringResource(R.string.stats_body_hint),
                     icon = Icons.Filled.Accessibility,
                     onClick = onOpenBodyTrend,
                 )
@@ -89,7 +79,6 @@ fun ProgressScreen(
 @Composable
 private fun ProgressRow(
     title: String,
-    description: String,
     icon: ImageVector,
     onClick: () -> Unit,
 ) {
@@ -118,23 +107,14 @@ private fun ProgressRow(
                     modifier = Modifier.size(22.dp),
                 )
             }
-            Column(
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = GymLogSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,

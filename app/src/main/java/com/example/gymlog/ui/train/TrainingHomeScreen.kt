@@ -121,23 +121,14 @@ private fun TrainingTimerToolCard(onOpenTimer: () -> Unit) {
                     modifier = Modifier.size(22.dp),
                 )
             }
-            Column(
+            Text(
+                text = stringResource(R.string.training_timer_tool),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = GymLogSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.training_timer_tool),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.training_timer_tool_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
@@ -268,11 +259,6 @@ private fun StartTrainingCard(onStartTraining: () -> Unit) {
             style = MaterialTheme.typography.headlineSmall,
             color = Color(0xFFBBD0EC),
         )
-        Text(
-            text = stringResource(R.string.train_hero_subtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFFD6E4F5),
-        )
         GymLogActionButton(
             text = stringResource(R.string.home_start_training),
             onClick = onStartTraining,
@@ -309,24 +295,13 @@ private fun LibraryCard(onOpenLibrary: () -> Unit) {
                     modifier = Modifier.size(22.dp),
                 )
             }
-            Column(
+            Text(
+                text = stringResource(R.string.exercise_library),
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = GymLogSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.exercise_library),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = stringResource(R.string.train_library_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
