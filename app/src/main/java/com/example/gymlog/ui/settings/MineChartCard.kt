@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -49,9 +51,22 @@ enum class MineChartMetric(val label: String) {
     DAYS("训练天数"),
 }
 
+/** 时长单位：小时（小数）/ 分钟。 */
+enum class MineDurationUnitOption(val label: String) {
+    HOURS("小时"),
+    MINUTES("分钟"),
+}
+
+/** 训练量单位：KG / T（吨）。 */
+enum class MineVolumeUnitOption(val label: String) {
+    KG("KG"),
+    T("T"),
+}
+
 /**
  * 我的页按周统计柱状图卡（名片与快捷入口之间）。
- * 右上角下拉切换范围；下方 chips 与 Pager 双向联动切换指标。
+ * 头部：大数居左，范围下拉居中，单位切换居右；
+ * 底部 chips 与 Pager 双向联动切换指标。
  */
 @Composable
 fun MineWeeklyChartCard(
@@ -63,6 +78,10 @@ fun MineWeeklyChartCard(
     val metrics = MineChartMetric.entries
     val pagerState = rememberPagerState { metrics.size }
     val scope = rememberCoroutineScope()
+    // 单位记忆在卡片内：时长默认小时，训练量默认 KG，天数无单位切换
+    var durationUnit by remember { mutableStateOf(MineDurationUnitOption.HOURS) }
+    var volumeUnit by remember { mutableStateOf(MineVolumeUnitOption.KG) }
+    val currentMetric = metrics[pagerState.currentPage]
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -70,17 +89,36 @@ fun MineWeeklyChartCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = headerValue(metrics[pagerState.currentPage], bars),
+                text = headerValue(currentMetric, bars, durationUnit, volumeUnit),
                 style = MaterialTheme.typography.headlineSmall,
             )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = range.weeksAgoLabel(bars),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.weight(1f))
-            RangeDropdown(range = range, onRangeChange = onRangeChange)
+            // 中间：范围切换真正居中
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                MineChartDropdown(
+                    label = range.label,
+                    options = MineChartRange.entries.map { it.label },
+                    selectedIndex = MineChartRange.entries.indexOf(range),
+                    onSelect = { onRangeChange(MineChartRange.entries[it]) },
+                )
+            }
+            // 右侧：单位切换（天数没有可切单位，占位保持范围居中）
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                when (currentMetric) {
+                    MineChartMetric.DURATION -> MineChartDropdown(
+                        label = durationUnit.label,
+                        options = MineDurationUnitOption.entries.map { it.label },
+                        selectedIndex = MineDurationUnitOption.entries.indexOf(durationUnit),
+                        onSelect = { durationUnit = MineDurationUnitOption.entries[it] },
+                    )
+                    MineChartMetric.VOLUME -> MineChartDropdown(
+                        label = volumeUnit.label,
+                        options = MineVolumeUnitOption.entries.map { it.label },
+                        selectedIndex = MineVolumeUnitOption.entries.indexOf(volumeUnit),
+                        onSelect = { volumeUnit = MineVolumeUnitOption.entries[it] },
+                    )
+                    MineChartMetric.DAYS -> Unit
+                }
+            }
         }
         HorizontalPager(
             state = pagerState,
@@ -89,6 +127,8 @@ fun MineWeeklyChartCard(
             WeeklyBarChart(
                 bars = bars,
                 metric = metrics[page],
+                durationUnit = durationUnit,
+                volumeUnit = volumeUnit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(170.dp),
@@ -129,34 +169,42 @@ fun MineWeeklyChartCard(
     }
 }
 
-/** 头部大数字：当前指标的范围内总量。 */
-private fun headerValue(metric: MineChartMetric, bars: List<MineWeeklyBar>): String {
+/** 头部大数：当前指标范围内总量，按所选单位显示。 */
+private fun headerValue(
+    metric: MineChartMetric,
+    bars: List<MineWeeklyBar>,
+    durationUnit: MineDurationUnitOption,
+    volumeUnit: MineVolumeUnitOption,
+): String {
     return when (metric) {
-        MineChartMetric.DURATION -> formatDurationHeader(bars.sumOf { it.durationMillis })
-        MineChartMetric.VOLUME -> formatVolumeCompact(bars.sumOf { it.volumeKg }) + " kg"
+        MineChartMetric.DURATION -> {
+            val millis = bars.sumOf { it.durationMillis }
+            when (durationUnit) {
+                // 90 分钟 = 1.5 小时
+                MineDurationUnitOption.HOURS -> stripTrailingZero(millis / 3_600_000.0) + " 小时"
+                MineDurationUnitOption.MINUTES -> (millis / 60_000).toString() + " 分钟"
+            }
+        }
+        MineChartMetric.VOLUME -> {
+            val kg = bars.sumOf { it.volumeKg }
+            when (volumeUnit) {
+                MineVolumeUnitOption.KG -> formatVolumeCompact(kg) + " kg"
+                MineVolumeUnitOption.T -> formatTonnes(kg) + " T"
+            }
+        }
         MineChartMetric.DAYS -> bars.sumOf { it.trainingDays }.toString() + " 天"
     }
 }
 
-private fun MineChartRange.weeksAgoLabel(bars: List<MineWeeklyBar>): String {
-    return when (this) {
-        MineChartRange.M1 -> "近 4 周"
-        MineChartRange.M3 -> "近 13 周"
-        MineChartRange.Y1 -> "近 1 年"
-        MineChartRange.ALL -> "全期 ${bars.size} 周"
-    }
+/** 吨：≥10T 取整，否则保留 1 位小数。 */
+private fun formatTonnes(kg: Double): String {
+    val t = kg / 1_000.0
+    return if (t >= 10.0) Math.round(t).toString() else String.format("%.1f", t)
 }
 
-/** 时长大数：2小时05分 / 45分钟。 */
-private fun formatDurationHeader(millis: Long): String {
-    val totalMinutes = millis / 60_000
-    val hours = totalMinutes / 60
-    val minutes = totalMinutes % 60
-    return when {
-        hours > 0 && minutes > 0 -> "${hours}小时${minutes}分"
-        hours > 0 -> "${hours}小时"
-        else -> "${minutes}分钟"
-    }
+private fun stripTrailingZero(value: Double): String {
+    val rounded = Math.round(value * 10.0) / 10.0
+    return if (rounded % 1.0 == 0.0) rounded.toLong().toString() else rounded.toString()
 }
 
 /** 训练量超四位数用 k：15k；以内保持原格式。 */
@@ -168,26 +216,43 @@ internal fun formatVolumeCompact(volumeKg: Double): String {
     }
 }
 
-/** 右上角范围选择。 */
+/** 与按钮对齐的下拉选择：菜单锚定在按钮正下方。 */
 @Composable
-private fun RangeDropdown(
-    range: MineChartRange,
-    onRangeChange: (MineChartRange) -> Unit,
+private fun MineChartDropdown(
+    label: String,
+    options: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    TextButton(onClick = { expanded = true }) {
-        Text(range.label, style = MaterialTheme.typography.labelLarge)
-        Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-    }
-    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-        MineChartRange.entries.forEach { option ->
-            DropdownMenuItem(
-                text = { Text(option.label) },
-                onClick = {
-                    expanded = false
-                    onRangeChange(option)
-                },
-            )
+    // Box 即按钮的边界，DropdownMenu 锚定其左下角，与按钮对齐
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text(label, style = MaterialTheme.typography.labelLarge)
+            Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEachIndexed { index, option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            option,
+                            color = if (index == selectedIndex) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onSelect(index)
+                    },
+                )
+            }
         }
     }
 }
@@ -200,6 +265,8 @@ private fun RangeDropdown(
 private fun WeeklyBarChart(
     bars: List<MineWeeklyBar>,
     metric: MineChartMetric,
+    durationUnit: MineDurationUnitOption,
+    volumeUnit: MineVolumeUnitOption,
     modifier: Modifier = Modifier,
 ) {
     val barColor = MaterialTheme.colorScheme.primary
@@ -208,14 +275,39 @@ private fun WeeklyBarChart(
     val density = LocalDensity.current
     val labelPx = with(density) { 10.dp.toPx() }
 
-    val values = bars.map { bar ->
+    // 绘图用原始值 + 各自的格式化
+    data class ChartValue(val raw: Double, val text: (Double) -> String)
+
+    val values: List<Double> = bars.map { bar ->
         when (metric) {
-            MineChartMetric.DURATION -> bar.durationMillis / 3_600_000.0 // 小时
-            MineChartMetric.VOLUME -> bar.volumeKg
+            MineChartMetric.DURATION -> when (durationUnit) {
+                MineDurationUnitOption.HOURS -> bar.durationMillis / 3_600_000.0
+                MineDurationUnitOption.MINUTES -> bar.durationMillis / 60_000.0
+            }
+            MineChartMetric.VOLUME -> when (volumeUnit) {
+                MineVolumeUnitOption.KG -> bar.volumeKg
+                MineVolumeUnitOption.T -> bar.volumeKg / 1_000.0
+            }
             MineChartMetric.DAYS -> bar.trainingDays.toDouble()
         }
     }
     val maxValue = niceCeil(values.maxOrNull() ?: 0.0)
+
+    fun axisLabel(v: Double): String = when (metric) {
+        MineChartMetric.DURATION -> when (durationUnit) {
+            MineDurationUnitOption.HOURS -> stripTrailingZero(v) + "h"
+            MineDurationUnitOption.MINUTES -> v.toInt().toString()
+        }
+        MineChartMetric.VOLUME -> when (volumeUnit) {
+            MineVolumeUnitOption.KG -> formatVolumeCompact(v)
+            MineVolumeUnitOption.T -> when {
+                v == 0.0 -> "0"
+                v >= 10.0 -> Math.round(v).toString()
+                else -> String.format("%.1f", v)
+            }
+        }
+        MineChartMetric.DAYS -> v.toInt().toString()
+    }
 
     Canvas(modifier = modifier) {
         val labelSpaceLeft = 34.dp.toPx()
@@ -235,12 +327,6 @@ private fun WeeklyBarChart(
         )
         paint.color = argb(labelColor)
 
-        fun label(v: Double): String = when (metric) {
-            MineChartMetric.DURATION -> if (maxValue >= 1) "${v.toInt()}h" else "${(v * 60).toInt()}分"
-            MineChartMetric.VOLUME -> if (v >= 10_000) "${(v / 1_000).toInt()}k" else WeightLogic.formatKg(v)
-            MineChartMetric.DAYS -> v.toInt().toString()
-        }
-
         // 横向网格线 + Y 轴刻度（0 / 半 / 满）
         for (fraction in listOf(0.0, 0.5, 1.0)) {
             val y = yFor(maxValue * fraction)
@@ -251,7 +337,7 @@ private fun WeeklyBarChart(
                 strokeWidth = 1.dp.toPx(),
             )
             drawContext.canvas.nativeCanvas.drawText(
-                label(maxValue * fraction),
+                axisLabel(maxValue * fraction),
                 0f,
                 y + labelPx / 3,
                 paint,
@@ -277,20 +363,19 @@ private fun WeeklyBarChart(
                 color = barColor,
                 topLeft = Offset(left, yFor(value)),
                 size = Size(barWidth, baseline - yFor(value)),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
+                cornerRadius = CornerRadius(4.dp.toPx()),
             )
         }
 
         // X 轴：抽稀标注约 5 个周起始日期
         val labelCount = minOf(5, values.size)
         if (labelCount > 0) {
-            val step = (values.size - 1).coerceAtLeast(1) / (labelCount - 1).coerceAtLeast(1)
+            val step = ((values.size - 1) / (labelCount - 1)).coerceAtLeast(1)
             val indices = if (values.size == 1) listOf(0) else (0 until values.size step step).toList()
             indices.forEach { index ->
                 val date = bars[index].weekStart
                 val text = "${date.monthValue}/${date.dayOfMonth}"
                 val x = labelSpaceLeft + slot * index + slot / 2
-                // 让文字以刻度为中心
                 val textWidth = paint.measureText(text)
                 drawContext.canvas.nativeCanvas.drawText(
                     text,
