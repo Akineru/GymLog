@@ -471,22 +471,20 @@ private fun FigureCanvas(
                     filterQuality = FilterQuality.High,
                 )
                 if (masks != null) {
-                    // 无训练数据时也把肌群轮廓淡画出来，纯剪影看不出肌肉分界
-                    if (layers.isEmpty()) {
-                        MuscleMaskCatalog.specs
-                            .filter { MuscleMaskCatalog.visible(it.muscleId, front) }
-                            .forEach { spec ->
-                                drawMask(
-                                    masks = masks,
-                                    front = front,
-                                    muscleId = spec.muscleId,
-                                    color = palette.idle,
-                                    alpha = CONTOUR_ALPHA,
-                                    dst = dst,
-                                    dstSize = dstSize,
-                                )
-                            }
-                    }
+                    // 始终淡画全部肌群轮廓：无高亮时剪影有分块感，有高亮时其余肌群不糊成一片
+                    MuscleMaskCatalog.specs
+                        .filter { MuscleMaskCatalog.visible(it.muscleId, front) }
+                        .forEach { spec ->
+                            drawMask(
+                                masks = masks,
+                                front = front,
+                                muscleId = spec.muscleId,
+                                color = palette.idle,
+                                alpha = CONTOUR_ALPHA,
+                                dst = dst,
+                                dstSize = dstSize,
+                            )
+                        }
                     layers.forEach { layer ->
                         if (!MuscleMaskCatalog.visible(layer.muscleId, front)) return@forEach
                         drawMask(
