@@ -58,7 +58,6 @@ fun BodyFigureCard(
     var selectedRegionId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(highlights) { selectedRegionId = null }
     val girths = state.history.firstOrNull()?.girths() ?: BodyGirths()
-    val selectedName = selectedRegionId?.let { MuscleCatalog.specificMuscleForRegion(it)?.nameZh }
     val showMuscle = mode == FigureMode.MUSCLE
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -127,8 +126,10 @@ fun BodyFigureCard(
                             selectedRegionId = if (selectedRegionId == it) null else it
                         }
                     },
-                    boundedHeight = FigureHeight,
-                    showCallouts = false,
+                    // 训练肌群模式显示引线标注（与训练肌群图一致）：按宽度自适应，
+                    // 固定高 + 引线宽高比会让画布超出卡片宽度、标注被圆角裁掉
+                    boundedHeight = if (showMuscle) null else FigureHeight,
+                    showCallouts = showMuscle,
                     lockFront = !showMuscle,
                     showSwitch = showMuscle,
                     switchBelow = true,
@@ -141,14 +142,6 @@ fun BodyFigureCard(
                         modifier = Modifier.matchParentSize(),
                     )
                 }
-            }
-            if (showMuscle && selectedName != null) {
-                Text(
-                    text = selectedName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp),
-                )
             }
         }
     }
