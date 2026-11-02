@@ -130,8 +130,15 @@ fun BodyFigureCard(
                     // 固定高 + 引线宽高比会让画布超出卡片宽度、标注被圆角裁掉
                     boundedHeight = if (showMuscle) null else FigureHeight,
                     showCallouts = showMuscle,
-                    // 只有练过（有高亮）或点选了肌肉才显示标注文字，平时不显示
-                    showCalloutLabels = showMuscle && (highlights.isNotEmpty() || selectedRegionId != null),
+                    // 只标注练过（有高亮）或点选中的肌肉；无高亮无选中时不出任何标注
+                    calloutRegionIds = if (showMuscle) {
+                        buildSet {
+                            highlights.forEach { add(it.muscleId) }
+                            selectedRegionId?.let { add(com.example.gymlog.ui.muscle.muscleKey(it)) }
+                        }
+                    } else {
+                        null
+                    },
                     lockFront = !showMuscle,
                     showSwitch = showMuscle,
                     switchBelow = true,

@@ -89,8 +89,8 @@ internal fun MuscleFigure(
     selectedRegionId: String? = null,
     boundedHeight: Dp? = null,
     showCallouts: Boolean = boundedHeight == null,
-    /** 只控制标注文字是否绘制；showCallouts 仍决定布局留白，切换时人体大小不跳。 */
-    showCalloutLabels: Boolean = true,
+    /** 只绘制这些肌肉（无侧 muscleId）的标注；null = 全部标注。 */
+    calloutRegionIds: Set<String>? = null,
     lockFront: Boolean = false,
     forcedFront: Boolean? = null,
     showSwitch: Boolean = true,
@@ -163,6 +163,7 @@ internal fun MuscleFigure(
                         } else {
                             emptyList()
                         },
+                        calloutRegionIds = calloutRegionIds,
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
@@ -199,7 +200,8 @@ internal fun MuscleFigure(
                         image = side.base,
                         front = true,
                         masks = side.masks,
-                        callouts = if (showCallouts && showCalloutLabels) frontCallouts else emptyList(),
+                        callouts = if (showCallouts) frontCallouts else emptyList(),
+                        calloutRegionIds = calloutRegionIds,
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
@@ -217,7 +219,8 @@ internal fun MuscleFigure(
                     WideSide(
                         side = assets.front,
                         front = true,
-                        callouts = if (showCallouts && showCalloutLabels) frontCallouts else emptyList(),
+                        callouts = if (showCallouts) frontCallouts else emptyList(),
+                        calloutRegionIds = calloutRegionIds,
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
@@ -232,7 +235,8 @@ internal fun MuscleFigure(
                     WideSide(
                         side = assets.back,
                         front = false,
-                        callouts = if (showCallouts && showCalloutLabels) backCallouts else emptyList(),
+                        callouts = if (showCallouts) backCallouts else emptyList(),
+                        calloutRegionIds = calloutRegionIds,
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
@@ -269,6 +273,7 @@ private fun WideSide(
     palette: MusclePalette,
     selectedRegionId: String?,
     showCallouts: Boolean,
+    calloutRegionIds: Set<String>? = null,
     onRegionClick: (String) -> Unit,
     onBackgroundClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -410,6 +415,8 @@ private fun FigureCanvas(
     palette: MusclePalette,
     selectedRegionId: String?,
     showCallouts: Boolean,
+    /** 只绘制这些肌肉（无侧 muscleId）的标注；null = 全部标注。 */
+    calloutRegionIds: Set<String>? = null,
     onRegionClick: (String) -> Unit,
     onBackgroundClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -417,6 +424,13 @@ private fun FigureCanvas(
     val labelSize = 11.sp
     val layers = remember(highlights) { MuscleMaskCatalog.layers(highlights) }
     val selectedId = remember(selectedRegionId) { selectedRegionId?.let(::muscleKey) }
+    val visibleCallouts = remember(callouts, calloutRegionIds) {
+        if (calloutRegionIds == null) {
+            callouts
+        } else {
+            callouts.filter { muscleKey(it.regionId) in calloutRegionIds }
+        }
+    }
     val preferredLayerIds = remember(layers, selectedId) {
         buildList {
             layers.forEach { add(it.muscleId) }
@@ -430,12 +444,12 @@ private fun FigureCanvas(
             modifier = Modifier.fillMaxSize(),
         ) {
             val interaction = if (masks != null) {
-                Modifier.pointerInput(masks, front, showCallouts, callouts, preferredLayerIds) {
+                Modifier.pointerInput(masks, front, showCallouts, visibleCallouts, preferredLayerIds) {
                     val textPx = labelSize.toPx()
                     detectTapGestures { offset ->
                         val frame = frameFor(size.width.toFloat(), size.height.toFloat(), showCallouts)
                         val labelHit = placeCallouts(
-                            callouts,
+                            visibleCallouts,
                             front,
                             masks,
                             frame,
@@ -511,7 +525,7 @@ private fun FigureCanvas(
                         )
                     }
                     if (showCallouts) {
-                        drawCallouts(callouts, front, masks, highlights, palette, selectedRegionId, frame, labelSize.toPx())
+                        drawCallouts(visibleCallouts, front, masks, highlights, palette, selectedRegionId, frame, labelSize.toPx())
                     }
                 }
             }
@@ -665,7 +679,7 @@ private fun sameMuscle(regionId: String, selectedRegionId: String?): Boolean {
     return muscleKey(regionId) == muscleKey(selectedRegionId)
 }
 
-private fun muscleKey(regionId: String): String {
+internal fun muscleKey(regionId: String): String {
     return regionId.removeSuffix("_l").removeSuffix("_r")
 }
 
