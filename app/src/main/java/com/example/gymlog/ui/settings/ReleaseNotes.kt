@@ -41,6 +41,12 @@ object ReleaseHistory {
                         "界面文案精简，收藏星标位置优化。",
                     ),
                 ),
+                ReleaseSection(
+                    title = "数据安全",
+                    items = listOf(
+                        "新增自动本地备份：冷启动自动保留最近 3 份快照，数据管理页可一键恢复。",
+                    ),
+                ),
             ),
         ),
         ReleaseNote(

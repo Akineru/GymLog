@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog.GymLogApplication
+import com.example.gymlog.data.AutoBackupManager
 import com.example.gymlog.data.BackupCodec
 import com.example.gymlog.data.BackupRepository
 import com.example.gymlog.data.GymLogSnapshot
@@ -36,14 +37,22 @@ data class DataTransferUiState(
     val busy: Boolean = false,
     val preview: ImportPreview? = null,
     val notice: TransferNotice? = null,
+    val autoBackups: List<AutoBackupManager.AutoBackupEntry> = emptyList(),
+    val autoLastAt: Long? = null,
+    val restoreTarget: AutoBackupManager.AutoBackupEntry? = null,
 )
 
 class DataTransferViewModel(
     private val app: Application,
     private val backupRepository: BackupRepository,
+    private val autoBackupManager: AutoBackupManager,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(DataTransferUiState())
     val state: StateFlow<DataTransferUiState> = mutableState.asStateFlow()
+
+    init {
+        refreshAutoBackups()
+    }
 
     fun exportTo(uri: Uri) {
         if (mutableState.value.busy) return
@@ -125,6 +134,49 @@ class DataTransferViewModel(
         mutableState.update { it.copy(preview = null) }
     }
 
+    fun refreshAutoBackups() {
+        val list = autoBackupManager.list()
+        mutableState.update { it.copy(autoBackups = list, autoLastAt = list.maxOfOrNull { e -> e.exportedAt }) }
+    }
+
+    fun autoBackupNow() {
+        if (mutableState.value.busy) return
+        viewModelScope.launch {
+            mutableState.update { it.copy(busy = true, notice = null) }
+            val notice = withContext(Dispatchers.IO) {
+                runCatching { autoBackupManager.backupNow() }.fold(
+                    onSuccess = { TransferNotice.Exported },
+                    onFailure = { TransferNotice.ExportFailed },
+                )
+            }
+            mutableState.update { it.copy(busy = false, notice = notice) }
+            refreshAutoBackups()
+        }
+    }
+
+    fun requestRestore(entry: AutoBackupManager.AutoBackupEntry) {
+        mutableState.update { it.copy(restoreTarget = entry) }
+    }
+
+    fun cancelRestore() {
+        mutableState.update { it.copy(restoreTarget = null) }
+    }
+
+    fun confirmRestore() {
+        val target = mutableState.value.restoreTarget ?: return
+        if (mutableState.value.busy) return
+        viewModelScope.launch {
+            mutableState.update { it.copy(busy = true, restoreTarget = null) }
+            val notice = withContext(Dispatchers.IO) {
+                runCatching { autoBackupManager.restore(target) }.fold(
+                    onSuccess = { TransferNotice.Imported },
+                    onFailure = { TransferNotice.ImportFailed },
+                )
+            }
+            mutableState.update { it.copy(busy = false, notice = notice) }
+        }
+    }
+
     fun dismissNotice() {
         mutableState.update { it.copy(notice = null) }
     }
@@ -136,7 +188,7 @@ class DataTransferViewModel(
             return object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     @Suppress("UNCHECKED_CAST")
-                    return DataTransferViewModel(app, app.backupRepository) as T
+                    return DataTransferViewModel(app, app.backupRepository, app.autoBackupManager) as T
                 }
             }
         }

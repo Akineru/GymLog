@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.room.Room
 import com.example.gymlog.data.AppearanceStore
+import com.example.gymlog.data.AutoBackupManager
 import com.example.gymlog.data.BackupRepository
 import com.example.gymlog.data.CalendarColorStore
 import com.example.gymlog.data.BodyRecordRepository
@@ -176,6 +177,10 @@ class GymLogApplication : Application() {
         )
     }
 
+    val autoBackupManager: AutoBackupManager by lazy {
+        AutoBackupManager(this, backupRepository)
+    }
+
     override fun onCreate() {
         super.onCreate()
         // 独立倒计时不跨进程恢复；进程重建后不能留下上一进程排队的旧闹钟，
@@ -199,5 +204,7 @@ class GymLogApplication : Application() {
                 }
                 .onFailure { error -> Log.e("ExerciseCatalog", "import failed; retry on next launch", error) }
         }
+        // 自动本地备份：冷启动节流触发（6 小时内不重复），防止数据意外丢失
+        appScope.launch { autoBackupManager.runAutoBackup() }
     }
 }

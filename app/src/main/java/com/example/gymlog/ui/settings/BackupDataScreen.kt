@@ -4,13 +4,16 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
@@ -33,7 +36,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
+import com.example.gymlog.data.AutoBackupManager
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,6 +129,40 @@ fun BackupDataScreen(
                 }
             }
             item {
+                Column {
+                    Text(
+                        text = "自动备份",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
+                    )
+                    SettingsLinkRow(
+                        title = "立即备份到本机",
+                        subtitle = autoLastText(state.autoLastAt),
+                        icon = Icons.Filled.Backup,
+                        enabled = !state.busy,
+                        onClick = viewModel::autoBackupNow,
+                    )
+                    state.autoBackups.forEach { entry ->
+                        SettingsLinkRow(
+                            title = autoEntryText(entry),
+                            subtitle = "点击从此备份恢复（会覆盖当前数据）",
+                            icon = Icons.Filled.FileDownload,
+                            enabled = !state.busy,
+                            onClick = { viewModel.requestRestore(entry) },
+                        )
+                    }
+                    if (state.autoBackups.isEmpty()) {
+                        Text(
+                            text = "还没有自动备份。冷启动时会自动创建，也可以点上面立即备份。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                        )
+                    }
+                }
+            }
+            item {
                 SettingsLinkRow(
                     title = stringResource(R.string.clear_data),
                     subtitle = stringResource(R.string.clear_data_hint),
@@ -163,6 +204,29 @@ fun BackupDataScreen(
             },
             dismissButton = {
                 TextButton(onClick = viewModel::cancelImport) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
+    state.restoreTarget?.let { target ->
+        AlertDialog(
+            onDismissRequest = viewModel::cancelRestore,
+            shape = RoundedCornerShape(24.dp),
+            title = { Text("从备份恢复") },
+            text = {
+                Text(
+                    "将用 " + autoEntryText(target) + " 的备份覆盖当前全部数据，此操作不可撤销。确定继续吗？",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmRestore) {
+                    Text("恢复", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::cancelRestore) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -256,6 +320,16 @@ fun BackupDataScreen(
 
 private val today: String
     get() = LocalDate.now().toString()
+
+private val autoTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+
+private fun autoLastText(lastAt: Long?): String = when (lastAt) {
+    null -> "尚未备份，冷启动时会自动创建"
+    else -> "上次备份：" + autoTimeFormat.format(Date(lastAt)) + "，保留最近 3 份"
+}
+
+private fun autoEntryText(entry: AutoBackupManager.AutoBackupEntry): String =
+    autoTimeFormat.format(Date(entry.exportedAt)) + "（" + "%.1f MB".format(entry.sizeBytes / 1024f / 1024f) + "）"
 
 @Composable
 private fun transferNoticeMessage(notice: TransferNotice): String {
