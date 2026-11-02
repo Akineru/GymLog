@@ -434,6 +434,15 @@ fun GymLogApp(
     val dayParts = remember(sessions, measurements) {
         CalendarDayPartsLogic.labelsFor(sessions, measurements)
     }
+    // 日历详情页每日容量（kg，不含单位）
+    val dayVolumes = remember(sessions, measurements) {
+        val volumes = HashMap<Long, Double>()
+        sessions.forEach { detail ->
+            val total = listOf(detail).partVolumes(measurements).sumOf { (_, volume) -> volume }
+            if (total > 0.0) volumes += detail.session.dateEpochDay to total
+        }
+        volumes
+    }
     val dataEpoch by app.backupRepository.dataEpoch.collectAsStateWithLifecycle()
     val photoViewModel: PhotoWallViewModel = viewModel(factory = PhotoWallViewModel.factory(app))
     val timerViewModel: TrainingTimerViewModel = viewModel(
@@ -782,6 +791,7 @@ fun GymLogApp(
                             },
                             onBack = { screen = Screen.Calendar },
                             dayParts = dayParts,
+                            dayVolumes = dayVolumes,
                         )
                     }
                     is Screen.BodyRecord -> {

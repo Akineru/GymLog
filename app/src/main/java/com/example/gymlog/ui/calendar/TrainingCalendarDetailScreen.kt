@@ -62,6 +62,7 @@ fun TrainingCalendarDetailScreen(
     onDayClick: (LocalDate) -> Unit,
     onBack: () -> Unit,
     dayParts: Map<Long, String> = emptyMap(),
+    dayVolumes: Map<Long, Double> = emptyMap(),
 ) {
     BackHandler(onBack = onBack)
     val today = LocalDate.now()
@@ -162,6 +163,7 @@ fun TrainingCalendarDetailScreen(
                                         isSelected = date == selectedDate,
                                         paint = dayPaints[date.toEpochDay()] ?: CalendarDayPaint.Empty,
                                         parts = dayParts[date.toEpochDay()].orEmpty(),
+                                        volume = dayVolumes[date.toEpochDay()] ?: 0.0,
                                         onClick = {
                                             val dateMonth = YearMonth.from(date)
                                             if (dateMonth != month) onMonthChange(dateMonth)
@@ -192,6 +194,7 @@ private fun DetailDayCell(
     isSelected: Boolean,
     paint: CalendarDayPaint,
     parts: String,
+    volume: Double,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -268,5 +271,24 @@ private fun DetailDayCell(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        if (inMonth && volume > 0.0) {
+            Text(
+                text = formatDayVolume(volume),
+                color = if (fill != null) CalendarDayInk else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 9.sp,
+                lineHeight = 11.sp,
+                fontWeight = FontWeight.Normal,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
+}
+
+/** 日历格内的每日容量：无单位，万位以上压缩成 k（13077.7 → 13.1k）。 */
+internal fun formatDayVolume(volumeKg: Double): String = when {
+    volumeKg >= 10_000 -> String.format(java.util.Locale.US, "%.1fk", volumeKg / 1_000)
+    volumeKg >= 1_000 -> String.format(java.util.Locale.US, "%.0f", volumeKg)
+    else -> String.format(java.util.Locale.US, "%.1f", volumeKg).removeSuffix(".0").ifEmpty { "0" }
 }
