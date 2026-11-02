@@ -375,8 +375,8 @@ private fun ExerciseGridCard(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         // 触摸区 44dp（无障碍建议值），用 offset 抵消尺寸变化让星星视觉位置不变
-                        // x 向右偏，避免星星盖住缩略图
-                        .offset(x = (-9).dp, y = (-15).dp)
+                        // x 正值向右，星星贴卡片右上角，不压缩略图
+                        .offset(x = 11.dp, y = (-15).dp)
                         .size(44.dp)
                         .clickable(onClick = onToggleFavorite, role = Role.Button)
                         .semantics { contentDescription = favoriteLabel },
