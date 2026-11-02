@@ -17,6 +17,33 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.6.0",
+            date = "2026年11月2日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "肌群图全新素材",
+                    items = listOf(
+                        "肌群图彻底重制：男/女双版本，共 19 块肌群，遮罩贴合身体轮廓。",
+                        "肌群图新增淡色轮廓展示，无训练数据时也能看清肌肉分块。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "训练肌群标注",
+                    items = listOf(
+                        "身体记录页可显示当天练过肌肉的引线标注，点击肌肉可查看名称。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "日历与细节",
+                    items = listOf(
+                        "日历月份支持左右滑动切换。",
+                        "日历展开页显示每日训练容量。",
+                        "界面文案精简，收藏星标位置优化。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.5.6",
             date = "2026年11月1日",
             sections = listOf(
