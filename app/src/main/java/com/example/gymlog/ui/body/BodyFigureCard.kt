@@ -130,6 +130,8 @@ fun BodyFigureCard(
                     // 固定高 + 引线宽高比会让画布超出卡片宽度、标注被圆角裁掉
                     boundedHeight = if (showMuscle) null else FigureHeight,
                     showCallouts = showMuscle,
+                    // 只有练过（有高亮）或点选了肌肉才显示标注文字，平时不显示
+                    showCalloutLabels = showMuscle && (highlights.isNotEmpty() || selectedRegionId != null),
                     lockFront = !showMuscle,
                     showSwitch = showMuscle,
                     switchBelow = true,

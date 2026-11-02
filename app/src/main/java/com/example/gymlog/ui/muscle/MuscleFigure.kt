@@ -89,6 +89,8 @@ internal fun MuscleFigure(
     selectedRegionId: String? = null,
     boundedHeight: Dp? = null,
     showCallouts: Boolean = boundedHeight == null,
+    /** 只控制标注文字是否绘制；showCallouts 仍决定布局留白，切换时人体大小不跳。 */
+    showCalloutLabels: Boolean = true,
     lockFront: Boolean = false,
     forcedFront: Boolean? = null,
     showSwitch: Boolean = true,
@@ -197,7 +199,7 @@ internal fun MuscleFigure(
                         image = side.base,
                         front = true,
                         masks = side.masks,
-                        callouts = if (showCallouts) frontCallouts else emptyList(),
+                        callouts = if (showCallouts && showCalloutLabels) frontCallouts else emptyList(),
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
@@ -215,7 +217,7 @@ internal fun MuscleFigure(
                     WideSide(
                         side = assets.front,
                         front = true,
-                        callouts = if (showCallouts) frontCallouts else emptyList(),
+                        callouts = if (showCallouts && showCalloutLabels) frontCallouts else emptyList(),
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
@@ -230,7 +232,7 @@ internal fun MuscleFigure(
                     WideSide(
                         side = assets.back,
                         front = false,
-                        callouts = if (showCallouts) backCallouts else emptyList(),
+                        callouts = if (showCallouts && showCalloutLabels) backCallouts else emptyList(),
                         highlights = highlights,
                         palette = palette,
                         selectedRegionId = selectedRegionId,
