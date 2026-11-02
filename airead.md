@@ -775,9 +775,11 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 日历格子颜色必须走 `CalendarDayColorLogic`；特殊日盖过部位色。不要再按旧的单 `BodyPart.rank` 独自算一套颜色给小日历或展开月历。
 - `dayKinds` 是可选备份字段；缺键=空。不要把照片墙塞进备份，也不要在清除/导入训练数据时删照片文件。
 - 照片墙相对路径必须经 `PhotoPaths.isSafe`；FileProvider 只用于相机临时文件。不要把用户照片内容写进日志或交接文档。
-- 肌群训练高亮用红色系，用户选中用主题 `primary`；不要把选中画成训练色。点击命中优先使用 `MuscleMaskCatalog.layers` 的绘制顺序；`quadriceps` 合并层和子头不能各用一套优先级。
-- `MuscleAssetCache` 按面懒加载，失败时保留底图并提供重试；遮罩解码、BitSet 和锚点计算必须继续在 `Dispatchers.Default`，不要移回主线程。
-- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`CalendarDayPartsTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ActiveWorkoutLabelTest`、`ReleaseHistoryTest`（最新版应为 1.5.3）。
+- 肌群训练高亮用红色系，用户选中用主题 `primary`；不要把选中画成训练色。点击命中优先使用 `MuscleMaskCatalog.layers` 的绘制顺序。1.6.0 起肌群素材已彻底替换：19 条目录（`MuscleCatalog`），男/女双版素材在 `assets/muscle_masks/{male,female}/{front,back}/`，加载层按性别拆分（`MuscleSex` + `MuscleAssetLoader`）。旧 33 肌群 id 已全部废弃，`PresetMuscleMappings` / `DatasetMuscleMapping` 已改写为新 id；不要再引用 `trapezius_upper`、`soleus`、`forearm_flexors` 等旧 id，也不要恢复 `AnatomySvg.kt`、`muscle_manifest.json` 和 `unsupported` 降级 UI。
+- 肌群加载按性别：`MuscleAssetLoader` 实例经 `MuscleAssetCache.forSex(sex)` 获取，`MuscleFigure` 必须传 `sex`；遮罩文件名 = muscleId，无侧肌（斜方/菱形/竖脊/腹直/前臂/小腿三头）用整块编号。
+- 长驻协程闭包捕获旧状态是重复踩过的坑（日历滑回当月标题不更新、动作分类双击失效）。`LaunchedEffect` 里读外部状态一律 `rememberUpdatedState`。
+- 直接用 adb 改 app 数据库是高危操作：拉取和推回必须包含 `gymlog.db` + `-wal` + `-shm` 三件套，先 force-stop。只换主库、删 WAL 会丢掉未 checkpoint 的近期训练记录（2026-11-02 已因此丢过一次数据）。app 现有自动备份兜底（见「自动本地备份」）。
+- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`CalendarDayPartsTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ActiveWorkoutLabelTest`、`ReleaseHistoryTest`（最新版应跟随最新发版，当前 1.6.0）。
 
 ## 1.5.1 发版
 
@@ -815,3 +817,46 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - Debug APK：GymLog-1.5.4.apk，166,199,844 B，SHA-256 494FF0FD40EAB626867A7087CB12E9B8A405EE5C1A23D8750A4D5F2590BC16D5。
 - apt dump badging：versionCode 14，versionName 1.5.4，label「练有所迹」；Android Debug 证书签名，不是正式商店签名。
 - 模拟器 install -r 后冷启动无 FATAL EXCEPTION。
+
+## 肌群素材彻底替换（1.6.0）
+
+- 素材：4 张 1024×1536 底座（男女×正背，`drawable-nodpi/muscle_*_base_{male,female}.png`）+ 54 张遮罩（`assets/muscle_masks/{male,female}/{front,back}/`，文件名 = muscleId）。旧的 135 个遮罩/底座文件、`AnatomySvg.kt`、`muscle_manifest.json` 已删除。
+- `MuscleCatalog` 收为 19 条：斜方肌、菱形肌、竖脊肌、腹直肌、前臂肌群、小腿三头肌为左右连块的整块编号，其余按 `_l/_r` 分侧。用户明确不做旧 id 兼容、不考虑旧备份导入。
+- 加载层按性别：`MuscleSex` 枚举 + `rememberMuscleSex()`（读身体资料性别），`MuscleAssetCache.forSex(sex)` 每性别独立 loader；`MuscleFigure` 加 `sex` 参数，全部 4 个调用点已传。
+- 围度锚点改用 `forearm` / `gastrocnemius` 遮罩。`unsupported`（深层肌不绘制）降级 UI 全链路删除。
+- 预置数据改写：`PresetMuscleMappings` / `DatasetMuscleMapping` 中旧 id 按合并映射改写（三头斜方→trapezius、前臂三组→forearm、rectus_femoris/vastus_*→quadriceps、soleus→gastrocnemius），仅训练胫骨前肌的预置动作 `tibialis_raise` 已删除；导入器对同动作肌群链接去重。
+- 回归测试：`MuscleResourceTest` 断言遮罩 100% 落在底图内（容差 8px，实测 male back/gastrocnemius 4px）。
+- 肌群图空态和高亮态都淡画全部遮罩轮廓（16% 透明度），纯剪影问题已修。
+
+## 我的页统计图表（1.6.0）
+
+- `MineChartCard`：名片与 2×2 快捷入口之间的按周柱状图，Canvas 自绘无三方库。
+- 右上范围：最近 1 个月 / 3 个月 / 1 年 / 全期，持久化在 `MineChartPrefsStore`（SharedPreferences），重启恢复上次选择；全期超 52 周自动抽稀。
+- 三指标 HorizontalPager + 底部 chips 双向联动；头部大数字居中、范围靠左、单位靠右（Box 叠加布局，uiautomator 实测像素级居中）。
+- 单位：时长小时（小数，90 分钟=1.5 小时）/ 分钟；训练量 KG（≥1 万压缩成 15k）/ T；天数无单位切换。
+- 点击柱子顶部气泡显示该周数值（纯数字无单位），其他柱变淡；切页/换范围清空选中。
+
+## 日历滑切与每日容量（1.6.0）
+
+- `CalendarMonthOverview` 网格放进 HorizontalPager（1600 页，1970-2103）：手势、‹ › 按钮、「今天」、跨月点击全部走滑动动画并双向联动月份状态。
+- 坑：pager 的 snapshotFlow 闭包捕获旧 month，滑回同一月份不触发更新；用 `rememberUpdatedState` 修。
+- 日历展开页（`TrainingCalendarDetailScreen`）训练日格子第三行小字显示当日容量（`formatDayVolume`：无单位，≥1 万压缩成 k）；休息日和跨月格不显示。数据源 `dayVolumes` 在 `GymLogApp` 用 `partVolumes` 按日汇总。
+
+## 去解释小字（1.6.0）
+
+- 设置首页五行副标题、我的页 2×2 快捷网格副标题、统计页分组小标题与两卡副标题、训练页入口卡副标题与 hero 副标题全部删除；子页面内部的功能说明和风险提示保留。
+- 我的页 2×2 网格：身体数据 / 照片墙 / 数据管理 / 关于，数据管理与关于有 Mine 直达入口（`MineScreen` 加 `onOpenBackup` / `onOpenAbout`）。
+
+## 自动本地备份（1.6.0）
+
+- `AutoBackupManager`：冷启动 `GymLogApplication.onCreate` 异步触发，距上次超过 6 小时才备份；JSON 快照复用 `BackupCodec`，写到 `files/auto_backups/`，保留最近 3 份滚动淘汰。照片墙图片不进快照。
+- 数据管理页新增「自动备份」卡片：显示上次备份时间、「立即备份到本机」、备份条目列表（时间+大小）、点条目从备份恢复（红色确认框，走 `importSnapshot` 自带回滚）。
+- 坑：`list()` 解析快照头不能截断 JSON（JSONObject 解析半截必抛异常），用正则从文件头 2KB 提取 `exportedAt`。
+
+## 1.6.0 发版
+
+- versionCode = 19，versionName = 1.6.0（2026-11-02；先以 17 发过一次，加入统计图表、日历、备份后归并重发为 19，tag `v1.6.0` 强移到最终提交）。
+- 内容：肌群素材彻底替换、我的页统计图表、日历滑切与每日容量、去解释小字、自动本地备份。
+- ReleaseNotes.kt 顶部为 1.6.0（5 节），`ReleaseHistoryTest` 首条断言为 1.6.0。
+- GitHub Release：`v1.6.0`，附件 GymLog-1.6.0.apk（debug 签名，163.8MB）。发版流程：版本号 → 应用内公告 → 测试 → commit+tag → `gh release create/upload` → adb 装实机（无线调试 `adb-cdbf33ff-dx3Km2._adb-tls-connect._tcp`）。
+- 动作库数据另有一份手工补全：全量 1418 个动作的主要/次要肌群已按 19 肌群目录补齐（含 TARGET 歧义大类按动作名细分），并已用 `muscle_sync.py` 写回模拟器与实机数据库。注意这是 DB 直改，重新导入预置目录会回退；要长期生效需把映射固化进导入器数据。
