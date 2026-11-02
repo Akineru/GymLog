@@ -471,6 +471,22 @@ private fun FigureCanvas(
                     filterQuality = FilterQuality.High,
                 )
                 if (masks != null) {
+                    // 无训练数据时也把肌群轮廓淡画出来，纯剪影看不出肌肉分界
+                    if (layers.isEmpty()) {
+                        MuscleMaskCatalog.specs
+                            .filter { MuscleMaskCatalog.visible(it.muscleId, front) }
+                            .forEach { spec ->
+                                drawMask(
+                                    masks = masks,
+                                    front = front,
+                                    muscleId = spec.muscleId,
+                                    color = palette.idle,
+                                    alpha = CONTOUR_ALPHA,
+                                    dst = dst,
+                                    dstSize = dstSize,
+                                )
+                            }
+                    }
                     layers.forEach { layer ->
                         if (!MuscleMaskCatalog.visible(layer.muscleId, front)) return@forEach
                         drawMask(
@@ -654,3 +670,6 @@ private fun muscleKey(regionId: String): String {
 }
 
 private const val SELECTED_ALPHA = 0.28f
+
+/** 空态肌群轮廓的透明度：刚好能看出分界又不喧宾夺主。 */
+private const val CONTOUR_ALPHA = 0.16f
