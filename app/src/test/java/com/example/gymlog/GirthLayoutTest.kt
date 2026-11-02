@@ -40,6 +40,7 @@ class GirthLayoutTest {
     fun anchorsFollowTheFrontBodyAndDoNotOverlapWhenPlaced() {
         val masks = MuscleMaskStore(
             androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>().assets,
+            com.example.gymlog.ui.muscle.MuscleSex.MALE,
             front = true,
         )
         masks.prepare()
@@ -58,12 +59,12 @@ class GirthLayoutTest {
         assertTrue(bySlot.getValue(GirthSlot.ARM).x < 512f)
         assertTrue(bySlot.getValue(GirthSlot.FOREARM).x < 512f)
         assertTrue(bySlot.getValue(GirthSlot.THIGH).x > 512f)
-        val forearm = masks.bitmap("forearm_flexors")
+        val forearm = masks.bitmap("forearm")
         assertTrue(
             "forearm should sit above the hand ${bySlot.getValue(GirthSlot.FOREARM).y} vs ${forearm.leftCenterY}",
             bySlot.getValue(GirthSlot.FOREARM).y < forearm.leftCenterY!!,
         )
-        val calf = masks.bitmap("tibialis_anterior")
+        val calf = masks.bitmap("gastrocnemius")
         assertTrue(
             "calf should sit below the knee ${bySlot.getValue(GirthSlot.CALF).y} vs ${calf.leftCenterY}",
             bySlot.getValue(GirthSlot.CALF).y > calf.leftCenterY!!,
@@ -157,7 +158,7 @@ class GirthLayoutTest {
     @Test
     fun actualGirthLayoutFitsCommonPhoneWidths() {
         val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
-        val masks = MuscleMaskStore(context.assets, front = true)
+        val masks = MuscleMaskStore(context.assets, com.example.gymlog.ui.muscle.MuscleSex.MALE, front = true)
         masks.prepare()
         val anchors = GirthAnchors.resolve(masks)
         val names = mapOf(

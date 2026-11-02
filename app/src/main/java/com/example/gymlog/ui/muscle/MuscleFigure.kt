@@ -64,29 +64,28 @@ private val frontCallouts = listOf(
     Callout("biceps_brachii_l", "肱二头肌", onRight = false),
     Callout("rectus_abdominis", "腹直肌", onRight = false),
     Callout("external_oblique_r", "腹外斜肌", onRight = true),
-    Callout("vastus_lateralis_l", "股外侧肌", onRight = false),
-    Callout("tibialis_anterior_r", "胫骨前肌", onRight = true),
+    Callout("quadriceps_l", "股四头肌", onRight = false),
+    Callout("gastrocnemius_r", "小腿三头肌", onRight = true),
 )
 
 private val backCallouts = listOf(
-    Callout("trapezius_upper", "斜方肌上部", onRight = false),
-    Callout("trapezius_middle", "斜方肌中部", onRight = false),
+    Callout("trapezius", "斜方肌", onRight = false),
     Callout("deltoid_posterior_r", "三角肌后束", onRight = true),
     Callout("latissimus_dorsi_l", "背阔肌", onRight = false),
-    Callout("trapezius_lower", "斜方肌下部", onRight = true),
+    Callout("rhomboids", "菱形肌", onRight = false),
+    Callout("erector_spinae", "竖脊肌", onRight = false),
     Callout("triceps_brachii_r", "肱三头肌", onRight = true),
-    Callout("gluteus_medius_l", "臀中肌", onRight = false),
     Callout("gluteus_maximus_r", "臀大肌", onRight = true),
     Callout("hamstrings_l", "腘绳肌", onRight = false),
-    Callout("gastrocnemius_r", "腓肠肌", onRight = true),
-    Callout("soleus_l", "比目鱼肌", onRight = false),
+    Callout("gastrocnemius_l", "小腿三头肌", onRight = false),
 )
 
 @Composable
-fun MuscleFigure(
+internal fun MuscleFigure(
     highlights: List<MuscleHighlight>,
     onRegionClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    sex: MuscleSex = MuscleSex.MALE,
     selectedRegionId: String? = null,
     boundedHeight: Dp? = null,
     showCallouts: Boolean = boundedHeight == null,
@@ -100,9 +99,10 @@ fun MuscleFigure(
     var showFront by remember(forcedFront) { mutableStateOf(forcedFront ?: true) }
     val palette = rememberMusclePalette()
     val context = LocalContext.current
-    val assets by MuscleAssetCache.assets.collectAsStateWithLifecycle()
-    val loading by MuscleAssetCache.loading.collectAsStateWithLifecycle()
-    val loadErrors by MuscleAssetCache.errors.collectAsStateWithLifecycle()
+    val loader = MuscleAssetCache.forSex(sex)
+    val assets by loader.assets.collectAsStateWithLifecycle()
+    val loading by loader.loading.collectAsStateWithLifecycle()
+    val loadErrors by loader.errors.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val frontLabel = stringResource(R.string.muscle_front)
     val backLabel = stringResource(R.string.muscle_back)
@@ -117,16 +117,16 @@ fun MuscleFigure(
                 onViewSideChange(front)
             }
         }
-        LaunchedEffect(context, frontShown, compact, lockFront) {
+        LaunchedEffect(context, sex, frontShown, compact, lockFront) {
             if (compact || lockFront) {
-                MuscleAssetCache.loadSide(context, frontShown)
+                loader.loadSide(context, frontShown)
             } else {
-                MuscleAssetCache.loadSide(context, front = true)
-                MuscleAssetCache.loadSide(context, front = false)
+                loader.loadSide(context, front = true)
+                loader.loadSide(context, front = false)
             }
         }
         val retryCurrent: () -> Unit = {
-            scope.launch { MuscleAssetCache.retry(context, frontShown) }
+            scope.launch { loader.retry(context, frontShown) }
         }
         Column(
             modifier = Modifier.align(Alignment.TopCenter),
@@ -225,7 +225,7 @@ fun MuscleFigure(
                         modifier = Modifier.weight(1f).aspectRatio(canvasAspect(showCallouts)),
                         loading = loading,
                         error = loadErrors[true],
-                        onRetry = { scope.launch { MuscleAssetCache.retry(context, front = true) } },
+                        onRetry = { scope.launch { loader.retry(context, front = true) } },
                     )
                     WideSide(
                         side = assets.back,
@@ -240,15 +240,15 @@ fun MuscleFigure(
                         modifier = Modifier.weight(1f).aspectRatio(canvasAspect(showCallouts)),
                         loading = loading,
                         error = loadErrors[false],
-                        onRetry = { scope.launch { MuscleAssetCache.retry(context, front = false) } },
+                        onRetry = { scope.launch { loader.retry(context, front = false) } },
                     )
                 }
                 if (assets.front?.masks == null || assets.back?.masks == null) {
                     MaskLoadNotice(
                         onRetry = {
                             scope.launch {
-                                MuscleAssetCache.retry(context, front = true)
-                                MuscleAssetCache.retry(context, front = false)
+                                loader.retry(context, front = true)
+                                loader.retry(context, front = false)
                             }
                         },
                     )
@@ -514,8 +514,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMask(
 ) {
     if (masks == null) return
     if (!MuscleMaskCatalog.visible(muscleId, front)) return
-    val fileName = MuscleMaskCatalog.spec(muscleId)?.fileName ?: return
-    val mask = masks.bitmap(fileName)
+    val mask = masks.bitmap(muscleId)
     if (mask.opaqueCount == 0) return
     drawImage(
         image = mask.image,
@@ -628,7 +627,7 @@ private fun anchorFor(masks: MuscleMaskStore, front: Boolean, regionId: String):
     val muscleId = regionId.removeSuffix("_l").removeSuffix("_r")
     val spec = MuscleMaskCatalog.spec(muscleId) ?: return null
     if (!MuscleMaskCatalog.visible(muscleId, front)) return null
-    val mask = masks.bitmap(spec.fileName)
+    val mask = masks.bitmap(muscleId)
     if (mask.opaqueCount == 0) return null
     return when {
         regionId.endsWith("_l") -> {

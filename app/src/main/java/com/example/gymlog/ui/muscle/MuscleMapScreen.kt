@@ -111,9 +111,6 @@ fun MuscleMapScreen(
                 regionId in MuscleCatalog.find(highlight.muscleId)?.paintRegionIds.orEmpty()
             }?.role
     }
-    val unsupported = visible.mapNotNull { highlight ->
-        MuscleCatalog.find(highlight.muscleId)?.takeIf { !it.visualSupported }
-    }
 
     Scaffold(
         topBar = {
@@ -171,6 +168,7 @@ fun MuscleMapScreen(
                             GymLogCard(modifier = Modifier.fillMaxWidth()) {
                                 MuscleFigure(
                                     highlights = visible,
+                                    sex = rememberMuscleSex(),
                                     selectedRegionId = selectedRegionId,
                                     onRegionClick = { selectedRegionId = if (selectedRegionId == it) null else it },
                                     onBackgroundClick = { selectedRegionId = null },
@@ -179,14 +177,11 @@ fun MuscleMapScreen(
                                 )
                             }
                         }
-                        if (!state.hasSessions || unsupported.isNotEmpty()) {
+                        if (!state.hasSessions) {
                             item {
                                 GymLogCard(modifier = Modifier.fillMaxWidth()) {
                                     Column(modifier = Modifier.padding(12.dp)) {
-                                        StatusCopy(
-                                            hasSessions = state.hasSessions,
-                                            unsupported = unsupported,
-                                        )
+                                        StatusCopy(hasSessions = state.hasSessions)
                                     }
                                 }
                             }
@@ -230,6 +225,7 @@ fun MuscleMapScreen(
                         GymLogCard(modifier = Modifier.fillMaxWidth()) {
                             MuscleFigure(
                                 highlights = visible,
+                                sex = rememberMuscleSex(),
                                 selectedRegionId = selectedRegionId,
                                 onRegionClick = { selectedRegionId = if (selectedRegionId == it) null else it },
                                 onBackgroundClick = { selectedRegionId = null },
@@ -238,14 +234,11 @@ fun MuscleMapScreen(
                             )
                         }
                     }
-                    if (!state.hasSessions || unsupported.isNotEmpty()) {
+                    if (!state.hasSessions) {
                         item {
                             GymLogCard(modifier = Modifier.fillMaxWidth()) {
                                 Column(modifier = Modifier.padding(12.dp)) {
-                                    StatusCopy(
-                                        hasSessions = state.hasSessions,
-                                        unsupported = unsupported,
-                                    )
+                                    StatusCopy(hasSessions = state.hasSessions)
                                 }
                             }
                         }
@@ -435,25 +428,13 @@ private fun LegendItem(color: androidx.compose.ui.graphics.Color, label: String)
 }
 
 @Composable
-private fun StatusCopy(hasSessions: Boolean, unsupported: List<Muscle>) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        if (!hasSessions) {
-            Text(
-                text = stringResource(R.string.muscle_empty),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (unsupported.isNotEmpty()) {
-            Text(
-                text = stringResource(
-                    R.string.muscle_unsupported_list,
-                    unsupported.joinToString("、") { it.nameZh },
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
+private fun StatusCopy(hasSessions: Boolean) {
+    if (!hasSessions) {
+        Text(
+            text = stringResource(R.string.muscle_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

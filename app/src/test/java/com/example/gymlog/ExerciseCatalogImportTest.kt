@@ -60,7 +60,7 @@ class ExerciseCatalogImportTest {
         assertEquals(0, stats.linked)
         assertEquals(0, stats.skipped)
         assertEquals(24, stats.pendingMatches)
-        assertEquals(2_476, stats.unmappedTokens)
+        assertEquals(2_498, stats.unmappedTokens)
         assertEquals(0, stats.failed)
         val state = db.exerciseCatalogDao().importState(ExerciseSource.DATASET)
         assertNotNull(state)
@@ -69,7 +69,7 @@ class ExerciseCatalogImportTest {
         assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
         assertEquals(89, db.exerciseCatalogDao().presetCandidates().size)
         assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
-        assertEquals(2_051, db.exerciseMuscleDao().countAll())
+        assertEquals(2_032, db.exerciseMuscleDao().countAll())
 
         val first = db.exerciseDao().getById("ds_0001")
         assertNotNull(first)
@@ -169,7 +169,7 @@ class ExerciseCatalogImportTest {
         assertEquals(1, db.backupDao().allSets().size)
         assertEquals(archived.id, db.backupDao().allSets().single().exerciseId)
         val legacyIds = db.exerciseDao().allIds().filter { it.startsWith("preset_") }
-        assertEquals(89, legacyIds.size)
+        assertEquals(88, legacyIds.size)
         assertTrue(legacyIds.all { db.exerciseDao().getById(it)?.source == ExerciseSource.LEGACY })
     }
 
@@ -201,9 +201,9 @@ class ExerciseCatalogImportTest {
         val tokens = db.exerciseCatalogDao().tokensForExercise("ds_0001")
         assertTrue(tokens.any { it.token == "abs" && it.mappingStatus == DatasetMappingStatus.MAPPED.name })
         assertTrue(DatasetMuscleMapping.rules.size == 50)
-        assertTrue(DatasetMuscleMapping.rules.values.count { it.status == DatasetMappingStatus.MAPPED } == 23)
-        assertTrue(DatasetMuscleMapping.rules.values.count { it.status == DatasetMappingStatus.AMBIGUOUS } == 12)
-        assertTrue(DatasetMuscleMapping.rules.values.count { it.status == DatasetMappingStatus.UNMAPPED } == 15)
+        assertTrue(DatasetMuscleMapping.rules.values.count { it.status == DatasetMappingStatus.MAPPED } == 22)
+        assertTrue(DatasetMuscleMapping.rules.values.count { it.status == DatasetMappingStatus.AMBIGUOUS } == 11)
+        assertTrue(DatasetMuscleMapping.rules.values.count { it.status == DatasetMappingStatus.UNMAPPED } == 17)
         assertEquals(0, DatasetMuscleMapping.mappedIds("shoulders").size)
         assertEquals(0, DatasetMuscleMapping.mappedIds("hip flexors").size)
         assertEquals(listOf("pectoralis_major"), DatasetMuscleMapping.mappedIds("pectorals"))
@@ -224,7 +224,7 @@ class ExerciseCatalogImportTest {
         assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
         assertEquals(1_324, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.added)
         assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
-        assertEquals(2_051, db.exerciseMuscleDao().countAll())
+        assertEquals(2_032, db.exerciseMuscleDao().countAll())
     }
 
     @Test
@@ -293,7 +293,7 @@ class ExerciseCatalogImportTest {
         assertEquals(2_648, db.exerciseCatalogDao().allContents().size)
         assertEquals(1_324, db.exerciseCatalogDao().allMedia().size)
         assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
-        assertEquals(2_051, db.exerciseMuscleDao().countAll())
+        assertEquals(2_032, db.exerciseMuscleDao().countAll())
         assertEquals(89, db.exerciseCatalogDao().presetCandidates().size)
     }
 

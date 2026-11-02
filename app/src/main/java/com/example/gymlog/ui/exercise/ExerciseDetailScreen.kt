@@ -82,6 +82,7 @@ import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.displayName
 import com.example.gymlog.ui.muscle.MuscleFigure
+import com.example.gymlog.ui.muscle.rememberMuscleSex
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 import java.time.LocalDate
@@ -442,6 +443,7 @@ private fun OverviewTab(
                 // 肌群图收窄与肌群文字并排（左图右文），总览一屏能看到更多内容
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     MuscleFigure(
+                        sex = rememberMuscleSex(),
                         highlights = links.map { link ->
                             MuscleHighlight(
                                 muscleId = link.muscleId,

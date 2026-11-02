@@ -6,6 +6,7 @@ import android.content.res.AssetManager
 import android.content.res.Resources
 import androidx.test.core.app.ApplicationProvider
 import com.example.gymlog.ui.muscle.MuscleAssetCache
+import com.example.gymlog.ui.muscle.MuscleSex
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -36,57 +37,57 @@ class MuscleAssetCacheTest {
 
     @Test
     fun sameSideIsReusedAndBackLoadsIndependently() = runTest {
-        MuscleAssetCache.loadSide(context, front = true)
-        val firstFront = MuscleAssetCache.assets.value.front
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(context, front = true)
+        val firstFront = MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front
         assertNotNull(firstFront)
         assertNotNull(firstFront!!.masks)
-        assertEquals(7, MuscleAssetCache.assets.value.girthAnchors.size)
-        assertNull("back must stay lazy until requested", MuscleAssetCache.assets.value.back)
+        assertEquals(7, MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.girthAnchors.size)
+        assertNull("back must stay lazy until requested", MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.back)
 
-        MuscleAssetCache.loadSide(context, front = true)
-        assertSame(firstFront, MuscleAssetCache.assets.value.front)
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(context, front = true)
+        assertSame(firstFront, MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front)
 
-        MuscleAssetCache.loadSide(context, front = false)
-        assertNotNull(MuscleAssetCache.assets.value.back)
-        assertSame(firstFront, MuscleAssetCache.assets.value.front)
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(context, front = false)
+        assertNotNull(MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.back)
+        assertSame(firstFront, MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front)
     }
 
     @Test
     fun frontSideLoadTimeIsRecorded() = runTest {
         val started = System.nanoTime()
-        MuscleAssetCache.loadSide(context, front = true)
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(context, front = true)
         val firstMs = (System.nanoTime() - started) / 1_000_000
         val reusedStarted = System.nanoTime()
-        MuscleAssetCache.loadSide(context, front = true)
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(context, front = true)
         val reusedMs = (System.nanoTime() - reusedStarted) / 1_000_000
         println("MUSCLE_FRONT_LOAD_MS=$firstMs MUSCLE_FRONT_REUSE_MS=$reusedMs")
-        assertNotNull(MuscleAssetCache.assets.value.front)
+        assertNotNull(MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front)
     }
 
     @Test
     fun maskFailureKeepsTheBaseAndRetryRecoversMasks() = runTest {
-        MuscleAssetCache.loadSide(FailingAssetsContext(context), front = true)
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(FailingAssetsContext(context), front = true)
 
-        val degraded = MuscleAssetCache.assets.value.front
+        val degraded = MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front
         assertNotNull(degraded)
         assertNull(degraded!!.masks)
-        assertFalse(MuscleAssetCache.loading.value)
+        assertFalse(MuscleAssetCache.forSex(MuscleSex.MALE).loading.value)
 
-        MuscleAssetCache.retry(context, front = true)
+        MuscleAssetCache.forSex(MuscleSex.MALE).retry(context, front = true)
 
-        val recovered = MuscleAssetCache.assets.value.front
+        val recovered = MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front
         assertNotNull(recovered)
         assertNotNull(recovered!!.masks)
-        assertEquals(7, MuscleAssetCache.assets.value.girthAnchors.size)
+        assertEquals(7, MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.girthAnchors.size)
     }
 
     @Test
     fun baseFailureIsReportedWithoutThrowing() = runTest {
-        MuscleAssetCache.loadSide(FailingResourcesContext(context), front = true)
+        MuscleAssetCache.forSex(MuscleSex.MALE).loadSide(FailingResourcesContext(context), front = true)
 
-        assertNull(MuscleAssetCache.assets.value.front)
-        assertNotNull(MuscleAssetCache.errors.value[true])
-        assertFalse(MuscleAssetCache.loading.value)
+        assertNull(MuscleAssetCache.forSex(MuscleSex.MALE).assets.value.front)
+        assertNotNull(MuscleAssetCache.forSex(MuscleSex.MALE).errors.value[true])
+        assertFalse(MuscleAssetCache.forSex(MuscleSex.MALE).loading.value)
     }
 
     private class FailingAssetsContext(base: Context) : ContextWrapper(base) {

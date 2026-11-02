@@ -34,6 +34,7 @@ import com.example.gymlog.data.MuscleHighlight
 import com.example.gymlog.data.girths
 import com.example.gymlog.ui.muscle.GirthCalloutOverlay
 import com.example.gymlog.ui.muscle.MuscleFigure
+import com.example.gymlog.ui.muscle.rememberMuscleSex
 import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
@@ -119,6 +120,7 @@ fun BodyFigureCard(
             Box(modifier = Modifier.fillMaxWidth()) {
                 MuscleFigure(
                     highlights = if (showMuscle) highlights else emptyList(),
+                    sex = rememberMuscleSex(),
                     selectedRegionId = if (showMuscle) selectedRegionId else null,
                     onRegionClick = {
                         if (showMuscle) {

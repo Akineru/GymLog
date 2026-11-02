@@ -12,10 +12,10 @@ internal object GirthAnchors {
     fun resolve(masks: MuscleMaskStore): List<GirthAnchorPoint> {
         val chest = masks.bitmap("pectoralis_major")
         val arm = masks.bitmap("biceps_brachii")
-        val forearm = masks.bitmap("forearm_flexors")
+        val forearm = masks.bitmap("forearm")
         val rectus = masks.bitmap("rectus_abdominis")
         val thigh = masks.bitmap("quadriceps")
-        val calf = masks.bitmap("tibialis_anterior")
+        val calf = masks.bitmap("gastrocnemius")
         val armPoint = band(GirthSlot.ARM, arm, 0.30f, 0.70f)
         val forearmMass = band(GirthSlot.FOREARM, forearm, 0.18f, 0.48f)
         val thighPoint = band(GirthSlot.THIGH, thigh, 0.22f, 0.52f)

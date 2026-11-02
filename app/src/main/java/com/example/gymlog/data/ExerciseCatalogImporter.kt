@@ -181,7 +181,13 @@ open class ExerciseCatalogImporter(
                     val preserveLinks = existing && !existingLinks[localId].isNullOrEmpty()
                     if (!preserveLinks) {
                         muscleDao.deleteForExercise(localId)
+                        // Different tokens can fold into the same muscle id
+                        // (e.g. wrist flexors + extensors -> forearm); keep the
+                        // first occurrence so every action paints once per muscle.
                         roleById.entries.forEachIndexed { index, entry ->
+                            if (links.any { it.exerciseId == localId && it.muscleId == entry.key }) {
+                                return@forEachIndexed
+                            }
                             links += MuscleLink(
                                 exerciseId = localId,
                                 muscleId = entry.key,

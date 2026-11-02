@@ -30,7 +30,6 @@ data class MuscleMapUiState(
     val range: MuscleMapRange = MuscleMapRange.DAY,
     val highlights: List<MuscleHighlight> = emptyList(),
     val hasSessions: Boolean = false,
-    val unsupported: List<Muscle> = emptyList(),
 )
 
 class MuscleMapViewModel(
@@ -49,15 +48,11 @@ class MuscleMapViewModel(
     ) { sessions, links, day, span ->
         val picked = sessions.filter { dayInRange(it.session.dateEpochDay, day, span) }
         val highlights = MuscleMapLogic.highlightsFor(picked, links)
-        val unsupported = highlights.mapNotNull { highlight ->
-            MuscleCatalog.find(highlight.muscleId)?.takeIf { !it.visualSupported }
-        }
         MuscleMapUiState(
             date = day,
             range = span,
             highlights = highlights,
             hasSessions = picked.isNotEmpty(),
-            unsupported = unsupported,
         )
     }.flowOn(Dispatchers.Default).stateIn(
         scope = viewModelScope,

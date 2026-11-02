@@ -32,8 +32,10 @@ fun GirthCalloutOverlay(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val assets by MuscleAssetCache.assets.collectAsStateWithLifecycle()
-    LaunchedEffect(context) { MuscleAssetCache.loadSide(context, front = true) }
+    val sex = rememberMuscleSex()
+    val loader = MuscleAssetCache.forSex(sex)
+    val assets by loader.assets.collectAsStateWithLifecycle()
+    LaunchedEffect(context, sex) { loader.loadSide(context, front = true) }
     val anchors = assets.girthAnchors
     if (anchors.isEmpty()) return
     val missing = stringResource(R.string.mine_value_empty)

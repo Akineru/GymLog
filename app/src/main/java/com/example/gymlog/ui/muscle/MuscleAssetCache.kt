@@ -7,7 +7,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.example.gymlog.R
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,11 +32,11 @@ internal data class MuscleAssets(
 )
 
 /**
- * Lazily decodes one side at a time, off the main thread. Body record only needs
+ * Lazily decodes one sex+side at a time, off the main thread. Body record only needs
  * the front side; the muscle map loads the back side when the user switches.
- * Mask resources are process-wide and shared by body record and the muscle map.
+ * Each sex owns its own loader, so caches never leak across male/female figures.
  */
-internal object MuscleAssetCache {
+internal class MuscleAssetLoader(private val sex: MuscleSex) {
     private val mutex = Mutex()
     private val state = MutableStateFlow(MuscleAssets())
     private val loadingState = MutableStateFlow(false)
@@ -57,9 +59,15 @@ internal object MuscleAssetCache {
             try {
                 val app = context.applicationContext
                 val loaded = withContext(Dispatchers.Default) {
-                    val base = decode(app, if (front) R.drawable.muscle_front_base else R.drawable.muscle_back_base)
+                    val baseRes = when {
+                        front && sex == MuscleSex.MALE -> R.drawable.muscle_front_base_male
+                        front -> R.drawable.muscle_front_base_female
+                        sex == MuscleSex.MALE -> R.drawable.muscle_back_base_male
+                        else -> R.drawable.muscle_back_base_female
+                    }
+                    val base = decode(app, baseRes)
                     val masksResult = runCatching {
-                        MuscleMaskStore(app.assets, front).also { it.prepare() }
+                        MuscleMaskStore(app.assets, sex, front).also { it.prepare() }
                     }
                     val masks = masksResult.getOrNull()
                     val anchors = if (front && masks != null) {
@@ -128,4 +136,16 @@ internal object MuscleAssetCache {
         val masksError: String?,
         val anchors: List<GirthAnchorPoint>,
     )
+}
+
+internal object MuscleAssetCache {
+    private val loaders = mutableMapOf<MuscleSex, MuscleAssetLoader>()
+
+    fun forSex(sex: MuscleSex): MuscleAssetLoader {
+        return synchronized(loaders) { loaders.getOrPut(sex) { MuscleAssetLoader(sex) } }
+    }
+
+    internal fun resetForTesting() {
+        synchronized(loaders) { loaders.values.forEach { it.resetForTesting() } }
+    }
 }

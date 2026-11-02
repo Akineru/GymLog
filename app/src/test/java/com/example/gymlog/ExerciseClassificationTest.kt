@@ -137,7 +137,7 @@ class ExerciseClassificationTest {
         migrator.migrateAll()
 
         val presets = db.exerciseDao().allExercises().filter { it.id.startsWith("preset_") }
-        assertEquals(89, presets.size)
+        assertEquals(88, presets.size)
         assertTrue(presets.all { it.bodyCategoryId != null && it.equipmentCategoryId != null })
         assertTrue(presets.all { it.classificationVersion == ExerciseClassification.VERSION })
         assertTrue(presets.all { it.classificationStatus == ExerciseClassification.STATUS_AMBIGUOUS })

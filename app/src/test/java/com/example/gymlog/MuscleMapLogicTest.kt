@@ -57,15 +57,15 @@ class MuscleMapLogicTest {
 
     @Test
     fun removingASessionDropsItsUniqueMuscle() {
-        val raise = exercise("preset_tibialis_raise", "胫骨前肌训练")
+        val raise = exercise("preset_seated_calf_raise", "坐姿提踵")
         val squat = exercise("preset_barbell_squat", "杠铃深蹲")
         val both = MuscleMapLogic.highlightsFor(
             listOf(session("s1", 20_000, raise), session("s2", 20_000, squat)),
             emptyList(),
         )
         val remaining = MuscleMapLogic.highlightsFor(listOf(session("s2", 20_000, squat)), emptyList())
-        assertTrue(both.any { it.muscleId == "tibialis_anterior" })
-        assertTrue(remaining.none { it.muscleId == "tibialis_anterior" })
+        assertTrue(both.any { it.muscleId == "gastrocnemius" })
+        assertTrue(remaining.none { it.muscleId == "gastrocnemius" })
         assertTrue(remaining.any { it.muscleId == "quadriceps" })
     }
 
@@ -96,46 +96,38 @@ class MuscleMapLogicTest {
     @Test
     fun figureMasksMatchExistingMuscles() {
         assertEquals(MuscleCatalog.all.map { it.id }.toSet(), MuscleMaskCatalog.specs.map { it.muscleId }.toSet())
-        val hidden = setOf("rhomboids", "brachialis", "internal_oblique", "transversus_abdominis")
-        assertEquals(hidden, MuscleCatalog.all.filter { !it.visualSupported }.map { it.id }.toSet())
-        hidden.forEach { id ->
-            assertFalse(MuscleMaskCatalog.visible(id, front = true))
-            assertFalse(MuscleMaskCatalog.visible(id, front = false))
-        }
-        assertEquals("deltoid_middle", MuscleMaskCatalog.spec("deltoid_lateral")?.fileName)
+        assertEquals(emptySet<String>(), MuscleCatalog.all.filter { !it.visualSupported }.map { it.id }.toSet())
         assertTrue(MuscleMaskCatalog.visible("pectoralis_major", front = true))
         assertFalse(MuscleMaskCatalog.visible("pectoralis_major", front = false))
         assertTrue(MuscleMaskCatalog.visible("latissimus_dorsi", front = false))
-        assertTrue(MuscleMaskCatalog.visible("forearm_extensors", front = true))
-        assertTrue(MuscleMaskCatalog.visible("forearm_extensors", front = false))
-        assertTrue(MuscleMaskCatalog.visible("sartorius", front = true))
-        assertFalse(MuscleMaskCatalog.visible("sartorius", front = false))
+        assertTrue(MuscleMaskCatalog.visible("forearm", front = true))
+        assertTrue(MuscleMaskCatalog.visible("forearm", front = false))
+        assertTrue(MuscleMaskCatalog.visible("trapezius", front = true))
+        assertTrue(MuscleMaskCatalog.visible("trapezius", front = false))
         val layers = MuscleMaskCatalog.layers(
             listOf(
                 MuscleHighlight("quadriceps", MuscleRole.SECONDARY, emptyList()),
-                MuscleHighlight("vastus_lateralis", MuscleRole.PRIMARY, emptyList()),
-                MuscleHighlight("rectus_femoris", MuscleRole.PRIMARY, emptyList()),
                 MuscleHighlight("biceps_brachii", MuscleRole.SECONDARY, emptyList()),
                 MuscleHighlight("rhomboids", MuscleRole.PRIMARY, emptyList()),
             ),
         )
-        assertEquals(listOf("biceps_brachii", "quadriceps"), layers.map { it.muscleId })
-        assertEquals(MuscleRole.PRIMARY, layers.single { it.muscleId == "quadriceps" }.role)
+        assertEquals(listOf("quadriceps", "biceps_brachii", "rhomboids"), layers.map { it.muscleId })
+        assertEquals(MuscleRole.PRIMARY, layers.single { it.muscleId == "rhomboids" }.role)
         assertEquals("pectoralis_major_l", MuscleMaskCatalog.regionId("pectoralis_major", 400))
         assertEquals("pectoralis_major_r", MuscleMaskCatalog.regionId("pectoralis_major", 700))
-        assertEquals("quadriceps", MuscleMaskCatalog.regionId("quadriceps", 400))
-        assertEquals("trapezius_upper", MuscleMaskCatalog.regionId("trapezius_upper", 400))
-        assertEquals("quadriceps", MuscleCatalog.specificMuscleForRegion("quadriceps")?.id)
-        assertEquals("vastus_lateralis", MuscleCatalog.specificMuscleForRegion("vastus_lateralis_l")?.id)
+        assertEquals("quadriceps_l", MuscleMaskCatalog.regionId("quadriceps", 400))
+        assertEquals("trapezius", MuscleMaskCatalog.regionId("trapezius", 400))
+        assertEquals("trapezius", MuscleCatalog.specificMuscleForRegion("trapezius")?.id)
+        assertEquals("pectoralis_major", MuscleCatalog.specificMuscleForRegion("pectoralis_major_l")?.id)
     }
 
     @Test
-    fun parentAndChildRelatedExercisesKeepCurrentAsymmetricSemantics() {
+    fun quadricepsRegionQueriesIncludePresetAndCustomExercises() {
         val squat = exercise("preset_barbell_squat", "杠铃深蹲")
         val legExtension = exercise("preset_leg_extension", "腿屈伸")
         val custom = ExerciseEntity(
-            id = "custom_rectus_only",
-            name = "只映射股直肌的动作",
+            id = "custom_quad_only",
+            name = "只映射股四头肌的自定义动作",
             bodyPart = BodyPart.LEGS.name,
             equipmentType = EquipmentType.FREE_WEIGHT.name,
             weightMode = WeightMode.WEIGHTED.name,
@@ -143,7 +135,7 @@ class MuscleMapLogicTest {
             aliases = null,
             createdAt = 1L,
         )
-        val stored = listOf(MuscleLink("custom_rectus_only", "rectus_femoris", MuscleRole.PRIMARY, 0))
+        val stored = listOf(MuscleLink("custom_quad_only", "quadriceps", MuscleRole.PRIMARY, 0))
         val highlights = MuscleMapLogic.highlightsFor(
             listOf(
                 session("s1", 20_000, squat),
@@ -156,18 +148,14 @@ class MuscleMapLogicTest {
         val composite = MuscleMapLogic.exercisesForRegion("quadriceps", highlights)
             .map { it.exerciseId }
             .toSet()
-        val head = MuscleMapLogic.exercisesForRegion("rectus_femoris_l", highlights)
+        val side = MuscleMapLogic.exercisesForRegion("quadriceps_l", highlights)
             .map { it.exerciseId }
             .toSet()
 
         assertTrue("preset_barbell_squat" in composite)
         assertTrue("preset_leg_extension" in composite)
-        assertFalse("custom_rectus_only" in composite)
-        assertTrue("preset_leg_extension" in head)
-        assertTrue("custom_rectus_only" in head)
-        // The current child query also includes the parent composite because
-        // quadriceps.paintRegionIds contains the child region ids.
-        assertTrue("preset_barbell_squat" in head)
+        assertTrue("custom_quad_only" in composite)
+        assertEquals(composite, side)
     }
 
     @Test

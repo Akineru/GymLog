@@ -87,7 +87,6 @@ object PresetExercises {
         preset("barbell_hip_thrust", "杠铃臀推", BodyPart.LEGS, EquipmentType.FREE_WEIGHT, WeightMode.WEIGHTED, "杠铃臀推, 杠铃臀桥", createdAt),
         preset("hip_adduction", "髋内收", BodyPart.LEGS, EquipmentType.MACHINE, WeightMode.WEIGHTED, "髋内收, 坐姿髋内收", createdAt),
         preset("seated_calf_raise", "坐姿提踵", BodyPart.LEGS, EquipmentType.MACHINE, WeightMode.WEIGHTED, "坐姿提踵", createdAt),
-        preset("tibialis_raise", "胫骨前肌训练", BodyPart.LEGS, EquipmentType.FREE_WEIGHT, WeightMode.WEIGHTED, "胫骨前肌训练, 勾脚尖", createdAt),
 
         preset("preacher_curl", "牧师凳弯举", BodyPart.ARMS, EquipmentType.FREE_WEIGHT, WeightMode.WEIGHTED, "牧师凳弯举, 斜托弯举", createdAt),
         preset("incline_dumbbell_curl", "斜板弯举", BodyPart.ARMS, EquipmentType.FREE_WEIGHT, WeightMode.WEIGHTED, "斜板弯举, 上斜哑铃弯举", createdAt),

@@ -22,25 +22,26 @@ internal class MaskBitmap(
 )
 
 /**
- * Decodes one side's visible masks once. Front and back each own a store so a
- * body-record screen never pays for the back-side masks until it needs them.
+ * Decodes one sex+side's visible masks once. Each combination owns a store so a
+ * body-record screen never pays for masks it does not show.
  */
 internal class MuscleMaskStore(
     private val assets: AssetManager,
+    private val sex: MuscleSex,
     private val front: Boolean,
 ) {
     private val cache = HashMap<String, MaskBitmap>()
 
     fun prepare() {
         MuscleMaskCatalog.specs.forEach { spec ->
-            if (if (front) spec.front else spec.back) bitmap(spec.fileName)
+            if (if (front) spec.front else spec.back) bitmap(spec.muscleId)
         }
     }
 
     internal fun loadedCount(): Int = cache.size
 
-    fun bitmap(fileName: String): MaskBitmap {
-        return cache.getOrPut(fileName) { decode(fileName) }
+    fun bitmap(muscleId: String): MaskBitmap {
+        return cache.getOrPut(muscleId) { decode(muscleId) }
     }
 
     /**
@@ -61,7 +62,7 @@ internal class MuscleMaskStore(
         val index = imageY * MuscleMaskCatalog.WIDTH + imageX
         val hits = MuscleMaskCatalog.specs.mapNotNull { spec ->
             if (if (front) !spec.front else !spec.back) return@mapNotNull null
-            val mask = bitmap(spec.fileName)
+            val mask = bitmap(spec.muscleId)
             if (!mask.opaque.get(index)) return@mapNotNull null
             spec.muscleId to mask.opaqueCount
         }
@@ -78,15 +79,15 @@ internal class MuscleMaskStore(
         return MuscleMaskCatalog.regionId(chosen.first, imageX)
     }
 
-    private fun decode(fileName: String): MaskBitmap {
-        val side = if (front) "front" else "back"
-        val decoded = assets.open("muscle_masks/$side/$fileName.png").use { stream ->
+    private fun decode(muscleId: String): MaskBitmap {
+        val dir = "${sex.name.lowercase()}/${if (front) "front" else "back"}"
+        val decoded = assets.open("muscle_masks/$dir/$muscleId.png").use { stream ->
             val options = BitmapFactory.Options().apply {
                 inPreferredConfig = Bitmap.Config.ARGB_8888
                 inScaled = false
             }
             BitmapFactory.decodeStream(stream, null, options)
-        } ?: error("Missing muscle mask muscle_masks/$side/$fileName.png")
+        } ?: error("Missing muscle mask muscle_masks/$dir/$muscleId.png")
         val measured = analyze(decoded)
         val alpha = Bitmap.createBitmap(decoded.width, decoded.height, Bitmap.Config.ALPHA_8)
         Canvas(alpha).drawBitmap(decoded, 0f, 0f, null)
