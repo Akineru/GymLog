@@ -97,6 +97,8 @@ internal fun MuscleFigure(
     switchBelow: Boolean = false,
     onViewSideChange: (Boolean) -> Unit = {},
     onBackgroundClick: () -> Unit = {},
+    /** 非空时按肌群 id 上色，不再使用主练/次练的红。正面和背面共用这一份。 */
+    heatColors: Map<String, Color>? = null,
 ) {
     var showFront by remember(forcedFront) { mutableStateOf(forcedFront ?: true) }
     val palette = rememberMusclePalette()
@@ -170,6 +172,7 @@ internal fun MuscleFigure(
                         showCallouts = showCallouts,
                         onRegionClick = onRegionClick,
                         onBackgroundClick = onBackgroundClick,
+                        heatColors = heatColors,
                         modifier = figureSize(boundedHeight, showCallouts),
                     )
                     if (side.masks == null) {
@@ -208,6 +211,7 @@ internal fun MuscleFigure(
                         showCallouts = showCallouts,
                         onRegionClick = onRegionClick,
                         onBackgroundClick = onBackgroundClick,
+                        heatColors = heatColors,
                         modifier = figureSize(boundedHeight, showCallouts),
                     )
                     if (side.masks == null) {
@@ -227,6 +231,7 @@ internal fun MuscleFigure(
                         showCallouts = showCallouts,
                         onRegionClick = onRegionClick,
                         onBackgroundClick = onBackgroundClick,
+                        heatColors = heatColors,
                         modifier = Modifier.weight(1f).aspectRatio(canvasAspect(showCallouts)),
                         loading = loading,
                         error = loadErrors[true],
@@ -243,6 +248,7 @@ internal fun MuscleFigure(
                         showCallouts = showCallouts,
                         onRegionClick = onRegionClick,
                         onBackgroundClick = onBackgroundClick,
+                        heatColors = heatColors,
                         modifier = Modifier.weight(1f).aspectRatio(canvasAspect(showCallouts)),
                         loading = loading,
                         error = loadErrors[false],
@@ -276,6 +282,7 @@ private fun WideSide(
     calloutRegionIds: Set<String>? = null,
     onRegionClick: (String) -> Unit,
     onBackgroundClick: () -> Unit,
+    heatColors: Map<String, Color>? = null,
     modifier: Modifier = Modifier,
     loading: Boolean = false,
     error: String? = null,
@@ -300,6 +307,7 @@ private fun WideSide(
             showCallouts = showCallouts,
             onRegionClick = onRegionClick,
             onBackgroundClick = onBackgroundClick,
+            heatColors = heatColors,
             modifier = modifier,
         )
     }
@@ -419,10 +427,13 @@ private fun FigureCanvas(
     calloutRegionIds: Set<String>? = null,
     onRegionClick: (String) -> Unit,
     onBackgroundClick: () -> Unit,
+    heatColors: Map<String, Color>? = null,
     modifier: Modifier = Modifier,
 ) {
     val labelSize = 11.sp
-    val layers = remember(highlights) { MuscleMaskCatalog.layers(highlights) }
+    val layers = remember(highlights, heatColors) {
+        if (heatColors == null) MuscleMaskCatalog.layers(highlights) else emptyList()
+    }
     val selectedId = remember(selectedRegionId) { selectedRegionId?.let(::muscleKey) }
     val visibleCallouts = remember(callouts, calloutRegionIds) {
         if (calloutRegionIds == null) {
@@ -431,10 +442,22 @@ private fun FigureCanvas(
             callouts.filter { muscleKey(it.regionId) in calloutRegionIds }
         }
     }
-    val preferredLayerIds = remember(layers, selectedId) {
-        buildList {
-            layers.forEach { add(it.muscleId) }
-            if (selectedId != null && selectedId !in this) add(selectedId)
+    val preferredLayerIds = remember(layers, selectedId, heatColors, front) {
+        if (heatColors != null) {
+            val trained = heatColors.keys
+            buildList {
+                MuscleMaskCatalog.specs
+                    .filter { MuscleMaskCatalog.visible(it.muscleId, front) }
+                    .map { it.muscleId }
+                    .sortedBy { if (it in trained) 1 else 0 }
+                    .forEach { add(it) }
+                if (selectedId != null && selectedId !in this) add(selectedId)
+            }
+        } else {
+            buildList {
+                layers.forEach { add(it.muscleId) }
+                if (selectedId != null && selectedId !in this) add(selectedId)
+            }
         }
     }
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
@@ -501,17 +524,32 @@ private fun FigureCanvas(
                                 dstSize = dstSize,
                             )
                         }
-                    layers.forEach { layer ->
-                        if (!MuscleMaskCatalog.visible(layer.muscleId, front)) return@forEach
-                        drawMask(
-                            masks = masks,
-                            front = front,
-                            muscleId = layer.muscleId,
-                            color = if (layer.role == MuscleRole.PRIMARY) palette.primary else palette.secondary,
-                            alpha = MuscleMaskCatalog.OVERLAY_ALPHA,
-                            dst = dst,
-                            dstSize = dstSize,
-                        )
+                    if (heatColors != null) {
+                        heatColors.forEach { (muscleId, color) ->
+                            if (!MuscleMaskCatalog.visible(muscleId, front)) return@forEach
+                            drawMask(
+                                masks = masks,
+                                front = front,
+                                muscleId = muscleId,
+                                color = color,
+                                alpha = 1f,
+                                dst = dst,
+                                dstSize = dstSize,
+                            )
+                        }
+                    } else {
+                        layers.forEach { layer ->
+                            if (!MuscleMaskCatalog.visible(layer.muscleId, front)) return@forEach
+                            drawMask(
+                                masks = masks,
+                                front = front,
+                                muscleId = layer.muscleId,
+                                color = if (layer.role == MuscleRole.PRIMARY) palette.primary else palette.secondary,
+                                alpha = MuscleMaskCatalog.OVERLAY_ALPHA,
+                                dst = dst,
+                                dstSize = dstSize,
+                            )
+                        }
                     }
                     if (selectedId != null) {
                         drawMask(

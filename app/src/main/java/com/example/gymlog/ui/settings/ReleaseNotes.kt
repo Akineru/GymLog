@@ -17,6 +17,20 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.6.1",
+            date = "2026年11月4日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "肌群训练热力图",
+                    items = listOf(
+                        "统计页新增肌群训练热力图，可在最近一周和最近一月之间切换。",
+                        "练过的肌肉显示红色，练得越勤颜色越深；点一块肌肉可查看课次、组数和动作。",
+                        "右上角问号说明颜色深浅的含义。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.6.0",
             date = "2026年11月2日",
             sections = listOf(
