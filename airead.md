@@ -2,9 +2,9 @@
 
 本地离线的 Android 力量训练记录应用。单 Activity，Kotlin + Jetpack Compose + Room。没有账号、没有网络同步。界面中文；启动器英文名是 Traivol（`values-en/strings.xml` 的 `app_name`），中文名是「练有所迹」。
 
-当前版本：`versionName` **1.5.4**，`versionCode` **14**。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **19**。
+当前版本：`versionName` **1.6.1**，`versionCode` **20**。包名 `com.example.gymlog`。数据库文件 `gymlog.db`，Room version **21**（1.6.1 无迁移）。
 
-> 状态：这是当前开发版。下面的「外观与日历配色」「通知设置」「1.5.2」等章节和实际代码是当前口径；更早的 UI 阶段章节保留为历史记录。
+> 状态：1.6.1 已发布。文末「1.6.1 发版」是最新口径；更早的功能章节保留为历史记录。硬约束仍然有效。
 
 下一个实现者先读这份文档，再改代码。用户用简体中文沟通。版本说明写在 `ui/settings/ReleaseNotes.kt` 的 `ReleaseHistory.notes`，新版本插在列表最上面。关于页读安装包的 `versionName`。
 
@@ -779,7 +779,7 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 肌群加载按性别：`MuscleAssetLoader` 实例经 `MuscleAssetCache.forSex(sex)` 获取，`MuscleFigure` 必须传 `sex`；遮罩文件名 = muscleId，无侧肌（斜方/菱形/竖脊/腹直/前臂/小腿三头）用整块编号。
 - 长驻协程闭包捕获旧状态是重复踩过的坑（日历滑回当月标题不更新、动作分类双击失效）。`LaunchedEffect` 里读外部状态一律 `rememberUpdatedState`。
 - 直接用 adb 改 app 数据库是高危操作：拉取和推回必须包含 `gymlog.db` + `-wal` + `-shm` 三件套，先 force-stop。只换主库、删 WAL 会丢掉未 checkpoint 的近期训练记录（2026-11-02 已因此丢过一次数据）。app 现有自动备份兜底（见「自动本地备份」）。
-- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`CalendarDayPartsTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ActiveWorkoutLabelTest`、`ReleaseHistoryTest`（最新版应跟随最新发版，当前 1.6.0）。
+- 与 1.4.1 / 1.4.2 / 训练重构相关的单测包括：`DayKindMigrationTest`、`DayKindLogicTest`、`CalendarDayColorTest`、`CalendarDayPartsTest`、`PhotoWallMigrationTest`、`PhotoImageTest`、`BodyMeasurementMigrationTest`、`WorkoutDurationMigrationTest`、`WorkoutClockLogicTest`、`ActiveWorkoutLabelTest`、`ReleaseHistoryTest`（最新版应跟随最新发版，当前 1.6.1）。
 
 ## 1.5.1 发版
 
@@ -860,3 +860,12 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - ReleaseNotes.kt 顶部为 1.6.0（5 节），`ReleaseHistoryTest` 首条断言为 1.6.0。
 - GitHub Release：`v1.6.0`，附件 GymLog-1.6.0.apk（debug 签名，163.8MB）。发版流程：版本号 → 应用内公告 → 测试 → commit+tag → `gh release create/upload` → adb 装实机（无线调试 `adb-cdbf33ff-dx3Km2._adb-tls-connect._tcp`）。
 - 动作库数据另有一份手工补全：全量 1418 个动作的主要/次要肌群已按 19 肌群目录补齐（含 TARGET 歧义大类按动作名细分），并已用 `muscle_sync.py` 写回模拟器与实机数据库。注意这是 DB 直改，重新导入预置目录会回退；要长期生效需把映射固化进导入器数据。
+
+## 1.6.1 发版
+
+- versionCode = 20，versionName = 1.6.1（2026-11-04；提交 `9f92587`，tag `v1.6.1`）。无数据库迁移，Room 仍是 21。
+- 统计页（`ProgressScreen`）新增卡片「肌群训练热力图」。默认最近 7 个本地自然日（含今天），可切换最近 30 个本地自然日（含今天）。只计已保存训练的组。同一课次同一肌群只计一次：有主练记 1，仅次练记 0.5，跨课次累加成分数。色带：0 灰，≤0.5 低，≤1.5 一般，≤3.5 中，≤6.5 高，其余峰值。正背面 `MuscleFigure` 共用一份 muscleId 颜色表；`heatColors` 为可选参数。训练页肌群高亮仍用原来的红色系，不要和热力色带混用。
+- 点一块肌肉可看课次数、动作数、组数、最近日期和动作列表。问号在卡片右上角（不是底部），对话框说明颜色含义。
+- 逻辑在 `data/MuscleHeatLogic.kt`；UI 在 `ui/progress/MuscleHeatmapCard.kt` 与 `MuscleHeatViewModel.kt`。
+- ReleaseNotes.kt 顶部为 1.6.1（2026年11月4日，节「肌群训练热力图」），`ReleaseHistoryTest` 首条断言为 1.6.1。
+- GitHub Release：https://github.com/Akineru/GymLog/releases/tag/v1.6.1 。
