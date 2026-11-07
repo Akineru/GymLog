@@ -6,9 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.CompositionLocalProvider
-import com.chrisbanes.haze.hazeSource
-import com.chrisbanes.haze.rememberHazeState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -44,7 +41,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import com.example.gymlog.ui.theme.GlassBackdropBlobs
-import com.example.gymlog.ui.theme.LocalGlassHazeState
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -1350,15 +1346,12 @@ private fun HistoryScreen(
             )
         },
     ) { innerPadding ->
-        val hazeState = rememberHazeState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .hazeSource(hazeState),
+                .padding(innerPadding),
         ) {
             GlassBackdropBlobs(modifier = Modifier.matchParentSize())
-            CompositionLocalProvider(LocalGlassHazeState provides hazeState) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
@@ -1536,7 +1529,6 @@ private fun HistoryScreen(
                 }
             }
         }
-            }
         }
     }
     if (editingDayNote) {

@@ -44,10 +44,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.CompositionLocalProvider
-
-import com.chrisbanes.haze.hazeSource
-import com.chrisbanes.haze.rememberHazeState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,7 +76,6 @@ import com.example.gymlog.ui.theme.GymLogSpacing
 import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.LiquidGlassCard
 import com.example.gymlog.ui.theme.LiquidGlassColors
-import com.example.gymlog.ui.theme.LocalGlassHazeState
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -153,16 +148,13 @@ fun HomeScreen(
             )
         },
     ) { innerPadding ->
-        val hazeState = rememberHazeState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .hazeSource(hazeState),
+                .padding(innerPadding),
         ) {
             // 低饱和流体色块：给玻璃卡片提供可折射的背景颜色
             GlassBackdropBlobs(modifier = Modifier.matchParentSize())
-            CompositionLocalProvider(LocalGlassHazeState provides hazeState) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
@@ -229,10 +221,10 @@ fun HomeScreen(
                 }
             }
             }
-            }
         }
     }
 }
+
 @Composable
 private fun OverviewCard(
     mode: HomeRangeMode,
