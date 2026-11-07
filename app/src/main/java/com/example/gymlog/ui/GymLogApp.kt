@@ -70,7 +70,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -170,12 +169,10 @@ import java.util.Locale
 import java.util.UUID
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.systemGestureExclusion
@@ -1211,8 +1208,6 @@ private fun RootTabBar(
         Triple(RootTab.Mine, Icons.Filled.Person, stringResource(R.string.tab_mine)),
     )
     val itemHeight = 48.dp
-    var dragTotalDx by remember { mutableStateOf(0f) }
-    var cellWidthPx by remember { mutableStateOf(0f) }
 
     Box(
         modifier = modifier
@@ -1244,26 +1239,6 @@ private fun RootTabBar(
                 ),
                 shape = RoundedCornerShape(999.dp),
             )
-            .pointerInput(Unit) {
-                // 胶囊内横滑 = 翻页手势：一次滑动切一页（按滑动距离可跨页），滑块只做动画不跟手
-                detectHorizontalDragGestures(
-                    onHorizontalDrag = { change, amount ->
-                        change.consume()
-                        dragTotalDx += amount
-                    },
-                    onDragEnd = {
-                        val steps = (dragTotalDx / (cellWidthPx * 0.75f).coerceAtLeast(1f)).roundToInt()
-                            .coerceIn(-2, 2)
-                        dragTotalDx = 0f
-                        if (steps != 0) {
-                            val target = (selected.ordinal + steps).coerceIn(0, tabs.size - 1)
-                            if (target != selected.ordinal) {
-                                onSelect(tabs[target].first)
-                            }
-                        }
-                    },
-                )
-            }
             .padding(6.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -1295,11 +1270,7 @@ private fun RootTabBar(
                 ),
         )
         // 图标（无文字标签，等分宽度保证间距均匀）
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .onSizeChanged { cellWidthPx = it.width / tabs.size.toFloat() },
-        ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             tabs.forEach { (tab, icon, label) ->
                 val isSelected = tab == selected
                 Box(
