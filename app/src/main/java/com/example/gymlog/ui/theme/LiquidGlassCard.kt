@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,15 +22,24 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+import com.chrisbanes.haze.HazeInput
+import com.chrisbanes.haze.HazeState
+import com.chrisbanes.haze.HazeTint
+import com.chrisbanes.haze.hazeBlur
+import com.chrisbanes.haze.hazeBlurStyle
+import dev.chrisbanes.haze.materials.HazeMaterials
+
+/** 页面级 Haze 状态：有值时玻璃卡启用真实 backdrop blur（磨砂），null 时退化为拟玻璃 */
+val LocalGlassHazeState = compositionLocalOf<HazeState?> { null }
+
 private val GlassFill = Color.White.copy(alpha = 0.34f)
 
 /**
- * 液态玻璃卡片（拟玻璃方案 A）。
+ * 液态玻璃卡片。
  *
- * 不使用 RenderEffect / backdrop blur，全版本可用：
- * - 半透明白底，透出页面背景色块
- * - 左上斜向高光层（液态感来源）
- * - 1px 渐变描边模拟玻璃边缘反光
+ * - 页面提供了 [LocalGlassHazeState]（API 31+）：真实 backdrop blur 磨砂 + 白色提亮，透出滚动内容
+ * - 未提供（或低版本自动降级）：半透明白底拟玻璃
+ * - 共同点：左上斜向高光层 + 1px 渐变描边
  *
  * 内容文字需使用深色（见 [LiquidGlassColors]），玻璃上不要放白色正文。
  */
@@ -39,10 +49,25 @@ fun LiquidGlassCard(
     shape: Shape = RoundedCornerShape(GymLogRadii.panel),
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val hazeState = LocalGlassHazeState.current
     Column(
         modifier = modifier
             .clip(shape)
-            .background(GlassFill)
+            .then(
+                if (hazeState != null) {
+                    Modifier.hazeBlur(
+                        input = HazeInput.Sources(hazeState),
+                        style = HazeBlurStyle {
+                            blurRadius(28.dp)
+                            tints += HazeTint(Color(0xFFF4F7FB).copy(alpha = 0.55f))
+                            // 磨砂颗粒：噪点是"砂"的关键，比模糊本身更能带来磨砂质感
+                            noiseFactor(0.18f)
+                        },
+                    )
+                } else {
+                    Modifier.background(GlassFill)
+                },
+            )
             .drawBehind {
                 // 左上 45° 斜向高光
                 drawRect(

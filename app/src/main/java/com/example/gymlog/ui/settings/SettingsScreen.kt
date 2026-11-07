@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,6 +53,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,9 +76,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.chrisbanes.haze.hazeSource
+import com.chrisbanes.haze.rememberHazeState
 import com.example.gymlog.R
 import com.example.gymlog.data.Gender
 import com.example.gymlog.data.MineDurationUnit
+import com.example.gymlog.ui.theme.GlassBackdropBlobs
+import com.example.gymlog.ui.theme.LocalGlassHazeState
 import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
@@ -108,10 +115,17 @@ fun MineScreen(
             )
         },
     ) { innerPadding ->
-        LazyColumn(
+        val hazeState = rememberHazeState()
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .hazeSource(hazeState),
+        ) {
+            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
+            CompositionLocalProvider(LocalGlassHazeState provides hazeState) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -165,6 +179,8 @@ fun MineScreen(
                         ),
                     ),
                 )
+            }
+        }
             }
         }
     }

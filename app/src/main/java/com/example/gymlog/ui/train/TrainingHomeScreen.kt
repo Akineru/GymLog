@@ -42,8 +42,15 @@ import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
+import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.LiquidGlassCard
 import com.example.gymlog.ui.theme.LiquidGlassColors
+import com.example.gymlog.ui.theme.LocalGlassHazeState
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.CompositionLocalProvider
+import com.chrisbanes.haze.hazeSource
+import com.chrisbanes.haze.rememberHazeState
 
 data class ActiveWorkoutUi(
     val durationMillis: Long,
@@ -69,28 +76,37 @@ fun TrainingHomeScreen(
             )
         },
     ) { innerPadding ->
-        LazyColumn(
+        val hazeState = rememberHazeState()
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(
-                start = GymLogSpacing.md,
-                end = GymLogSpacing.md,
-                top = GymLogSpacing.sm,
-                bottom = GymLogSpacing.xl,
-            ),
-            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+                .padding(innerPadding)
+                .hazeSource(hazeState),
         ) {
-            if (!hasActiveWorkout) {
-                item(key = "start") {
-                    StartTrainingCard(onStartTraining = onStartTraining)
+            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
+            CompositionLocalProvider(LocalGlassHazeState provides hazeState) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = GymLogSpacing.md,
+                        end = GymLogSpacing.md,
+                        top = GymLogSpacing.sm,
+                        bottom = GymLogSpacing.xl,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+                ) {
+                    if (!hasActiveWorkout) {
+                        item(key = "start") {
+                            StartTrainingCard(onStartTraining = onStartTraining)
+                        }
+                    }
+                    item(key = "library") {
+                        LibraryCard(onOpenLibrary = onOpenLibrary)
+                    }
+                    item(key = "timer-tool") {
+                        TrainingTimerToolCard(onOpenTimer = onOpenTimer)
+                    }
                 }
-            }
-            item(key = "library") {
-                LibraryCard(onOpenLibrary = onOpenLibrary)
-            }
-            item(key = "timer-tool") {
-                TrainingTimerToolCard(onOpenTimer = onOpenTimer)
             }
         }
     }
