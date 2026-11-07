@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -1210,14 +1211,8 @@ private fun RootTabBar(
         Triple(RootTab.Mine, Icons.Filled.Person, stringResource(R.string.tab_mine)),
     )
     val itemHeight = 48.dp
-    val itemWidth = 64.8.dp // (336dp 胶囊 - 12dp 内边距) / 5 格，与 weight 均分严格一致
-    val itemWidthPx = with(LocalDensity.current) { itemWidth.toPx() }
     var dragTotalDx by remember { mutableStateOf(0f) }
-    val sliderX by animateDpAsState(
-        targetValue = itemWidth * selected.ordinal,
-        animationSpec = tween(260),
-        label = "nav-slider-x",
-    )
+    var cellWidthPx by remember { mutableStateOf(0f) }
 
     Box(
         modifier = modifier
@@ -1257,7 +1252,7 @@ private fun RootTabBar(
                         dragTotalDx += amount
                     },
                     onDragEnd = {
-                        val steps = (dragTotalDx / (itemWidthPx * 0.75f)).roundToInt()
+                        val steps = (dragTotalDx / (cellWidthPx * 0.75f).coerceAtLeast(1f)).roundToInt()
                             .coerceIn(-2, 2)
                         dragTotalDx = 0f
                         if (steps != 0) {
@@ -1269,10 +1264,17 @@ private fun RootTabBar(
                     },
                 )
             }
-            .width(336.dp)
             .padding(6.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
+        BoxWithConstraints {
+            // 格宽 = 胶囊实际内宽 / 5，任何屏宽下滑块与图标严格对齐
+            val itemWidth = maxWidth / tabs.size
+            val sliderX by animateDpAsState(
+                targetValue = itemWidth * selected.ordinal,
+                animationSpec = tween(260),
+                label = "nav-slider-x",
+            )
         // 选中滑块（品牌蓝渐变胶囊，随选中页动画平移）
         Box(
             modifier = Modifier
@@ -1293,7 +1295,11 @@ private fun RootTabBar(
                 ),
         )
         // 图标（无文字标签，等分宽度保证间距均匀）
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onSizeChanged { cellWidthPx = it.width / tabs.size.toFloat() },
+        ) {
             tabs.forEach { (tab, icon, label) ->
                 val isSelected = tab == selected
                 Box(
@@ -1314,6 +1320,7 @@ private fun RootTabBar(
                     )
                 }
             }
+        }
         }
     }
 }
