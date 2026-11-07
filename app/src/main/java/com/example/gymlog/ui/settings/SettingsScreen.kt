@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,6 +50,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +78,7 @@ import kotlinx.coroutines.withContext
 import com.example.gymlog.R
 import com.example.gymlog.data.Gender
 import com.example.gymlog.data.MineDurationUnit
+import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
@@ -101,13 +104,18 @@ fun MineScreen(
     var showBodyWeight by remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_mine)) },
                 actions = { SettingsTopBarAction(onOpenSettings) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },
     ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 流体色块铺满全屏（含顶栏与底部导航后方）
+            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -166,6 +174,7 @@ fun MineScreen(
                     ),
                 )
             }
+        }
         }
     }
     if (editingProfile) {

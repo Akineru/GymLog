@@ -23,15 +23,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
 import com.example.gymlog.ui.settings.SettingsTopBarAction
+import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 
@@ -46,13 +49,18 @@ fun ProgressScreen(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_progress)) },
                 actions = { SettingsTopBarAction(onOpenSettings) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },
     ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 流体色块铺满全屏（含顶栏与底部导航后方）
+            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,6 +85,7 @@ fun ProgressScreen(
                     onClick = onOpenBodyTrend,
                 )
             }
+        }
         }
     }
 }

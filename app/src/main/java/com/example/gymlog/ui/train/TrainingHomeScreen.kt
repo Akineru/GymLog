@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
 import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.ui.settings.SettingsTopBarAction
+import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
@@ -62,35 +64,41 @@ fun TrainingHomeScreen(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_train)) },
                 actions = { SettingsTopBarAction(onOpenSettings) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(
-                start = GymLogSpacing.md,
-                end = GymLogSpacing.md,
-                top = GymLogSpacing.sm,
-                bottom = GymLogSpacing.xl,
-            ),
-            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
-        ) {
-            if (!hasActiveWorkout) {
-                item(key = "start") {
-                    StartTrainingCard(onStartTraining = onStartTraining)
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 流体色块铺满全屏（含顶栏与底部导航后方），玻璃卡片有颜色可透
+            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(
+                    start = GymLogSpacing.md,
+                    end = GymLogSpacing.md,
+                    top = GymLogSpacing.sm,
+                    bottom = GymLogSpacing.xl,
+                ),
+                verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+            ) {
+                if (!hasActiveWorkout) {
+                    item(key = "start") {
+                        StartTrainingCard(onStartTraining = onStartTraining)
+                    }
                 }
-            }
-            item(key = "library") {
-                LibraryCard(onOpenLibrary = onOpenLibrary)
-            }
-            item(key = "timer-tool") {
-                TrainingTimerToolCard(onOpenTimer = onOpenTimer)
+                item(key = "library") {
+                    LibraryCard(onOpenLibrary = onOpenLibrary)
+                }
+                item(key = "timer-tool") {
+                    TrainingTimerToolCard(onOpenTimer = onOpenTimer)
+                }
             }
         }
     }

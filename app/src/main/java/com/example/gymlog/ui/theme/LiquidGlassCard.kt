@@ -51,6 +51,50 @@ internal val BackdropBlobs = listOf(
 )
 
 /**
+ * 共享玻璃表面：磨砂色块场 + 白色提亮 + 斜向高光 + 渐变描边。
+ * LiquidGlassCard 与 GymLogCard 共用，保证全 app 卡片材质一致。
+ */
+@Composable
+internal fun Modifier.glassSurface(shape: Shape): Modifier {
+    val configuration = LocalConfiguration.current
+    val screenWDp = configuration.screenWidthDp.toFloat()
+    val screenHDp = configuration.screenHeightDp.toFloat()
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    return this
+        .onGloballyPositioned { origin = it.positionInRoot() }
+        .clip(shape)
+        .drawBehind {
+            drawFrostedBackdrop(origin, screenWDp, screenHDp)
+            // 白色提亮层
+            drawRect(GlassTint)
+            // 左上 45° 斜向高光
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.50f),
+                        Color.White.copy(alpha = 0.10f),
+                        Color.Transparent,
+                    ),
+                    start = Offset.Zero,
+                    end = Offset(size.width * 0.55f, size.height * 0.55f),
+                ),
+            )
+        }
+        .border(
+            width = 1.dp,
+            brush = Brush.linearGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.95f),
+                    Color.White.copy(alpha = 0.25f),
+                    Color.White.copy(alpha = 0.10f),
+                    Color.White.copy(alpha = 0.60f),
+                ),
+            ),
+            shape = shape,
+        )
+}
+
+/**
  * 液态磨砂玻璃卡片（自研实现，无第三方依赖）。
  *
  * 原理：卡片知道自己在全屏中的位置后，在内部按同样的布局画一份
@@ -66,45 +110,8 @@ fun LiquidGlassCard(
     shape: Shape = RoundedCornerShape(GymLogRadii.panel),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWDp = configuration.screenWidthDp.toFloat()
-    val screenHDp = configuration.screenHeightDp.toFloat()
-
-    var cardOrigin by remember { mutableStateOf(Offset.Zero) }
-
     Column(
-        modifier = modifier
-            .onGloballyPositioned { cardOrigin = it.positionInRoot() }
-            .clip(shape)
-            .drawBehind {
-                drawFrostedBackdrop(cardOrigin, screenWDp, screenHDp)
-                // 白色提亮层
-                drawRect(GlassTint)
-                // 左上 45° 斜向高光
-                drawRect(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.50f),
-                            Color.White.copy(alpha = 0.10f),
-                            Color.Transparent,
-                        ),
-                        start = Offset.Zero,
-                        end = Offset(size.width * 0.55f, size.height * 0.55f),
-                    ),
-                )
-            }
-            .border(
-                width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.95f),
-                        Color.White.copy(alpha = 0.25f),
-                        Color.White.copy(alpha = 0.10f),
-                        Color.White.copy(alpha = 0.60f),
-                    ),
-                ),
-                shape = shape,
-            ),
+        modifier = modifier.glassSurface(shape),
         content = content,
     )
 }
