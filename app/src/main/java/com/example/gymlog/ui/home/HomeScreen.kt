@@ -38,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -139,23 +140,29 @@ fun HomeScreen(
     }
     val showingCurrentPeriod = range == currentPeriod
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.home_title)) },
-                actions = { SettingsTopBarAction(onOpenSettings) },
-            )
-        },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            // 低饱和流体色块：给玻璃卡片提供可折射的背景颜色
-            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
-            LazyColumn(
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 流体色块铺满全屏（含状态栏和顶栏后面），顶栏透明后与背景融为一体
+        GlassBackdropBlobs(modifier = Modifier.matchParentSize())
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.home_title)) },
+                    actions = { SettingsTopBarAction(onOpenSettings) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
+                    ),
+                )
+            },
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
@@ -221,6 +228,7 @@ fun HomeScreen(
                 }
             }
             }
+        }
         }
     }
 }
