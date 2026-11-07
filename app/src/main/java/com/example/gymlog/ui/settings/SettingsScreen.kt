@@ -78,7 +78,6 @@ import kotlinx.coroutines.withContext
 import com.example.gymlog.R
 import com.example.gymlog.data.Gender
 import com.example.gymlog.data.MineDurationUnit
-import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.glassSurface
 import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
@@ -115,8 +114,6 @@ fun MineScreen(
         },
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // 流体色块铺满全屏（含顶栏与底部导航后方）
-            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

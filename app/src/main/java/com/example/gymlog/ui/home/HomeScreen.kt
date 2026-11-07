@@ -74,7 +74,6 @@ import com.example.gymlog.ui.theme.GymLogNumberText
 import com.example.gymlog.ui.theme.GymLogSecondaryButton
 import com.example.gymlog.ui.theme.BrandAccent
 import com.example.gymlog.ui.theme.GymLogSpacing
-import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.LiquidGlassCard
 import com.example.gymlog.ui.theme.LiquidGlassColors
 
@@ -141,8 +140,6 @@ fun HomeScreen(
     val showingCurrentPeriod = range == currentPeriod
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // 流体色块铺满全屏（含状态栏和顶栏后面），顶栏透明后与背景融为一体
-        GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,

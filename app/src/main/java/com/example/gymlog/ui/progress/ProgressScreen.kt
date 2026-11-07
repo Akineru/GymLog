@@ -34,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
 import com.example.gymlog.ui.settings.SettingsTopBarAction
-import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 
@@ -59,8 +58,6 @@ fun ProgressScreen(
         },
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // 流体色块铺满全屏（含顶栏与底部导航后方）
-            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

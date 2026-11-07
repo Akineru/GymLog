@@ -615,6 +615,8 @@ fun GymLogApp(
     val isRoot = screen.isRoot
 
     Box(Modifier.fillMaxSize()) {
+        // 全 app 唯一的流体色块层：铺满整屏（含顶栏与底部导航后方），各 tab 页不再自绘
+        GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         Box(
             Modifier
                 .fillMaxSize()
@@ -1427,7 +1429,6 @@ private fun HistoryScreen(
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
-            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
