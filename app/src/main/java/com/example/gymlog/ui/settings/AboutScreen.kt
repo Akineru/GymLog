@@ -99,7 +99,6 @@ fun AboutScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.release_notes_title),
-                    subtitle = "查看每个版本的更新内容",
                     icon = Icons.Filled.Description,
                     onClick = onOpenReleaseNotes,
                 )

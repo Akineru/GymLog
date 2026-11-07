@@ -133,7 +133,6 @@
     <string name="release_notes_title">版本更新</string>
     <string name="release_notes_current">当前版本 %1$s</string>
     <string name="clear_data">清除本地数据</string>
-    <string name="clear_data_hint">删除训练记录、动作库和身体记录</string>
     <string name="clear_data_understand_title">清空本地数据？</string>
     <string name="clear_data_understand_message">会删除手机上的全部训练记录、动作库和个人身体记录。清空后内置动作会恢复，自定义动作不会保留。不能撤销。</string>
     <string name="clear_data_understand_confirm">我已了解</string>
@@ -340,7 +339,6 @@
     <string name="photo_wall_confirm_date">确认日期</string>
     <string name="photo_wall_date_value">日期 %1$s</string>
     <string name="photo_wall_opening">正在打开照片</string>
-    <string name="photo_wall_backup_note">数据备份不包含照片墙。导入或清除训练数据不会删除这里的照片。</string>
     <string name="mine_body_hint">记录身体数据，追踪变化趋势</string>
     <string name="body_record">身体记录</string>
     <string name="body_record_title">个人身体记录</string>

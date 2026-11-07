@@ -92,16 +92,8 @@ fun BackupDataScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
-                Text(
-                    text = stringResource(R.string.photo_wall_backup_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            item {
                 SettingsLinkRow(
                     title = stringResource(R.string.data_export),
-                    subtitle = "导出全部训练和身体数据",
                     icon = Icons.Filled.FileUpload,
                     enabled = !state.busy,
                     onClick = { exportLauncher.launch("gymlog-${today}.json") },
@@ -110,7 +102,6 @@ fun BackupDataScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.data_import),
-                    subtitle = "从 JSON 备份恢复数据",
                     icon = Icons.Filled.FileDownload,
                     enabled = !state.busy,
                     onClick = {
@@ -138,7 +129,6 @@ fun BackupDataScreen(
                     )
                     SettingsLinkRow(
                         title = "立即备份到本机",
-                        subtitle = autoLastText(state.autoLastAt),
                         icon = Icons.Filled.Backup,
                         enabled = !state.busy,
                         onClick = viewModel::autoBackupNow,
@@ -146,7 +136,6 @@ fun BackupDataScreen(
                     state.autoBackups.forEach { entry ->
                         SettingsLinkRow(
                             title = autoEntryText(entry),
-                            subtitle = "点击从此备份恢复（会覆盖当前数据）",
                             icon = Icons.Filled.FileDownload,
                             enabled = !state.busy,
                             onClick = { viewModel.requestRestore(entry) },
@@ -165,7 +154,6 @@ fun BackupDataScreen(
             item {
                 SettingsLinkRow(
                     title = stringResource(R.string.clear_data),
-                    subtitle = stringResource(R.string.clear_data_hint),
                     icon = Icons.Filled.DeleteOutline,
                     titleColor = MaterialTheme.colorScheme.error,
                     enabled = !clearState.busy,
@@ -322,11 +310,6 @@ private val today: String
     get() = LocalDate.now().toString()
 
 private val autoTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-
-private fun autoLastText(lastAt: Long?): String = when (lastAt) {
-    null -> "尚未备份，冷启动时会自动创建"
-    else -> "上次备份：" + autoTimeFormat.format(Date(lastAt)) + "，保留最近 3 份"
-}
 
 private fun autoEntryText(entry: AutoBackupManager.AutoBackupEntry): String =
     autoTimeFormat.format(Date(entry.exportedAt)) + "（" + "%.1f MB".format(entry.sizeBytes / 1024f / 1024f) + "）"
