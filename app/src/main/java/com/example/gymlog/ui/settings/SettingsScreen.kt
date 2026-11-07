@@ -79,6 +79,7 @@ import com.example.gymlog.R
 import com.example.gymlog.data.Gender
 import com.example.gymlog.data.MineDurationUnit
 import com.example.gymlog.ui.theme.GlassBackdropBlobs
+import com.example.gymlog.ui.theme.glassSurface
 import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
@@ -453,14 +454,11 @@ private fun DashboardCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Card(
+    Box(
         modifier = modifier
             .fillMaxWidth()
+            .glassSurface(dashboardCardShape())
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
     ) {
         content()
     }

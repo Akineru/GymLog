@@ -160,7 +160,7 @@ fun MineWeeklyChartCard(
                             if (selected) {
                                 MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.surfaceContainerHighest
+                                Color.White.copy(alpha = 0.55f)
                             },
                             RoundedCornerShape(50),
                         )
