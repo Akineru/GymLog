@@ -69,10 +69,11 @@ import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.theme.GymLogActionButton
-import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogNumberText
 import com.example.gymlog.ui.theme.GymLogSecondaryButton
 import com.example.gymlog.ui.theme.GymLogSpacing
+import com.example.gymlog.ui.theme.LiquidGlassCard
+import com.example.gymlog.ui.theme.LiquidGlassColors
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -86,6 +87,9 @@ private val monthDayFormatter: DateTimeFormatter =
 
 private val fullDateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy年M月d日", Locale.CHINA)
+
+/** 玻璃卡片上的品牌强调色（箭头、选中态） */
+private val GlassAccent = Color(0xFF4A6FD8)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,18 +146,23 @@ fun HomeScreen(
             )
         },
     ) { innerPadding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                top = 4.dp,
-                end = 16.dp,
-                bottom = 16.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // 低饱和流体色块：给玻璃卡片提供可折射的背景颜色
+            GlassBackdropBlobs(modifier = Modifier.matchParentSize())
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 4.dp,
+                    end = 16.dp,
+                    bottom = 16.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
             item(key = "subtitle") {
                 Text(
                     text = stringResource(
@@ -209,8 +218,67 @@ fun HomeScreen(
                     PartCard(group = group, onOpenSession = onOpenSession)
                 }
             }
+            }
         }
     }
+}
+
+/** 低饱和径向色块，模拟玻璃可透出的流体背景（不依赖 RenderEffect，全版本一致） */
+@Composable
+private fun GlassBackdropBlobs(modifier: Modifier = Modifier) {
+    Box(modifier) {
+        Blob(
+            color = Color(0xFF7FB4FF),
+            alpha = 0.45f,
+            size = 300.dp,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .offset(x = (-80).dp, y = (-60).dp),
+        )
+        Blob(
+            color = Color(0xFFFF9D6C),
+            alpha = 0.34f,
+            size = 250.dp,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = 70.dp, y = 40.dp),
+        )
+        Blob(
+            color = Color(0xFF69E0C3),
+            alpha = 0.30f,
+            size = 260.dp,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .offset(x = (-70).dp, y = 90.dp),
+        )
+        Blob(
+            color = Color(0xFFC78BFF),
+            alpha = 0.26f,
+            size = 240.dp,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .offset(x = 60.dp, y = (-40).dp),
+        )
+    }
+}
+
+@Composable
+private fun Blob(
+    color: Color,
+    alpha: Float,
+    size: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(color.copy(alpha = alpha), Color.Transparent),
+                ),
+            ),
+    )
 }
 
 @Composable
@@ -231,18 +299,11 @@ private fun OverviewCard(
         else -> R.string.home_duration_other
     }
     var volumeInTons by rememberSaveable { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                ),
-            )
-            .padding(start = 18.dp, end = 18.dp, top = 12.dp, bottom = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(9.dp),
-    ) {
+    LiquidGlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 12.dp, bottom = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(9.dp),
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -250,7 +311,7 @@ private fun OverviewCard(
                 Text(
                     text = stringResource(durationLabel),
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color(0xFFBBD0EC),
+                    color = LiquidGlassColors.inkMid,
                     modifier = Modifier.weight(1f),
                 )
                 RangeModeSwitch(mode = mode, onMode = onMode)
@@ -260,7 +321,7 @@ private fun OverviewCard(
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Normal,
                 ),
-                color = Color.White,
+                color = LiquidGlassColors.ink,
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -273,7 +334,7 @@ private fun OverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = stringResource(R.string.home_previous_period),
-                        tint = Color(0xFF8AB4FF),
+                        tint = GlassAccent,
                     )
                 }
                 Text(
@@ -284,7 +345,7 @@ private fun OverviewCard(
                     ),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFFBBD0EC),
+                    color = LiquidGlassColors.inkMid,
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(8.dp))
@@ -300,11 +361,11 @@ private fun OverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = stringResource(R.string.home_next_period),
-                        tint = Color(0xFF8AB4FF),
+                        tint = GlassAccent,
                     )
                 }
             }
-            HorizontalDivider(color = Color.White.copy(alpha = 0.14f))
+            HorizontalDivider(color = LiquidGlassColors.divider)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -341,6 +402,7 @@ private fun OverviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = Icons.Filled.PlayArrow,
             )
+        }
     }
 }
 
@@ -360,8 +422,8 @@ private fun RangeModeSwitch(
             .width(76.dp)
             .height(32.dp)
             .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.12f))
-            .border(1.dp, Color.White.copy(alpha = 0.16f), CircleShape)
+            .background(Color.White.copy(alpha = 0.45f))
+            .border(1.dp, Color.White.copy(alpha = 0.65f), CircleShape)
             .padding(2.dp),
     ) {
         Box(
@@ -393,7 +455,7 @@ private fun RangeModeSwitch(
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelLarge,
-                        color = if (selected) Color.White else Color(0xFFBBD0EC),
+                        color = if (selected) Color.White else LiquidGlassColors.inkMid,
                         fontWeight = if (selected) FontWeight.Normal else FontWeight.Normal,
                     )
                 }
@@ -422,7 +484,7 @@ private fun OverviewStat(
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color(0xFFBBD0EC),
+            color = LiquidGlassColors.inkSoft,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -433,7 +495,7 @@ private fun OverviewStat(
                     fontFeatureSettings = "tnum",
                     fontWeight = FontWeight.Normal,
                 ),
-                color = Color.White,
+                color = LiquidGlassColors.ink,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -441,7 +503,7 @@ private fun OverviewStat(
                 Text(
                     text = unit,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFBBD0EC),
+                    color = LiquidGlassColors.inkSoft,
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
@@ -462,7 +524,7 @@ private fun WeekCard(
 ) {
     val weekdays = stringArrayResource(R.array.home_weekdays)
     val currentWeek = weekStart == HomePeriod.weekStart(today)
-    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+    LiquidGlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -635,7 +697,7 @@ private fun EmptyDayCard(
     onOpenBody: () -> Unit,
     onOpenTrends: () -> Unit,
 ) {
-    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+    LiquidGlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -701,7 +763,7 @@ private fun PartCard(
     onOpenSession: (String) -> Unit,
 ) {
     val setCount = group.exercises.sumOf { it.setCount }
-    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+    LiquidGlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
