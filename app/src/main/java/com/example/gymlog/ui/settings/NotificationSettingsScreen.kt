@@ -138,11 +138,6 @@ fun NotificationSettingsScreen(
                                     },
                                 )
                             }
-                            Text(
-                                text = stringResource(R.string.notification_permission_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Row(
@@ -199,11 +194,6 @@ fun NotificationSettingsScreen(
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
-                            Text(
-                                text = stringResource(R.string.timer_end_notification_description),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
                         }
                         Switch(
                             checked = enabled,
@@ -215,14 +205,6 @@ fun NotificationSettingsScreen(
                         )
                     }
                 }
-            }
-            item {
-                Text(
-                    text = stringResource(R.string.notification_scope_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
             }
         }
     }

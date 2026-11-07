@@ -94,14 +94,6 @@ fun CalendarCustomColorsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
-                Text(
-                    text = stringResource(R.string.calendar_custom_colors_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
-            }
-            item {
                 GymLogCard(modifier = Modifier.fillMaxWidth()) {
                     Column {
                         CalendarColorCategory.entries.forEach { category ->

@@ -113,12 +113,6 @@ fun AppearanceSettingsScreen(
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
-                                    Text(
-                                        text = stringResource(R.string.wallpaper_colors_hint),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(top = 2.dp),
-                                    )
                                 }
                                 Switch(
                                     checked = appearance.useWallpaperColors,
@@ -138,14 +132,6 @@ fun AppearanceSettingsScreen(
                     ),
                     icon = Icons.Filled.Palette,
                     onClick = onOpenCalendarColors,
-                )
-            }
-            item {
-                Text(
-                    text = stringResource(R.string.calendar_colors_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
             }
         }

@@ -100,15 +100,6 @@ fun CalendarColorSettingsScreen(
                                 )
                             }
                         }
-                        Text(
-                            text = when (settings.mode) {
-                                CalendarColorMode.VIVID -> stringResource(R.string.calendar_colors_vivid_hint)
-                                CalendarColorMode.SOFT -> stringResource(R.string.calendar_colors_soft_hint)
-                                CalendarColorMode.CUSTOM -> stringResource(R.string.calendar_colors_custom_hint)
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                     }
                 }
             }
@@ -151,19 +142,10 @@ fun CalendarColorSettingsScreen(
                 item {
                     SettingsLinkRow(
                         title = stringResource(R.string.calendar_custom_colors_title),
-                        subtitle = stringResource(R.string.calendar_custom_colors_hint),
                         icon = Icons.Filled.Palette,
                         onClick = onOpenCustom,
                     )
                 }
-            }
-            item {
-                Text(
-                    text = stringResource(R.string.calendar_colors_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
             }
         }
     }
