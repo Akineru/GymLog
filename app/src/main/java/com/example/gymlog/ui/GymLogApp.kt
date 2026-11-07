@@ -1208,7 +1208,7 @@ private fun RootTabBar(
         Triple(RootTab.Mine, Icons.Filled.Person, stringResource(R.string.tab_mine)),
     )
     val itemHeight = 48.dp
-    val itemWidth = 57.6.dp // (300dp 胶囊 - 12dp 内边距) / 5 格，与 weight 均分严格一致
+    val itemWidth = 64.8.dp // (336dp 胶囊 - 12dp 内边距) / 5 格，与 weight 均分严格一致
     val itemWidthPx = with(LocalDensity.current) { itemWidth.toPx() }
     var dragTotalDx by remember { mutableStateOf(0f) }
     val sliderX by animateDpAsState(
@@ -1219,7 +1219,7 @@ private fun RootTabBar(
 
     Box(
         modifier = modifier
-            .padding(start = 24.dp, end = 24.dp, bottom = 14.dp)
+            .padding(start = 24.dp, end = 24.dp, bottom = 30.dp)
             .systemGestureExclusion()
             .clip(RoundedCornerShape(999.dp))
             .background(Color.White.copy(alpha = 0.55f))
@@ -1267,7 +1267,7 @@ private fun RootTabBar(
                     },
                 )
             }
-            .width(300.dp)
+            .width(336.dp)
             .padding(6.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -1351,7 +1351,7 @@ private fun CalendarTopBar(
     onToday: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    Surface(color = MaterialTheme.colorScheme.surface) {
+    Surface(color = Color.Transparent) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1413,7 +1413,7 @@ private fun HistoryScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Color.Transparent,
         topBar = {
             CalendarTopBar(
                 onToday = {
@@ -1425,13 +1425,13 @@ private fun HistoryScreen(
         },
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
         ) {
             GlassBackdropBlobs(modifier = Modifier.matchParentSize())
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
