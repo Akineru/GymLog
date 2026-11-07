@@ -40,6 +40,8 @@ import com.example.gymlog.data.partVolumes
 import com.example.gymlog.ui.theme.BrandBlue
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.Ink
+import com.example.gymlog.ui.theme.LiquidGlassCard
+import com.example.gymlog.ui.theme.LiquidGlassColors
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -114,45 +116,39 @@ fun CalendarMonthOverview(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(18.dp))
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                    ),
-                )
-                .padding(horizontal = 14.dp, vertical = 13.dp),
-            verticalArrangement = Arrangement.spacedBy(11.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+        LiquidGlassCard(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
+                verticalArrangement = Arrangement.spacedBy(11.dp),
             ) {
-                Text(
-                    text = "本月训练",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color(0xFFBBD0EC),
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = "${month.atDay(1).format(dayFormatter)} — ${month.atEndOfMonth().format(dayFormatter)}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color(0xFFBBD0EC),
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                MonthStat("训练次数", trainingCount.toString(), Modifier.weight(1f))
-                MonthStat("总组数", setCount.toString(), Modifier.weight(1f))
-                MonthStat(
-                    "总容量",
-                    String.format(Locale.US, "%.1f t", volumeKg / 1_000.0),
-                    Modifier.weight(1f),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "本月训练",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = LiquidGlassColors.inkMid,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = "${month.atDay(1).format(dayFormatter)} — ${month.atEndOfMonth().format(dayFormatter)}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = LiquidGlassColors.inkSoft,
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                ) {
+                    MonthStat("训练次数", trainingCount.toString(), Modifier.weight(1f))
+                    MonthStat("总组数", setCount.toString(), Modifier.weight(1f))
+                    MonthStat(
+                        "总容量",
+                        String.format(Locale.US, "%.1f t", volumeKg / 1_000.0),
+                        Modifier.weight(1f),
+                    )
+                }
             }
         }
         GymLogCard(modifier = Modifier.fillMaxWidth()) {
@@ -224,14 +220,14 @@ private fun MonthStat(label: String, value: String, modifier: Modifier) {
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
-            color = Color.White,
+            color = LiquidGlassColors.ink,
             fontWeight = FontWeight.Normal,
             maxLines = 1,
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFFBBD0EC),
+            color = LiquidGlassColors.inkSoft,
             maxLines = 1,
         )
     }

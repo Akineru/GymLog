@@ -71,7 +71,9 @@ import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogNumberText
 import com.example.gymlog.ui.theme.GymLogSecondaryButton
+import com.example.gymlog.ui.theme.ActionOrange
 import com.example.gymlog.ui.theme.GymLogSpacing
+import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.LiquidGlassCard
 import com.example.gymlog.ui.theme.LiquidGlassColors
 
@@ -88,8 +90,8 @@ private val monthDayFormatter: DateTimeFormatter =
 private val fullDateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy年M月d日", Locale.CHINA)
 
-/** 玻璃卡片上的品牌强调色（箭头、选中态） */
-private val GlassAccent = Color(0xFF4A6FD8)
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -223,64 +225,6 @@ fun HomeScreen(
     }
 }
 
-/** 低饱和径向色块，模拟玻璃可透出的流体背景（不依赖 RenderEffect，全版本一致） */
-@Composable
-private fun GlassBackdropBlobs(modifier: Modifier = Modifier) {
-    Box(modifier) {
-        Blob(
-            color = Color(0xFF7FB4FF),
-            alpha = 0.45f,
-            size = 300.dp,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = (-80).dp, y = (-60).dp),
-        )
-        Blob(
-            color = Color(0xFFFF9D6C),
-            alpha = 0.34f,
-            size = 250.dp,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = 70.dp, y = 40.dp),
-        )
-        Blob(
-            color = Color(0xFF69E0C3),
-            alpha = 0.30f,
-            size = 260.dp,
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .offset(x = (-70).dp, y = 90.dp),
-        )
-        Blob(
-            color = Color(0xFFC78BFF),
-            alpha = 0.26f,
-            size = 240.dp,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 60.dp, y = (-40).dp),
-        )
-    }
-}
-
-@Composable
-private fun Blob(
-    color: Color,
-    alpha: Float,
-    size: androidx.compose.ui.unit.Dp,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(color.copy(alpha = alpha), Color.Transparent),
-                ),
-            ),
-    )
-}
-
 @Composable
 private fun OverviewCard(
     mode: HomeRangeMode,
@@ -334,7 +278,7 @@ private fun OverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = stringResource(R.string.home_previous_period),
-                        tint = GlassAccent,
+                        tint = ActionOrange,
                     )
                 }
                 Text(
@@ -361,7 +305,7 @@ private fun OverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = stringResource(R.string.home_next_period),
-                        tint = GlassAccent,
+                        tint = ActionOrange,
                     )
                 }
             }
@@ -433,7 +377,7 @@ private fun RangeModeSwitch(
                 .width(36.dp)
                 .fillMaxHeight()
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
+                .background(ActionOrange),
         )
         Row(modifier = Modifier.fillMaxSize()) {
             listOf(
@@ -567,7 +511,7 @@ private fun WeekCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = ActionOrange,
                         modifier = Modifier.size(18.dp),
                     )
                 }
@@ -617,10 +561,10 @@ private fun WeekDay(
                 .padding(top = 4.dp)
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                .background(if (selected) ActionOrange else Color.Transparent)
                 .then(
                     if (today && !selected) {
-                        Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                        Modifier.border(1.dp, ActionOrange, CircleShape)
                     } else {
                         Modifier
                     },
@@ -644,7 +588,7 @@ private fun WeekDay(
                 .size(5.dp)
                 .clip(CircleShape)
                 .background(
-                    if (trained) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    if (trained) ActionOrange else Color.Transparent,
                 ),
         )
     }
@@ -718,7 +662,7 @@ private fun EmptyDayCard(
                     Icon(
                         imageVector = Icons.Filled.FitnessCenter,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = ActionOrange,
                         modifier = Modifier.size(20.dp),
                     )
                 }
@@ -830,7 +774,7 @@ private fun ExerciseTile(
             Icon(
                 imageVector = Icons.Filled.FitnessCenter,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = ActionOrange,
                 modifier = Modifier.size(16.dp),
             )
             Text(

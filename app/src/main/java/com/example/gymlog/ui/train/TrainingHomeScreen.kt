@@ -42,6 +42,8 @@ import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
+import com.example.gymlog.ui.theme.LiquidGlassCard
+import com.example.gymlog.ui.theme.LiquidGlassColors
 
 data class ActiveWorkoutUi(
     val durationMillis: Long,
@@ -242,29 +244,23 @@ fun ActiveWorkoutMiniBar(
 
 @Composable
 private fun StartTrainingCard(onStartTraining: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                ),
+    LiquidGlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
+        ) {
+            Text(
+                text = stringResource(R.string.train_hero_title),
+                style = MaterialTheme.typography.headlineSmall,
+                color = LiquidGlassColors.inkMid,
             )
-            .padding(horizontal = 20.dp, vertical = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(GymLogSpacing.sm),
-    ) {
-        Text(
-            text = stringResource(R.string.train_hero_title),
-            style = MaterialTheme.typography.headlineSmall,
-            color = Color(0xFFBBD0EC),
-        )
-        GymLogActionButton(
-            text = stringResource(R.string.home_start_training),
-            onClick = onStartTraining,
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = Icons.Filled.PlayArrow,
-        )
+            GymLogActionButton(
+                text = stringResource(R.string.home_start_training),
+                onClick = onStartTraining,
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Filled.PlayArrow,
+            )
+        }
     }
 }
 

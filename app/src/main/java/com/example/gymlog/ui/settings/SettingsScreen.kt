@@ -80,6 +80,9 @@ import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
 import com.example.gymlog.ui.theme.dashboardCardShape
+import com.example.gymlog.ui.theme.ActionOrange
+import com.example.gymlog.ui.theme.LiquidGlassCard
+import com.example.gymlog.ui.theme.LiquidGlassColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,15 +200,9 @@ private fun ProfileStatsCard(
     val bodyValue = if (showBodyWeight) state.bodyWeightText else state.bodyFatText
     val durationValue = if (durationInMinutes) state.durationMinutesValue else state.durationValue
     val durationUnit = if (durationInMinutes) MineDurationUnit.MINUTE else state.durationUnit
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                ),
-            ),
+    LiquidGlassCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
     ) {
         Row(
             modifier = Modifier
@@ -228,7 +225,7 @@ private fun ProfileStatsCard(
                     Text(
                         text = name ?: stringResource(R.string.mine_profile_title),
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
+                        color = LiquidGlassColors.ink,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -254,7 +251,7 @@ private fun ProfileStatsCard(
                         else -> genderLabel(gender)
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFFBBD0EC),
+                    color = LiquidGlassColors.inkMid,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 2.dp),
@@ -263,14 +260,14 @@ private fun ProfileStatsCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Color(0xFFBBD0EC),
+                tint = LiquidGlassColors.inkSoft,
             )
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color.White.copy(alpha = 0.16f)),
+                .background(LiquidGlassColors.divider),
         )
         Row(
             modifier = Modifier
@@ -324,7 +321,7 @@ private fun StatsDivider() {
         modifier = Modifier
             .width(1.dp)
             .height(38.dp)
-            .background(Color.White.copy(alpha = 0.14f)),
+            .background(LiquidGlassColors.divider),
     )
 }
 
@@ -346,13 +343,13 @@ private fun DarkStatItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF9FC4FF),
+            tint = ActionOrange,
             modifier = Modifier.size(20.dp),
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color(0xFFBBD0EC),
+            color = LiquidGlassColors.inkSoft,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -370,7 +367,7 @@ private fun DarkStatItem(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontFeatureSettings = "tnum",
                 ),
-                color = Color.White,
+                color = LiquidGlassColors.ink,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 softWrap = false,
@@ -380,7 +377,7 @@ private fun DarkStatItem(
                 Text(
                     text = unit,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFD6E4F5),
+                    color = LiquidGlassColors.inkSoft,
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
@@ -419,7 +416,7 @@ private fun QuickEntryGrid(entries: List<QuickEntry>) {
                                 Icon(
                                     imageVector = entry.icon,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = ActionOrange,
                                 )
                             }
                             Text(
@@ -516,7 +513,7 @@ private fun AvatarImage(
             Icon(
                 imageVector = Icons.Filled.Person,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = ActionOrange,
                 modifier = Modifier.size(32.dp),
             )
         }
