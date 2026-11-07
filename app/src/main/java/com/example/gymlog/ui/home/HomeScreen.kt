@@ -72,7 +72,7 @@ import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogNumberText
 import com.example.gymlog.ui.theme.GymLogSecondaryButton
-import com.example.gymlog.ui.theme.ActionOrange
+import com.example.gymlog.ui.theme.BrandAccent
 import com.example.gymlog.ui.theme.GymLogSpacing
 import com.example.gymlog.ui.theme.GlassBackdropBlobs
 import com.example.gymlog.ui.theme.LiquidGlassCard
@@ -286,7 +286,7 @@ private fun OverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = stringResource(R.string.home_previous_period),
-                        tint = ActionOrange,
+                        tint = BrandAccent,
                     )
                 }
                 Text(
@@ -313,7 +313,7 @@ private fun OverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = stringResource(R.string.home_next_period),
-                        tint = ActionOrange,
+                        tint = BrandAccent,
                     )
                 }
             }
@@ -385,7 +385,7 @@ private fun RangeModeSwitch(
                 .width(36.dp)
                 .fillMaxHeight()
                 .clip(CircleShape)
-                .background(ActionOrange),
+                .background(BrandAccent),
         )
         Row(modifier = Modifier.fillMaxSize()) {
             listOf(
@@ -519,7 +519,7 @@ private fun WeekCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
-                        tint = ActionOrange,
+                        tint = BrandAccent,
                         modifier = Modifier.size(18.dp),
                     )
                 }
@@ -569,10 +569,10 @@ private fun WeekDay(
                 .padding(top = 4.dp)
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(if (selected) ActionOrange else Color.Transparent)
+                .background(if (selected) BrandAccent else Color.Transparent)
                 .then(
                     if (today && !selected) {
-                        Modifier.border(1.dp, ActionOrange, CircleShape)
+                        Modifier.border(1.dp, BrandAccent, CircleShape)
                     } else {
                         Modifier
                     },
@@ -596,7 +596,7 @@ private fun WeekDay(
                 .size(5.dp)
                 .clip(CircleShape)
                 .background(
-                    if (trained) ActionOrange else Color.Transparent,
+                    if (trained) BrandAccent else Color.Transparent,
                 ),
         )
     }
@@ -670,7 +670,7 @@ private fun EmptyDayCard(
                     Icon(
                         imageVector = Icons.Filled.FitnessCenter,
                         contentDescription = null,
-                        tint = ActionOrange,
+                        tint = BrandAccent,
                         modifier = Modifier.size(20.dp),
                     )
                 }
@@ -782,7 +782,7 @@ private fun ExerciseTile(
             Icon(
                 imageVector = Icons.Filled.FitnessCenter,
                 contentDescription = null,
-                tint = ActionOrange,
+                tint = BrandAccent,
                 modifier = Modifier.size(16.dp),
             )
             Text(

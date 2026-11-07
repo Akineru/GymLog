@@ -105,7 +105,7 @@ fun GymLogActionButton(
         modifier = modifier.heightIn(min = 48.dp),
         shape = RoundedCornerShape(GymLogRadii.input),
         colors = ButtonDefaults.buttonColors(
-            containerColor = ActionOrange,
+            containerColor = BrandAccent,
             contentColor = Color.White,
         ),
     ) {

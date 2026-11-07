@@ -85,7 +85,7 @@ import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.PersonalRecordLogic
 import com.example.gymlog.data.displayName
 import com.example.gymlog.ui.muscle.MuscleFigure
-import com.example.gymlog.ui.theme.ActionOrange
+import com.example.gymlog.ui.theme.BrandAccent
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 
@@ -185,7 +185,7 @@ fun ExerciseLibraryScreen(
                         .padding(start = 8.dp)
                         .size(44.dp)
                         .clip(CircleShape)
-                        .background(ActionOrange),
+                        .background(BrandAccent),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,

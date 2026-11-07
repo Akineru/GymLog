@@ -80,7 +80,7 @@ import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
 import com.example.gymlog.ui.theme.dashboardCardShape
-import com.example.gymlog.ui.theme.ActionOrange
+import com.example.gymlog.ui.theme.BrandAccent
 import com.example.gymlog.ui.theme.LiquidGlassCard
 import com.example.gymlog.ui.theme.LiquidGlassColors
 
@@ -343,7 +343,7 @@ private fun DarkStatItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = ActionOrange,
+            tint = BrandAccent,
             modifier = Modifier.size(20.dp),
         )
         Text(
@@ -416,7 +416,7 @@ private fun QuickEntryGrid(entries: List<QuickEntry>) {
                                 Icon(
                                     imageVector = entry.icon,
                                     contentDescription = null,
-                                    tint = ActionOrange,
+                                    tint = BrandAccent,
                                 )
                             }
                             Text(
@@ -513,7 +513,7 @@ private fun AvatarImage(
             Icon(
                 imageVector = Icons.Filled.Person,
                 contentDescription = null,
-                tint = ActionOrange,
+                tint = BrandAccent,
                 modifier = Modifier.size(32.dp),
             )
         }

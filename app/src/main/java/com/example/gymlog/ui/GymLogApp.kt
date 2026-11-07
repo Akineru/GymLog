@@ -167,6 +167,22 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.draw.shadow
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.systemGestureExclusion
+import com.example.gymlog.ui.theme.BrandAccent
+import com.example.gymlog.ui.theme.BrandAccentSoft
+import kotlin.math.roundToInt
 
 private val dateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy年M月d日", Locale.CHINA)
@@ -604,7 +620,7 @@ fun GymLogApp(
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(bottom = measuredBarHeight)
+                .padding(bottom = (measuredBarHeight - 24.dp).coerceAtLeast(8.dp))
                 .consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
                 .then(if (isRoot) Modifier else Modifier.clearAndSetSemantics {}),
         ) {
@@ -1187,56 +1203,128 @@ private fun RootTabBar(
     onSelect: (RootTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val itemColors = NavigationBarItemDefaults.colors(
-        selectedIconColor = MaterialTheme.colorScheme.primary,
-        selectedTextColor = MaterialTheme.colorScheme.primary,
-        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    val tabs = listOf(
+        Triple(RootTab.Home, Icons.Filled.Home, stringResource(R.string.tab_home)),
+        Triple(RootTab.Calendar, Icons.Filled.CalendarMonth, stringResource(R.string.tab_calendar)),
+        Triple(RootTab.Train, Icons.Filled.FitnessCenter, stringResource(R.string.tab_train)),
+        Triple(RootTab.Progress, Icons.AutoMirrored.Filled.TrendingUp, stringResource(R.string.tab_progress)),
+        Triple(RootTab.Mine, Icons.Filled.Person, stringResource(R.string.tab_mine)),
     )
-    NavigationBar(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        tonalElevation = 0.dp,
+    val itemWidth = 56.dp
+    val itemHeight = 48.dp
+    val itemWidthPx = with(LocalDensity.current) { itemWidth.toPx() }
+    val scope = rememberCoroutineScope()
+    val slider = remember { Animatable(selected.ordinal.toFloat()) }
+    var dragItems by remember { mutableStateOf(0f) }
+    val liveItems = (slider.value + dragItems).coerceIn(0f, (tabs.size - 1).toFloat())
+
+    LaunchedEffect(selected) {
+        if (slider.targetValue != selected.ordinal.toFloat()) {
+            slider.animateTo(selected.ordinal.toFloat(), tween(240))
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .padding(horizontal = 24.dp)
+            .systemGestureExclusion()
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White.copy(alpha = 0.55f))
+            .drawBehind {
+                // 顶部斜向玻璃高光
+                drawRect(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.55f),
+                            Color.Transparent,
+                        ),
+                        start = Offset.Zero,
+                        end = Offset(size.width * 0.5f, size.height * 0.6f),
+                    ),
+                )
+            }
+            .border(
+                width = 1.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.95f),
+                        Color.White.copy(alpha = 0.3f),
+                        Color.White.copy(alpha = 0.6f),
+                    ),
+                ),
+                shape = RoundedCornerShape(999.dp),
+            )
+            .pointerInput(Unit) {
+                // 仅在导航栏胶囊内部横滑切页（跟手，松手落位）
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, amount ->
+                        change.consume()
+                        dragItems = (dragItems + amount / itemWidthPx)
+                            .coerceIn(-slider.value, (tabs.size - 1).toFloat() - slider.value)
+                    },
+                    onDragEnd = {
+                        // 现读最新状态（避免闭包捕获过期的 liveItems）
+                        val live = (slider.value + dragItems).coerceIn(0f, (tabs.size - 1).toFloat())
+                        val target = live.roundToInt().coerceIn(0, tabs.size - 1)
+                        dragItems = 0f
+                        scope.launch {
+                            if (target != selected.ordinal) {
+                                slider.snapTo(live)
+                                onSelect(tabs[target].first)
+                            } else {
+                                slider.animateTo(selected.ordinal.toFloat(), tween(240))
+                            }
+                        }
+                    },
+                )
+            }
+            .padding(6.dp),
+        contentAlignment = Alignment.CenterStart,
     ) {
-        NavigationBarItem(
-            selected = selected == RootTab.Home,
-            onClick = { onSelect(RootTab.Home) },
-            icon = { Icon(Icons.Filled.Home, contentDescription = null) },
-            label = { Text(stringResource(R.string.tab_home)) },
-            colors = itemColors,
+        // 选中滑块（品牌蓝渐变胶囊，横滑时跟手）
+        Box(
+            modifier = Modifier
+                .offset { IntOffset((liveItems * itemWidthPx).roundToInt(), 0) }
+                .width(itemWidth)
+                .height(itemHeight)
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    Brush.linearGradient(
+                        listOf(BrandAccentSoft, BrandAccent),
+                    ),
+                )
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(999.dp),
+                    ambientColor = Color(0x66000000),
+                    spotColor = Color(0x333B7DF8),
+                ),
         )
-        NavigationBarItem(
-            selected = selected == RootTab.Calendar,
-            onClick = { onSelect(RootTab.Calendar) },
-            icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
-            label = { Text(stringResource(R.string.tab_calendar)) },
-            colors = itemColors,
-        )
-        NavigationBarItem(
-            selected = selected == RootTab.Train,
-            onClick = { onSelect(RootTab.Train) },
-            icon = { Icon(Icons.Filled.FitnessCenter, contentDescription = null) },
-            label = { Text(stringResource(R.string.tab_train)) },
-            colors = itemColors,
-        )
-        NavigationBarItem(
-            selected = selected == RootTab.Progress,
-            onClick = { onSelect(RootTab.Progress) },
-            icon = { Icon(Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null) },
-            label = { Text(stringResource(R.string.tab_progress)) },
-            colors = itemColors,
-        )
-        NavigationBarItem(
-            selected = selected == RootTab.Mine,
-            onClick = { onSelect(RootTab.Mine) },
-            icon = { Icon(Icons.Filled.Person, contentDescription = null) },
-            label = { Text(stringResource(R.string.tab_mine)) },
-            colors = itemColors,
-        )
+        // 图标（无文字标签）
+        Row {
+            tabs.forEach { (tab, icon, label) ->
+                val isSelected = tab == selected
+                Box(
+                    modifier = Modifier
+                        .width(itemWidth)
+                        .height(itemHeight)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) { onSelect(tab) },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = label,
+                        tint = if (isSelected) Color.White else Color(0xFF5A6676),
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
+        }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeTopBar(

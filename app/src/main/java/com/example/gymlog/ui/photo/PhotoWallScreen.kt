@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
 import com.example.gymlog.data.PhotoWallEntity
-import com.example.gymlog.ui.theme.ActionOrange
+import com.example.gymlog.ui.theme.BrandAccent
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
@@ -113,7 +113,7 @@ fun PhotoWallScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { adding = true },
-                containerColor = ActionOrange,
+                containerColor = BrandAccent,
                 contentColor = androidx.compose.ui.graphics.Color.White,
             ) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.photo_wall_add))
