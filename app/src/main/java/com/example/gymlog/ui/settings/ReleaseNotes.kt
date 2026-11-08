@@ -17,6 +17,27 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.6.2",
+            date = "2026年11月8日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "液态磨砂玻璃界面",
+                    items = listOf(
+                        "全应用卡片升级为磨砂玻璃材质，背景流动色彩随页面贯通。",
+                        "悬浮玻璃导航栏，点按切换页面。",
+                        "品牌色焕新为钴蓝，视觉体系统一。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "字体与阅读体验",
+                    items = listOf(
+                        "接入 OPPO Sans 字体，标题更有分量、数字更利落。",
+                        "精简界面说明文字，页面更清爽。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.6.1",
             date = "2026年11月4日",
             sections = listOf(
