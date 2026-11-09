@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>别名卡片 · 编辑弹窗效果图</title>
+<style>
+  :root{
+    --page:#EDF2FC;
+    --card:#FFFFFF;
+    --muted:#EAF0F8;
+    --ink:#0B1220;
+    --ink2:#667085;
+    --line:#E1E7F0;
+    --accent:#3B7DF8;
+    --accent-ink:#12357A;
+    --accent-soft:#E8F0FF;
+    --danger:#C33B3B;
+    --font:"OPPO Sans","PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 600px at 12% -10%, #F7FAFF 0%, rgba(247,250,255,0) 60%),
+      radial-gradient(900px 520px at 92% 8%, #E6EEFB 0%, rgba(230,238,251,0) 55%),
+      var(--page);
+    min-height:100vh;
+    padding:40px 24px 64px;
+  }
+  .head{max-width:1180px;margin:0 auto 30px}
+  .head h1{font-size:22px;letter-spacing:.2px;margin:0 0 8px;font-weight:600}
+  .head p{margin:0;font-size:13.5px;line-height:1.75;color:var(--ink2);max-width:640px}
+  .head code{
+    font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;
+    background:#fff;border:1px solid var(--line);border-radius:6px;padding:1px 5px;color:#3A4658;
+  }
+  .stage{
+    max-width:1180px;margin:0 auto;
+    display:flex;flex-wrap:wrap;gap:40px 36px;justify-content:center;align-items:flex-start;
+  }
+  figure{margin:0;width:360px}
+  figcaption{
+    font-size:12.5px;color:#4B5A72;margin:0 0 12px;display:flex;align-items:center;gap:8px;
+    letter-spacing:.3px;
+  }
+  figcaption b{font-weight:600;color:var(--ink);font-size:13px}
+  .tag{
+    font-size:11px;padding:2px 7px;border-radius:20px;background:var(--accent-soft);color:var(--accent-ink);
+    border:1px solid #D5E3FF;
+  }
+
+  /* ---------- phone ---------- */
+  .phone{
+    position:relative;width:360px;height:740px;border-radius:38px;overflow:hidden;
+    background:var(--page);box-shadow:
+      0 1px 0 #fff inset,
+      0 2px 6px rgba(16,32,64,.06),
+      0 30px 60px -22px rgba(18,53,122,.34);
+    isolation:isolate;
+  }
+  .phone::after{ /* 陶瓷网格质感 */
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:
+      radial-gradient(560px 320px at 78% -6%, rgba(255,255,255,.85), rgba(255,255,255,0) 62%),
+      radial-gradient(420px 260px at 6% 104%, rgba(206,222,246,.55), rgba(206,222,246,0) 60%);
+  }
+  .status{
+    position:relative;z-index:3;height:44px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 22px;font-size:12.5px;font-weight:600;
+    color:#101B2B;letter-spacing:.2px;
+  }
+  .status .right{display:flex;align-items:center;gap:6px;font-size:11px;color:#22314A}
+  .bars{display:flex;gap:2px;align-items:flex-end;height:9px}
+  .bars i{display:block;width:2.5px;background:#22314A;border-radius:1px}
+  .bars i:nth-child(1){height:3px}.bars i:nth-child(2){height:5px}
+  .bars i:nth-child(3){height:7px}.bars i:nth-child(4){height:9px}
+  .batt{width:20px;height:10px;border:1.2px solid #22314A;border-radius:3px;position:relative}
+  .batt::before{content:"";position:absolute;inset:1.6px;right:5px;background:#22314A;border-radius:1.4px}
+  .batt::after{content:"";position:absolute;right:-3px;top:3px;width:1.6px;height:4px;background:#22314A;border-radius:0 1px 1px 0}
+
+  /* 背景页 */
+  .page{position:absolute;inset:0;z-index:2;padding:0 18px}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:52px}
+  .ic{width:22px;height:22px;stroke:#101B2B;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .tabs{display:flex;justify-content:space-between;padding:6px 26px 0;position:relative}
+  .tabs span{font-size:13.5px;color:#7C879B;padding-bottom:9px;position:relative}
+  .tabs span.on{color:var(--ink);font-weight:600}
+  .tabs span.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5px;border-radius:2px;background:var(--accent)}
+  .gif{height:150px;margin:14px 0 0;border-radius:18px;background:
+    linear-gradient(180deg,#F6F9FF,#EAF1FC);display:grid;place-items:center}
+  .gif div{width:64px;height:96px;border-radius:12px;background:
+    linear-gradient(160deg,#DCE6F7,#C9D8EF);opacity:.9}
+  .name{height:18px;width:130px;border-radius:5px;background:#DFE7F4;margin:14px 4px 10px}
+  .chips-row{display:flex;gap:8px;margin:0 4px}
+  .chips-row i{height:22px;width:56px;border-radius:20px;background:#fff;border:1px solid var(--line)}
+
+  /* 遮罩 + 弹窗 */
+  .scrim{position:absolute;inset:0;z-index:8;background:rgba(11,18,32,.42);backdrop-filter:blur(1.5px)}
+  .sheet{
+    position:absolute;z-index:9;left:16px;right:16px;top:150px;
+    background:var(--card);border-radius:24px;
+    box-shadow:0 24px 60px -18px rgba(9,20,44,.38), 0 2px 8px rgba(9,20,44,.10);
+    padding:20px 16px 14px;
+    display:flex;flex-direction:column;gap:0;
+  }
+  .sheet h2{font-size:18px;font-weight:600;margin:0 0 16px;letter-spacing:.2px}
+
+  .field{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+  .field-label{font-size:12.5px;color:var(--ink2);letter-spacing:.2px;display:flex;align-items:baseline;gap:8px}
+
+  /* 别名卡片区 */
+  .alias-wrap{
+    display:flex;flex-wrap:wrap;gap:8px;
+    padding:10px;border-radius:14px;background:#F5F8FD;
+    border:1px solid #E8EEF8;
+  }
+  .alias{
+    position:relative;display:inline-flex;align-items:center;
+    height:34px;padding:0 30px 0 12px;border-radius:11px;
+    background:#fff;border:1px solid #DCE5F2;
+    font-size:13px;color:#1D2A3D;letter-spacing:.1px;white-space:nowrap;
+    box-shadow:0 1px 2px rgba(18,53,122,.05);
+    transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+  }
+  .alias:hover{border-color:#C4D5EC}
+  .alias .x{
+    position:absolute;top:3px;right:3px;width:22px;height:22px;border:0;padding:0;
+    background:transparent;border-radius:50%;cursor:pointer;
+    display:grid;place-items:center;color:#9AA9BF;
+    transition:background .15s ease,color .15s ease;
+  }
+  .alias .x svg{width:8px;height:8px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round}
+  .alias .x:hover{background:#FCEBEB;color:var(--danger)}
+  .alias .x:active{transform:scale(.94)}
+
+  .add{
+    width:34px;height:34px;border-radius:11px;cursor:pointer;
+    border:1.5px dashed #B7CBE8;background:#EFF5FF;color:var(--accent);
+    display:grid;place-items:center;transition:background .15s ease,border-color .15s ease;
+  }
+  .add svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round}
+  .add:hover{background:#E5EFFF;border-color:#8FB4E8}
+
+  .new-alias{
+    height:34px;width:132px;border-radius:11px;border:1.5px solid var(--accent);
+    background:#fff;display:flex;align-items:center;padding:0 10px;gap:2px;
+    box-shadow:0 0 0 3px rgba(59,125,248,.12);
+  }
+  .new-alias input{
+    border:0;outline:0;background:transparent;width:100%;font-family:var(--font);
+    font-size:13px;color:var(--ink);padding:0;height:100%;
+  }
+  .new-alias input::placeholder{color:#A8B5C8}
+  .caret{width:1.5px;height:15px;background:var(--accent);animation:blink 1.1s steps(1) infinite;flex:none}
+  @keyframes blink{50%{opacity:0}}
+
+  .hint{font-size:11.5px;color:#93A0B4;letter-spacing:.2px;margin:8px 2px 0}
+  .hint.empty{color:#7C879B}
+
+  /* 空态：整行虚线按钮 */
+  .add-wide{
+    flex:1;height:34px;border-radius:11px;cursor:pointer;
+    border:1.5px dashed #B7CBE8;background:#EFF5FF;color:var(--accent);
+    display:grid;place-items:center;transition:background .15s ease,border-color .15s ease;
+  }
+  .add-wide svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round}
+  .add-wide:hover{background:#E5EFFF;border-color:#8FB4E8}
+
+  /* 其余字段 */
+  .box{
+    background:#F5F8FD;border-radius:12px;padding:10px 12px;
+    font-size:13px;line-height:1.75;color:#1D2A3D;
+  }
+  .box.ph{color:#A8B5C8}
+  .actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:14px}
+  .btn{border:0;font-family:var(--font);font-size:14px;padding:10px 20px;border-radius:11px;cursor:default}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.primary{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 6px 16px -6px rgba(59,125,248,.65)}
+
+  .note{
+    max-width:1180px;margin:44px auto 0;background:rgba(255,255,255,.72);
+    border:1px solid #E2E9F4;border-radius:16px;padding:18px 20px;
+    font-size:13px;line-height:1.85;color:#3A4658;
+  }
+  .note h3{margin:0 0 10px;font-size:13.5px;color:var(--ink);font-weight:600}
+  .note ul{margin:0;padding-left:18px}
+  .note li{margin:2px 0}
+  .note b{color:var(--ink)}
+  @media (max-width:840px){
+    body{padding:26px 14px 48px}
+    .stage{gap:34px}
+    figure,.phone{width:min(360px,calc(100vw - 28px))}
+    .sheet{left:14px;right:14px}
+  }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>编辑动作资料 · 别名改成卡片</h1>
+  <p>每个别名一张小卡，右上角 <code>×</code> 删除，末尾虚线 <code>＋</code> 新增。下面是可点的原型：点 × 真的会删，点 ＋ 会原地长出输入框，回车提交。</p>
+</div>
+
+<div class="stage">
+
+  <!-- 状态 A -->
+  <figure>
+    <figcaption><b>① 常态</b><span class="tag">3 个别名</span></figcaption>
+    <div class="phone">
+      <div class="status">
+        <span>15:22</span>
+        <span class="right">
+          <span>5G</span>
+          <span class="bars"><i></i><i></i><i></i><i></i></span>
+          <span class="batt"></span>
+        </span>
+      </div>
+      <div class="page">
+        <div class="nav">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="#101B2B" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="#101B2B" stroke="none"/><circle cx="12" cy="18.5" r="1.4" fill="#101B2B" stroke="none"/></svg>
+        </div>
+        <div class="tabs"><span class="on">总览</span><span>历史记录</span><span>要点</span></div>
+        <div class="gif"><div></div></div>
+        <div class="name"></div>
+        <div class="chips-row"><i></i><i></i></div>
+      </div>
+      <div class="scrim"></div>
+
+      <div class="sheet">
+        <h2>编辑动作资料</h2>
+        <div class="field">
+          <div class="field-label">别名</div>
+          <div class="alias-wrap" data-wrap>
+            <span class="alias">二头弯举<button class="x" aria-label="删除"><svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg></button></span>
+            <span class="alias">哑铃交替弯举<button class="x" aria-label="删除"><svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg></button></span>
+            <span class="alias">zqxcurl<button class="x" aria-label="删除"><svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg></button></span>
+            <button class="add" aria-label="新增别名"><svg viewBox="0 0 12 12"><path d="M6 1.5v9M1.5 6h9"/></svg></button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">动作怎么做</div>
+          <div class="box">站直，双手各持一只哑铃，掌心朝前，上臂贴住身体，屈肘把哑铃弯举到肩前，再缓慢放下。</div>
+        </div>
+        <div class="field">
+          <div class="field-label">动作细节</div>
+          <div class="box">肘部始终贴近身体，不要靠甩动借力；下放时控制速度，弯举到顶端时稍作停顿。</div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost">取消</button>
+          <button class="btn primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- 状态 B -->
+  <figure>
+    <figcaption><b>② 点 ＋ 输入中</b><span class="tag">原地输入</span></figcaption>
+    <div class="phone">
+      <div class="status">
+        <span>15:22</span>
+        <span class="right">
+          <span>5G</span>
+          <span class="bars"><i></i><i></i><i></i><i></i></span>
+          <span class="batt"></span>
+        </span>
+      </div>
+      <div class="page">
+        <div class="nav">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="#101B2B" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="#101B2B" stroke="none"/><circle cx="12" cy="18.5" r="1.4" fill="#101B2B" stroke="none"/></svg>
+        </div>
+        <div class="tabs"><span class="on">总览</span><span>历史记录</span><span>要点</span></div>
+        <div class="gif"><div></div></div>
+        <div class="name"></div>
+        <div class="chips-row"><i></i><i></i></div>
+      </div>
+      <div class="scrim"></div>
+
+      <div class="sheet">
+        <h2>编辑动作资料</h2>
+        <div class="field">
+          <div class="field-label">别名</div>
+          <div class="alias-wrap">
+            <span class="alias">二头弯举<button class="x" aria-label="删除"><svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg></button></span>
+            <span class="alias">哑铃交替弯举<button class="x" aria-label="删除"><svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg></button></span>
+            <span class="alias">zqxcurl<button class="x" aria-label="删除"><svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg></button></span>
+            <span class="new-alias"><input placeholder="新别名" autofocus><span class="caret"></span></span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">动作怎么做</div>
+          <div class="box">站直，双手各持一只哑铃，掌心朝前，上臂贴住身体，屈肘把哑铃弯举到肩前，再缓慢放下。</div>
+        </div>
+        <div class="field">
+          <div class="field-label">动作细节</div>
+          <div class="box">肘部始终贴近身体，不要靠甩动借力；下放时控制速度，弯举到顶端时稍作停顿。</div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost">取消</button>
+          <button class="btn primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- 状态 C -->
+  <figure>
+    <figcaption><b>③ 一个别名都没有</b><span class="tag">空态</span></figcaption>
+    <div class="phone">
+      <div class="status">
+        <span>15:22</span>
+        <span class="right">
+          <span>5G</span>
+          <span class="bars"><i></i><i></i><i></i><i></i></span>
+          <span class="batt"></span>
+        </span>
+      </div>
+      <div class="page">
+        <div class="nav">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="#101B2B" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="#101B2B" stroke="none"/><circle cx="12" cy="18.5" r="1.4" fill="#101B2B" stroke="none"/></svg>
+        </div>
+        <div class="tabs"><span class="on">总览</span><span>历史记录</span><span>要点</span></div>
+        <div class="gif"><div></div></div>
+        <div class="name"></div>
+        <div class="chips-row"><i></i><i></i></div>
+      </div>
+      <div class="scrim"></div>
+
+      <div class="sheet">
+        <h2>编辑动作资料</h2>
+        <div class="field">
+          <div class="field-label">别名</div>
+          <div class="alias-wrap">
+            <button class="add-wide" aria-label="新增别名"><svg viewBox="0 0 12 12"><path d="M6 1.5v9M1.5 6h9"/></svg></button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">动作怎么做</div>
+          <div class="box ph">站直，双手各持一只哑铃……</div>
+        </div>
+        <div class="field">
+          <div class="field-label">动作细节</div>
+          <div class="box ph">肘部始终贴近身体……</div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost">取消</button>
+          <button class="btn primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+</div>
+
+<div class="note">
+  <h3>落地时的几个决定</h3>
+  <ul>
+    <li><b>尺寸</b>：卡片高 34dp、圆角 11dp，字号 13sp；<code>×</code> 视觉 8dp，热区 22dp（手指够得着），颜色淡灰，按下变红。</li>
+    <li><b>长别名</b>：卡片不换行，超长时省略号截断（长按可看全名）；避免 360dp 屏上被一个字一个词撑开。</li>
+    <li><b>新增</b>：点 ＋ 在原地换成一个输入框，回车提交，空内容不产生卡片，重复的别名会被跳过。弹窗会随键盘上推，不会遮住输入框。</li>
+    <li><b>不再有小字</b>：原来那句「3 个别名，用逗号、顿号或分号分隔」整条删除——几个卡片一眼就数得出来，分隔规则也用不上了。</li>
+    <li><b>存储不变</b>：内部还是原来那个逗号分隔的字段，只是把逗号藏起来换成卡片，备份和老数据都不受影响。</li>
+  </ul>
+</div>
+
+<script>
+  document.querySelectorAll('[data-wrap]').forEach(wrap => {
+    const countEl = document.querySelector('[data-count]');
+    const addBtn = wrap.querySelector('.add');
+    const update = () => {
+      const n = wrap.querySelectorAll('.alias').length;
+      if (countEl) countEl.textContent = n + ' 个别名';
+    };
+    const bindX = (chip) => {
+      const x = chip.querySelector('.x');
+      if (x) x.addEventListener('click', e => { e.stopPropagation(); chip.remove(); update(); });
+    };
+    wrap.querySelectorAll('.alias').forEach(bindX);
+
+    addBtn.addEventListener('click', () => {
+      if (wrap.querySelector('.new-alias')) return;
+      const holder = document.createElement('span');
+      holder.className = 'new-alias';
+      const input = document.createElement('input');
+      input.placeholder = '新别名';
+      holder.appendChild(input);
+      wrap.insertBefore(holder, addBtn);
+      input.focus();
+
+      const commit = (keepOpen) => {
+        const v = input.value.trim();
+        if (v) {
+          const chip = document.createElement('span');
+          chip.className = 'alias';
+          chip.textContent = v;
+          const x = document.createElement('button');
+          x.className = 'x';
+          x.setAttribute('aria-label', '删除');
+          x.innerHTML = '<svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8"/></svg>';
+          chip.appendChild(x);
+          wrap.insertBefore(chip, holder);
+          bindX(chip);
+          update();
+        }
+        holder.remove();
+        if (keepOpen) addBtn.click();
+      };
+
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); commit(true); }
+        if (e.key === 'Escape') holder.remove();
+      });
+      input.addEventListener('blur', () => { if (document.body.contains(holder)) commit(false); });
+    });
+  });
+</script>
+</body>
+</html>

@@ -78,7 +78,7 @@ import kotlinx.coroutines.withContext
 import com.example.gymlog.R
 import com.example.gymlog.data.Gender
 import com.example.gymlog.data.MineDurationUnit
-import com.example.gymlog.ui.theme.glassSurface
+import com.example.gymlog.ui.theme.ceramicSurface
 import com.example.gymlog.ui.theme.dashboardCardBorder
 import com.example.gymlog.ui.theme.dashboardCardColors
 import com.example.gymlog.ui.theme.dashboardCardElevation
@@ -240,10 +240,11 @@ private fun ProfileStatsCard(
                         Icon(
                             imageVector = genderIcon(it),
                             contentDescription = genderLabel(it),
+                            // 白卡上必须够深：原来的浅粉/浅蓝对比度只有 1.8 / 1.6
                             tint = if (it == Gender.FEMALE) {
-                                Color(0xFFFFA9C8)
+                                Color(0xFFC2477A)
                             } else {
-                                Color(0xFFBBD0EC)
+                                MaterialTheme.colorScheme.primary
                             },
                             modifier = Modifier
                                 .padding(start = 6.dp)
@@ -454,7 +455,7 @@ private fun DashboardCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .glassSurface(dashboardCardShape())
+            .ceramicSurface(dashboardCardShape())
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         content()

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>日历配色鲜明/柔和对比</title>
+<style>
+  :root{--bg:#F3F6FA;--card:#fff;--blue:#2563EB;--ink:#0B1220;--muted:#667085;--line:#E1E7F0}
+  *{box-sizing:border-box}
+  body{margin:0;background:#E7ECF5;color:var(--ink);font-family:"Microsoft YaHei Light","Microsoft YaHei","PingFang SC",sans-serif;-webkit-font-smoothing:antialiased}
+  .sheet{width:840px;padding:26px 28px 30px}
+  .title{font-size:18px;margin:0 0 4px;font-weight:400}
+  .sub{font-size:10px;color:#6B7A90;margin:0 0 18px}
+  .compare{display:flex;gap:20px}
+  .panel{width:386px}
+  .label{display:flex;align-items:center;gap:7px;font-size:11px;color:#344054;margin:0 0 7px;padding-left:2px}
+  .label .dot{width:8px;height:8px;border-radius:50%;background:#2563EB}
+  .label.soft .dot{background:#AFC3D3}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;box-shadow:0 4px 14px rgba(28,48,84,.04)}
+  .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+  .card-head b{font-size:14px;font-weight:400;color:#1D2939}
+  .card-head span{font-size:9px;color:#98A6B8}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+  .wd{font-size:9px;color:#98A6B8;margin-bottom:4px}
+  .date{width:34px;height:34px;line-height:34px;border-radius:50%;margin:0 auto 2px;font-size:11px;color:#0B1220}
+  .part{font-size:8px;color:#667085;height:11px;line-height:11px}
+  .legend{display:flex;flex-wrap:wrap;gap:9px 13px;margin-top:14px;padding-top:11px;border-top:1px solid #EEF2F8}
+  .leg{display:flex;align-items:center;gap:5px;font-size:9px;color:#667085}
+  .leg i{width:9px;height:9px;border-radius:50%;display:block}
+  /* vivid */
+  .v1{background:#FF8A80}.v2{background:#82B1FF}.v3{background:#FFD740}.v4{background:#B9F6CA}.v5{background:#EA80FC}.v6{background:#CFD8DC}
+  /* soft */
+  .s1{background:#E57373}.s2{background:#64B5F6}.s3{background:#FFB74D}.s4{background:#81C784}.s5{background:#BA68C8}.s6{background:#90A4AE}
+  .note{font-size:9px;color:#7B8798;line-height:1.7;margin-top:16px;padding-top:12px;border-top:1px solid #DCE4EF}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="title">日历部位配色 · 最亮鲜明 / 柔和（当前）</div>
+  <div class="sub">相同日期、相同训练部位。鲜明改为同色相最亮的候选，柔和使用当前颜色。</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="label"><span class="dot"></span>鲜明（最亮）</div>
+      <div class="card">
+        <div class="card-head"><b>2026年10月</b><span>鲜明</span></div>
+        <div class="week">
+          <div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div><div class="wd">日</div>
+          <div><div class="date v1">12</div><div class="part">胸</div></div>
+          <div><div class="date v2">13</div><div class="part">背</div></div>
+          <div><div class="date v3">14</div><div class="part">肩</div></div>
+          <div><div class="date v4">15</div><div class="part">腿</div></div>
+          <div><div class="date v5">16</div><div class="part">手臂</div></div>
+          <div><div class="date v6">17</div><div class="part">其他</div></div>
+          <div><div class="date v1">18</div><div class="part">胸</div></div>
+          <div><div class="date v2">19</div><div class="part">背</div></div>
+          <div><div class="date v3">20</div><div class="part">肩</div></div>
+          <div><div class="date v4">21</div><div class="part">腿</div></div>
+          <div><div class="date v5">22</div><div class="part">手臂</div></div>
+          <div><div class="date v6">23</div><div class="part">其他</div></div>
+          <div><div class="date v1">24</div><div class="part">胸</div></div>
+        </div>
+        <div class="legend">
+          <span class="leg"><i class="v1"></i>胸</span>
+          <span class="leg"><i class="v2"></i>背</span>
+          <span class="leg"><i class="v3"></i>肩</span>
+          <span class="leg"><i class="v4"></i>腿</span>
+          <span class="leg"><i class="v5"></i>手臂</span>
+          <span class="leg"><i class="v6"></i>其他</span>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="label soft"><span class="dot"></span>柔和（当前）</div>
+      <div class="card">
+        <div class="card-head"><b>2026年10月</b><span>柔和</span></div>
+        <div class="week">
+          <div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div><div class="wd">日</div>
+          <div><div class="date s1">12</div><div class="part">胸</div></div>
+          <div><div class="date s2">13</div><div class="part">背</div></div>
+          <div><div class="date s3">14</div><div class="part">肩</div></div>
+          <div><div class="date s4">15</div><div class="part">腿</div></div>
+          <div><div class="date s5">16</div><div class="part">手臂</div></div>
+          <div><div class="date s6">17</div><div class="part">其他</div></div>
+          <div><div class="date s1">18</div><div class="part">胸</div></div>
+          <div><div class="date s2">19</div><div class="part">背</div></div>
+          <div><div class="date s3">20</div><div class="part">肩</div></div>
+          <div><div class="date s4">21</div><div class="part">腿</div></div>
+          <div><div class="date s5">22</div><div class="part">手臂</div></div>
+          <div><div class="date s6">23</div><div class="part">其他</div></div>
+          <div><div class="date s1">24</div><div class="part">胸</div></div>
+        </div>
+        <div class="legend">
+          <span class="leg"><i class="s1"></i>胸</span>
+          <span class="leg"><i class="s2"></i>背</span>
+          <span class="leg"><i class="s3"></i>肩</span>
+          <span class="leg"><i class="s4"></i>腿</span>
+          <span class="leg"><i class="s5"></i>手臂</span>
+          <span class="leg"><i class="s6"></i>其他</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note">最亮鲜明：胸 #FF8A80 · 背 #82B1FF · 肩 #FFD740 · 腿 #B9F6CA · 手臂 #EA80FC · 其他 #CFD8DC。柔和 = 当前配色，不做修改。</div>
+</div>
+</body>
+</html>

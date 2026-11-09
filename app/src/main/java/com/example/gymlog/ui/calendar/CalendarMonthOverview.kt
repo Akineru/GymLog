@@ -249,7 +249,8 @@ private fun MonthGrid(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF9EB5D0),
+                    // 白卡上的星期标签：原来的 #9EB5D0 只有 2.1:1，压到次级色
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
                 )

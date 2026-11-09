@@ -63,6 +63,17 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE id = :id")
     fun observeById(id: String): Flow<ExerciseEntity?>
 
+    /**
+     * 详情页「要点」用：数据集自带的中文步骤。
+     *
+     * 跨表查 `exercise_content` 是为了不给 [ExerciseRepository] 多加一个 DAO 构造参数
+     * （那会牵动十几处测试），本文件已有按 id 关联子表的查询，风格一致。
+     */
+    @Query(
+        "SELECT instructionStepsJson FROM exercise_content WHERE exerciseId = :id AND locale = 'zh' LIMIT 1",
+    )
+    fun observeInstructionSteps(id: String): Flow<String?>
+
     @Query("UPDATE exercises SET archived = 1 WHERE id = :id")
     suspend fun archive(id: String)
 
@@ -177,6 +188,15 @@ interface ExerciseDao {
         classificationStatus: String,
         classificationVersion: Int,
     )
+
+    /** 只在别名仍为空时写入：用户自己写过的不覆盖，重复执行是空操作。 */
+    @Query(
+        """
+        UPDATE exercises SET aliases = :aliases
+        WHERE id = :id AND IFNULL(aliases, '') = ''
+        """,
+    )
+    suspend fun fillAliasesIfBlank(id: String, aliases: String)
 
     @Query(
         """

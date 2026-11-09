@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
 import com.example.gymlog.data.BodyMetrics
@@ -176,6 +178,11 @@ fun TrendChart(
     points: List<TrendPoint>,
     quantity: TrendQuantity,
     modifier: Modifier = Modifier,
+    chartHeight: Dp = 220.dp,
+    /** 关掉内置的「大字 + 日期」表头，由调用方自己画（训练趋势页要把指标开关放在同一行）。 */
+    showHeader: Boolean = true,
+    /** 当前显示的点和它是不是最新一次，供调用方在关掉表头时仍能同步值。 */
+    onShownChange: ((TrendPoint, Boolean) -> Unit)? = null,
 ) {
     val points = remember(points) { points.sortedBy { it.dateEpochDay } }
     if (points.isEmpty()) {
@@ -194,6 +201,7 @@ fun TrendChart(
         .let { index -> if (index >= 0) index else points.lastIndex }
     val shown = points[shownIndex]
     val showingLatest = shownIndex == points.lastIndex
+    LaunchedEffect(shownIndex, points) { onShownChange?.invoke(shown, showingLatest) }
     val number = quantity.number(shown.value)
     val unit = quantity.unit()
     val headerDate = LocalDate.ofEpochDay(shown.dateEpochDay).format(headerDateFormatter)
@@ -229,7 +237,7 @@ fun TrendChart(
             .semantics { contentDescription = description },
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column {
+        if (showHeader) Column {
             if (showingLatest) {
                 Text(
                     text = stringResource(R.string.stats_latest_label),
@@ -268,7 +276,7 @@ fun TrendChart(
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
+                .height(chartHeight)
                 .pointerInput(points, yTicks, pointInset, hitRadius, labelGap) {
                     val frame = frameFor(
                         width = size.width.toFloat(),

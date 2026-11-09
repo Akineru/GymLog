@@ -92,7 +92,7 @@ class ExerciseCatalogBackupCompatibilityTest {
             repository.importSnapshot(BackupCodec.decode(v1.toString()))
             assertNotNull(db.exerciseDao().getById("custom_keep"))
             assertEquals(1, db.backupDao().allSets().size)
-            assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+            assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
             assertNotNull(db.exerciseDao().getById("preset_barbell_bench_press"))
             assertNotNull(db.exerciseDao().getById("ds_0001"))
 
@@ -100,7 +100,7 @@ class ExerciseCatalogBackupCompatibilityTest {
             repository.importSnapshot(BackupCodec.decode(v2.toString()))
             assertNotNull(db.exerciseDao().getById("custom_keep"))
             assertEquals(1, db.backupDao().allSets().size)
-            assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+            assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
             assertNotNull(db.exerciseDao().getById("ds_0001"))
         } finally {
             db.close()

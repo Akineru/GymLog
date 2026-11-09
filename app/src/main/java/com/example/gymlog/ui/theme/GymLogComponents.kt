@@ -59,9 +59,9 @@ fun GymLogCard(
     shape: Shape = RoundedCornerShape(GymLogRadii.card),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    // 全 app 统一磨砂玻璃材质（containerColor/border 参数保留以兼容旧签名，视觉由 glassSurface 决定）
+    // 全 app 统一哑光陶瓷材质（containerColor/border 参数保留以兼容旧签名）
     Column(
-        modifier = modifier.glassSurface(shape),
+        modifier = modifier.ceramicSurface(shape),
         content = content,
     )
 }

@@ -95,7 +95,9 @@ class BackupRepository(
         }
     }
 
-    suspend fun importSnapshot(snapshot: GymLogSnapshot) = coordinator.withLock {
+    suspend fun importSnapshot(rawSnapshot: GymLogSnapshot) = coordinator.withLock {
+        // 旧备份里还带着已下线的重复动作，先过滤并改挂引用，再做校验。
+        val snapshot = rawSnapshot.withoutRetiredDatasetExercises()
         snapshot.validate()
         val previous = exportSnapshot()
         val previousDataset = captureDatasetState()

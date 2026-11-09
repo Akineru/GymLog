@@ -19,6 +19,10 @@ class ExerciseRepository(
     fun observeHistory(exerciseId: String): Flow<List<ExerciseHistorySetRow>> =
         exerciseDao.observeHistoryForExercise(exerciseId)
 
+    /** 详情页「要点」用：数据集自带的中文步骤（JSON 字符串数组）。 */
+    fun observeInstructionSteps(exerciseId: String): Flow<String?> =
+        exerciseDao.observeInstructionSteps(exerciseId)
+
     /**
      * 保存「训练资料」四个字段（别名 / 优先级 / 怎么做 / 细节）。
      *
@@ -101,6 +105,8 @@ class ExerciseRepository(
             ExerciseEntity(
                 id = id,
                 name = trimmedName,
+                // 用户自己起的名字不清洗
+                originalName = trimmedName,
                 // Keep the legacy broad fields for historical grouping/fallbacks,
                 // but the new stable classification ids are authoritative.
                 bodyPart = ExerciseClassification.legacyBodyPartFor(bodyCategory).name,

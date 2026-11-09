@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>日历配色效果图</title>
+<style>
+  :root{--bg:#F3F6FA;--card:#fff;--soft:#E8F0FF;--blue:#2563EB;--ink:#0B1220;--muted:#667085;--line:#E1E7F0}
+  *{box-sizing:border-box}
+  body{margin:0;background:#E7ECF5;color:var(--ink);font-family:"Microsoft YaHei Light","Microsoft YaHei","PingFang SC",sans-serif;-webkit-font-smoothing:antialiased}
+  .sheet{width:1180px;padding:28px 30px 34px}
+  .sheet h1{font-size:18px;margin:0 0 4px;font-weight:400}
+  .sheet p{font-size:10px;color:#6B7A90;margin:0 0 20px}
+  .row{display:flex;gap:24px;align-items:flex-start}
+  .frame{width:340px}
+  .caption{font-size:10px;color:#667085;margin:0 0 7px;padding-left:2px}
+  .phone{width:340px;height:760px;border-radius:28px;background:var(--bg);border:5px solid #101827;overflow:hidden;box-shadow:0 14px 30px rgba(28,48,84,.14);position:relative}
+  .screen{height:100%;display:flex;flex-direction:column}
+  .status{height:22px;padding:6px 16px 0;display:flex;justify-content:space-between;font-size:8px}
+  .status .right{font-size:7px;letter-spacing:1px}
+  .head{height:56px;padding:0 16px;display:flex;align-items:center;gap:13px;flex:0 0 56px}
+  .head .back{font-size:20px;line-height:1;color:#1D2939;width:18px}
+  .head h2{font-size:19px;font-weight:400;margin:0}
+  .body{flex:1;padding:0 13px;overflow:hidden}
+  .section{font-size:9px;color:#7B8798;margin:8px 0 6px 2px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;margin-bottom:9px;overflow:hidden}
+  .entry{display:flex;align-items:center;gap:10px;padding:12px}
+  .icon{width:38px;height:38px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--blue);flex:0 0 38px}
+  .icon svg{width:19px;height:19px}
+  .txt{flex:1;min-width:0}
+  .txt b{display:block;font-size:13px;font-weight:400;color:#1D2939}
+  .txt span{display:block;font-size:9px;color:#7B8798;margin-top:3px}
+  .arr{font-size:18px;color:#98A6B8}
+  .appearance-card{padding:12px}
+  .label{font-size:13px;color:#1D2939;margin:0 0 9px}
+  .segment{display:flex;background:#F0F4FA;border:1px solid #E1E7F0;border-radius:12px;padding:3px;margin-bottom:13px}
+  .segment .seg{flex:1;text-align:center;font-size:9px;color:#667085;padding:7px 2px;border-radius:9px}
+  .segment .seg.on{background:var(--blue);color:#fff}
+  .switchrow{display:flex;align-items:center;gap:10px;border-top:1px solid #EEF2F8;padding-top:11px}
+  .switchrow .txt{flex:1}
+  .switchrow b{font-size:11px;font-weight:400;color:#1D2939;display:block}
+  .switchrow span{display:block;font-size:8px;color:#7B8798;margin-top:3px;line-height:1.5}
+  .switch{width:36px;height:21px;border-radius:12px;background:#D6DFEC;position:relative;flex:0 0 36px}
+  .switch::after{content:"";width:15px;height:15px;border-radius:50%;background:#fff;position:absolute;left:3px;top:3px;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .switch.on{background:var(--blue)}
+  .switch.on::after{left:18px}
+  .hint{font-size:8px;color:#7B8798;line-height:1.6;padding:0 3px;margin-top:2px}
+  .mode-card{padding:12px}
+  .mode-row{display:flex;gap:6px;margin-bottom:8px}
+  .mode{flex:1;border:1px solid #E1E7F0;border-radius:10px;text-align:center;font-size:9px;padding:9px 2px;color:#667085;background:#F7F9FD}
+  .mode.on{border-color:var(--blue);background:var(--soft);color:var(--blue);font-weight:600}
+  .mode-desc{font-size:8px;color:#7B8798;line-height:1.5;margin:2px 0 0}
+  .preview{padding:11px 12px 13px;border-top:1px solid #EEF2F8;margin-top:10px}
+  .preview-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+  .preview-top b{font-size:10px;font-weight:400;color:#1D2939}
+  .preview-top span{font-size:8px;color:#7B8798}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .wd{font-size:7px;color:#98A6B8}
+  .day{width:26px;height:26px;line-height:26px;border-radius:50%;margin:4px auto 1px;font-size:9px;color:#0B1220}
+  .daylabel{font-size:6px;color:#7B8798;height:8px;line-height:8px}
+  .c1{background:#E57373}.c2{background:#64B5F6}.c3{background:#FFB74D}.c4{background:#81C784}.c5{background:#BA68C8}.c6{background:#90A4AE}
+  .footer-line{display:flex;align-items:center;gap:7px;padding:11px 12px;border-top:1px solid #EEF2F8;margin-top:2px}
+  .footer-line .swatch{width:13px;height:13px;border-radius:50%;background:linear-gradient(90deg,#E57373,#64B5F6,#FFB74D,#81C784,#BA68C8,#90A4AE);flex:0 0 13px}
+  .footer-line .txt{font-size:9px;color:#667085}
+  .footer-line .go{font-size:9px;color:var(--blue);margin-left:auto}
+  .palette{padding:12px}
+  .part-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #F0F3F8}
+  .part-row:last-child{border-bottom:0}
+  .part-name{flex:1;font-size:10px;color:#1D2939}
+  .part-color{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #E1E7F0}
+  .part-hex{font-size:8px;color:#98A6B8;margin-left:4px}
+  .picker{border-top:1px solid #EEF2F8;margin-top:4px;padding-top:11px;display:flex;gap:10px;align-items:center}
+  .wheel{width:86px;height:86px;border-radius:50%;background:conic-gradient(#f44336,#ff9800,#ffeb3b,#4caf50,#00bcd4,#2196f3,#9c27b0,#f44336);position:relative;flex:0 0 86px}
+  .wheel::after{content:"";position:absolute;left:19px;top:19px;width:48px;height:48px;border-radius:50%;background:#F3F6FA}
+  .wheel::before{content:"";position:absolute;left:38px;top:3px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #1D2939;z-index:2}
+  .picker-info{flex:1}
+  .picker-info b{display:block;font-size:9px;font-weight:400;color:#1D2939}
+  .picker-info span{display:block;font-size:8px;color:#7B8798;margin-top:4px}
+  .bright{margin-top:9px;height:5px;border-radius:3px;background:linear-gradient(90deg,#000,#E57373,#fff)}
+  .picker-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
+  .btn{font-size:8px;padding:6px 8px;border-radius:7px;color:var(--blue)}
+  .btn.primary{background:var(--blue);color:#fff}
+  .foot{flex:1}
+  .navbar{height:48px;flex:0 0 48px;background:#fff;border-top:1px solid #E7EDF6;display:flex;align-items:center;padding:3px 7px}
+  .navitem{flex:1;text-align:center;font-size:7px;color:#7B8798}
+  .navitem .bubble{width:35px;height:20px;border-radius:10px;margin:0 auto 2px;display:flex;align-items:center;justify-content:center;font-size:12px}
+  .navitem.on{color:var(--blue);font-weight:600}
+  .navitem.on .bubble{background:var(--soft)}
+  .caption-note{font-size:8px;color:#7B8798;line-height:1.5;padding:7px 2px 0}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>日历配色 · 效果图</h1>
+  <p>鲜明 / 柔和 / 自定义三种方案；选择自定义后进入六部位调色盘。仅确认设计，不修改代码。</p>
+  <div class="row">
+    <div class="frame">
+      <div class="caption">1. 外观入口</div>
+      <div class="phone"><div class="screen">
+        <div class="status"><span>15:48</span><span class="right">5G ▮▮</span></div>
+        <div class="head"><div class="back">←</div><h2>外观</h2></div>
+        <div class="body">
+          <div class="card appearance-card">
+            <p class="label">主题</p>
+            <div class="segment"><div class="seg on">跟随系统</div><div class="seg">浅色</div><div class="seg">深色</div></div>
+            <div class="switchrow"><div class="txt"><b>使用壁纸配色</b><span>关闭后使用应用自己的配色。</span></div><div class="switch"></div></div>
+          </div>
+          <div class="card">
+            <div class="entry">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.4"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="16.2" cy="10.3" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.1" cy="15.3" r="1.2" fill="currentColor" stroke="none"/><circle cx="8.9" cy="15.3" r="1.2" fill="currentColor" stroke="none"/><circle cx="7.8" cy="10.3" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+              <div class="txt"><b>日历配色</b><span>鲜明 · 6 个部位</span></div><div class="arr">›</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="frame">
+      <div class="caption">2. 选择配色方案</div>
+      <div class="phone"><div class="screen">
+        <div class="status"><span>15:48</span><span class="right">5G ▮▮</span></div>
+        <div class="head"><div class="back">←</div><h2>日历配色</h2></div>
+        <div class="body">
+          <div class="card mode-card">
+            <div class="mode-row"><div class="mode on">鲜明</div><div class="mode">柔和</div><div class="mode">自定义</div></div>
+            <p class="mode-desc">鲜明：高饱和、容易区分；柔和：低饱和、更安静。</p>
+            <div class="preview">
+              <div class="preview-top"><b>10月</b><span>鲜明</span></div>
+              <div class="week">
+                <div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div><div class="wd">日</div>
+                <div><div class="day c1">13</div><div class="daylabel">胸</div></div>
+                <div><div class="day c2">14</div><div class="daylabel">背</div></div>
+                <div><div class="day c3">15</div><div class="daylabel">肩</div></div>
+                <div><div class="day c4">16</div><div class="daylabel">腿</div></div>
+                <div><div class="day c5">17</div><div class="daylabel">臂</div></div>
+                <div><div class="day c6">18</div><div class="daylabel">其他</div></div>
+                <div><div class="day c1">19</div><div class="daylabel">胸</div></div>
+              </div>
+            </div>
+          </div>
+          <p class="caption-note">选择「自定义」会进入第三屏的六部位调色盘；特殊日颜色保持固定。</p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="frame">
+      <div class="caption">3. 自定义六部位调色盘</div>
+      <div class="phone"><div class="screen">
+        <div class="status"><span>15:48</span><span class="right">5G ▮▮</span></div>
+        <div class="head"><div class="back">←</div><h2>自定义配色</h2></div>
+        <div class="body">
+          <div class="card palette">
+            <div class="part-row"><div class="part-name">胸</div><div class="part-hex">#E57373</div><div class="part-color c1"></div></div>
+            <div class="part-row"><div class="part-name">背</div><div class="part-hex">#64B5F6</div><div class="part-color c2"></div></div>
+            <div class="part-row"><div class="part-name">肩</div><div class="part-hex">#FFB74D</div><div class="part-color c3"></div></div>
+            <div class="part-row"><div class="part-name">腿</div><div class="part-hex">#81C784</div><div class="part-color c4"></div></div>
+            <div class="part-row"><div class="part-name">手臂</div><div class="part-hex">#BA68C8</div><div class="part-color c5"></div></div>
+            <div class="part-row"><div class="part-name">其他</div><div class="part-hex">#90A4AE</div><div class="part-color c6"></div></div>
+            <div class="picker">
+              <div class="wheel"></div>
+              <div class="picker-info">
+                <b>正在调整：胸</b>
+                <span>拖动色相 / 明度选择颜色</span>
+                <div class="bright"></div>
+              </div>
+            </div>
+            <div class="picker-actions"><div class="btn">取消</div><div class="btn primary">应用</div></div>
+          </div>
+          <p class="caption-note">文字颜色会按背景亮度自动切换，深色也能看清日期。</p>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

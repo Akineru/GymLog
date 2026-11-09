@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
+import com.example.gymlog.ui.theme.ceramicSurface
 import com.example.gymlog.data.TimerPhase
 import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.ui.theme.GymLogActionButton
@@ -128,31 +129,26 @@ fun TrainingTimerScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                            ),
-                        )
+                        .ceramicSurface(RoundedCornerShape(20.dp))
                         .padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
                         text = phaseLabel(state.phase),
                         style = MaterialTheme.typography.labelLarge,
-                        color = Color(0xFFBBD0EC),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (state.recoveredAfterReboot) {
                         Text(
                             text = stringResource(R.string.timer_recovered),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFBBD0EC),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Text(
                         text = state.formatted,
                         style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum"),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable(role = Role.Button, onClick = { editing = true })
@@ -177,7 +173,7 @@ fun TrainingTimerScreen(
                                     Icons.Filled.PlayArrow
                                 },
                                 contentDescription = primaryActionLabel(state.phase),
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                             )
                         }
                         IconButton(
@@ -187,14 +183,14 @@ fun TrainingTimerScreen(
                             Icon(
                                 imageVector = Icons.Filled.Flag,
                                 contentDescription = stringResource(R.string.timer_lap),
-                                tint = Color(0xFFD6E4F5),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                         IconButton(onClick = { confirmingReset = true }) {
                             Icon(
                                 imageVector = Icons.Filled.Refresh,
                                 contentDescription = stringResource(R.string.timer_reset),
-                                tint = Color(0xFFD6E4F5),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                         GymLogActionButton(

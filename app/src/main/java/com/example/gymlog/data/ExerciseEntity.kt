@@ -34,6 +34,13 @@ data class ExerciseEntity(
     val maxPrDateEpochDay: Long? = null,
     val archived: Boolean = false,
     val nameEn: String? = null,
+    /**
+     * 只保留动作本身的名字，去掉器械、负重方式、姿态和泛部位词（`杠铃 坐姿 窄距 卧推` → `窄距卧推`）。
+     *
+     * 由 [ExerciseNameCleaner] 生成，**只用于显示**：允许重名，不参与搜索、排序和合并。
+     * 数据集动作按规则清洗；预置动作和用户自建动作与 [name] 保持一致。
+     */
+    val originalName: String = "",
     val source: String = ExerciseSource.LEGACY,
     val sourceId: String? = null,
     val equipmentDetail: String? = null,
@@ -115,6 +122,14 @@ fun List<ExerciseEntity>.sortedByTrainingCount(    usage: List<ExerciseUsageRow>
             .thenBy { it.name.lowercase() },
     )
 }
+
+/**
+ * 界面显示用的动作名：优先 [ExerciseEntity.originalName]（去掉器械/负重/姿态后的动作本体），
+ * 该字段为空时回退到 [ExerciseEntity.name]，保证老数据或未清洗的动作也有名字可显示。
+ *
+ * 注意：只用于「给人看」的地方，搜索、排序、去重仍应使用 [ExerciseEntity.name]。
+ */
+fun ExerciseEntity.originalOrName(): String = originalName.ifBlank { name }
 
 fun ExerciseEntity.displayName(): String {
     val partLabel = ExerciseClassification.body(bodyCategoryId)?.labelZh

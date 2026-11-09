@@ -5,7 +5,9 @@ import androidx.compose.ui.graphics.Color
 val BrandBlue = Color(0xFF2563EB)
 val BrandBlueSoft = Color(0xFFE8F0FF)
 val BrandBlueInk = Color(0xFF12357A)
-val PageBackground = Color(0xFFF3F6FA)
+// 页面背景由 GymLogApp 统一绘制 mesh（ui/theme/CeramicSurface.kt）；
+// background / surface 设为透明，Scaffold 才不会盖掉 mesh。
+val PageBackground = Color(0xFFEDF2FC)
 val CardWhite = Color(0xFFFFFFFF)
 val MutedSurface = Color(0xFFEAF0F8)
 val Ink = Color(0xFF0B1220)

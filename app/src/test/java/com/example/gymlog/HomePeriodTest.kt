@@ -198,6 +198,32 @@ class HomePeriodTest {
         assertEquals("划船", groups[1].exercises.single().name)
     }
 
+    /** 今日训练的动作名用 originalName；originalName 为空（老数据 / 自定义动作）时回退 name。 */
+    @Test
+    fun dayGroupsShowOriginalNameAndFallBackToName() {
+        val date = LocalDate.of(2026, 10, 15)
+        val cleaned = exercise("bench", "杠铃 卧推", BodyPart.CHEST).copy(originalName = "卧推")
+        val blank = exercise("row", "绳索 站姿 划船", BodyPart.BACK)
+        val groups = HomePeriod.dayGroups(
+            listOf(
+                session(
+                    "s1",
+                    date.toEpochDay(),
+                    exercises = listOf(
+                        SessionExercise(cleaned, listOf(set("a", 40.0, 8))),
+                        SessionExercise(blank, listOf(set("b", 20.0, 10))),
+                    ),
+                ),
+            ),
+            emptyList(),
+            date,
+        )
+        assertEquals(
+            listOf("卧推", "绳索 站姿 划船"),
+            groups.flatMap { it.exercises }.map { it.name },
+        )
+    }
+
     @Test
     fun bodyweightVolumeUsesRecordedBodyWeight() {
         val date = LocalDate.of(2026, 10, 15)

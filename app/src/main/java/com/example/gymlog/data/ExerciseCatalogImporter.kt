@@ -53,6 +53,7 @@ open class ExerciseCatalogImporter(
             // Rows restored from an older backup may still need classification
             // even when the dataset itself is already complete.
             ExerciseClassificationMigrator(database).migrateAll()
+            DatasetExerciseAliasSeeder(database).seedAll()
             return previous.toStats(alreadyImported = true)
         }
 
@@ -259,6 +260,7 @@ open class ExerciseCatalogImporter(
                 state.toStats()
             }
             ExerciseClassificationMigrator(database).migrateAll()
+            DatasetExerciseAliasSeeder(database).seedAll()
             return stats
         } catch (error: Throwable) {
             // The dataset transaction has rolled back. Persist a separate failure
@@ -330,6 +332,7 @@ open class ExerciseCatalogImporter(
         fun toEntity(localId: String) = ExerciseEntity(
             id = localId,
             name = name,
+            originalName = ExerciseNameCleaner.clean(name),
             bodyPart = bodyPart,
             equipmentType = equipmentType,
             weightMode = weightMode,

@@ -1,5 +1,6 @@
 package com.example.gymlog.ui.calendar
 
+import com.example.gymlog.ui.theme.ceramicSurface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -86,12 +87,10 @@ fun TrainingCalendarCard(
         }
     }
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .ceramicSurface(RoundedCornerShape(16.dp)),
     ) {
         Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
             Row(

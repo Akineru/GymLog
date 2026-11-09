@@ -744,6 +744,9 @@ class SessionEditorViewModel(
         _clock.value = current.copy(
             displayMillis = adjusted.displayMillis,
             timerDurationMillis = adjusted.durationMillis,
+            // 归零之后再调时长等于一次新配置：回到「未启动」，
+            // 免得通知里显示「已歇 00:30 / 00:30 · 已暂停」这种没歇过的播报
+            started = current.started && current.displayMillis > 0L,
         )
     }
 

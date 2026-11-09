@@ -1,5 +1,7 @@
 package com.example.gymlog.ui.train
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +47,7 @@ import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 import com.example.gymlog.ui.theme.LiquidGlassCard
+import com.example.gymlog.ui.theme.ceramicSurface
 import com.example.gymlog.ui.theme.LiquidGlassColors
 
 data class ActiveWorkoutUi(
@@ -145,22 +149,93 @@ private fun TrainingTimerToolCard(onOpenTimer: () -> Unit) {
     }
 }
 
+/**
+ * 悬浮在内容之上的「锻炼中」卡片。
+ *
+ * - 展开态：整张卡片点一下就进训练；右侧垃圾桶是取消训练，箭头是收起。
+ * - 收起态：缩成右下角一颗只显示时长的小胶囊，点一下重新展开。
+ */
 @Composable
 fun ActiveWorkoutMiniBar(
     workout: ActiveWorkoutUi,
+    collapsed: Boolean,
+    onToggleCollapse: () -> Unit,
     onResume: () -> Unit,
     onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    Crossfade(
+        targetState = collapsed,
+        animationSpec = tween(durationMillis = 180),
+        label = "active-workout-bar",
+        modifier = modifier.fillMaxWidth(),
+    ) { isCollapsed ->
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            if (isCollapsed) {
+                CollapsedActiveWorkoutPill(
+                    durationMillis = workout.durationMillis,
+                    onClick = onToggleCollapse,
+                )
+            } else {
+                ExpandedActiveWorkoutCard(
+                    workout = workout,
+                    onResume = onResume,
+                    onDiscard = onDiscard,
+                    onCollapse = onToggleCollapse,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollapsedActiveWorkoutPill(
+    durationMillis: Long,
+    onClick: () -> Unit,
+) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                ),
+        modifier = Modifier
+            .ceramicSurface(RoundedCornerShape(999.dp), floatingElevation = 10.dp)
+            .clickable(
+                onClickLabel = stringResource(R.string.training_expand),
+                onClick = onClick,
             )
+            .padding(horizontal = 16.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color(0xFF40B98A)),
+        )
+        Text(
+            text = TrainingTimerLogic.formatDurationChinese(durationMillis),
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontFeatureSettings = "tnum",
+                fontWeight = FontWeight.Medium,
+            ),
+            color = LiquidGlassColors.ink,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun ExpandedActiveWorkoutCard(
+    workout: ActiveWorkoutUi,
+    onResume: () -> Unit,
+    onDiscard: () -> Unit,
+    onCollapse: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .ceramicSurface(RoundedCornerShape(20.dp), floatingElevation = 12.dp)
             .clickable(onClick = onResume)
             .padding(start = GymLogSpacing.md, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -169,7 +244,7 @@ fun ActiveWorkoutMiniBar(
             modifier = Modifier
                 .size(8.dp)
                 .clip(RoundedCornerShape(999.dp))
-                .background(Color(0xFF6EE7A8)),
+                .background(Color(0xFF40B98A)),
         )
         Column(
             modifier = Modifier
@@ -191,7 +266,7 @@ fun ActiveWorkoutMiniBar(
                         fontFeatureSettings = "tnum",
                         fontWeight = FontWeight.Normal,
                     ),
-                    color = Color.White,
+                    color = LiquidGlassColors.ink,
                     maxLines = 1,
                     modifier = Modifier.weight(1f),
                 )
@@ -204,7 +279,7 @@ fun ActiveWorkoutMiniBar(
                         Icon(
                             imageVector = Icons.Filled.Timer,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = LiquidGlassColors.inkSoft,
                             modifier = Modifier.size(14.dp),
                         )
                         Text(
@@ -213,7 +288,7 @@ fun ActiveWorkoutMiniBar(
                                 fontFeatureSettings = "tnum",
                                 fontWeight = FontWeight.Medium,
                             ),
-                            color = Color.White,
+                            color = LiquidGlassColors.ink,
                             maxLines = 1,
                         )
                     }
@@ -223,7 +298,7 @@ fun ActiveWorkoutMiniBar(
                 text = workout.currentExerciseName
                     ?: stringResource(R.string.training_active_next_hint),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFBBD0EC),
+                color = LiquidGlassColors.inkSoft,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -232,18 +307,18 @@ fun ActiveWorkoutMiniBar(
             Icon(
                 imageVector = Icons.Filled.Delete,
                 contentDescription = stringResource(R.string.training_discard),
-                tint = Color(0xFFBBD0EC),
+                tint = LiquidGlassColors.inkSoft,
                 modifier = Modifier.size(18.dp),
             )
         }
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = stringResource(R.string.training_resume),
-            tint = Color.White,
-            modifier = Modifier
-                .padding(end = 8.dp)
-                .size(20.dp),
-        )
+        IconButton(onClick = onCollapse, modifier = Modifier.size(40.dp)) {
+            Icon(
+                imageVector = Icons.Filled.KeyboardArrowDown,
+                contentDescription = stringResource(R.string.training_collapse),
+                tint = LiquidGlassColors.inkMid,
+                modifier = Modifier.size(22.dp),
+            )
+        }
     }
 }
 

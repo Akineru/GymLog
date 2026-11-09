@@ -1,5 +1,6 @@
 package com.example.gymlog.ui.body
 
+import com.example.gymlog.ui.theme.ceramicSurface
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,12 +60,10 @@ fun BodyFigureCard(
     LaunchedEffect(highlights) { selectedRegionId = null }
     val girths = state.history.firstOrNull()?.girths() ?: BodyGirths()
     val showMuscle = mode == FigureMode.MUSCLE
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = dashboardCardShape(),
-        colors = dashboardCardColors(),
-        elevation = dashboardCardElevation(),
-        border = dashboardCardBorder(),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .ceramicSurface(dashboardCardShape()),
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),

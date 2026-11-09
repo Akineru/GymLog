@@ -8,6 +8,7 @@ import com.example.gymlog.data.TimerRecordEntity
 import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.WorkoutSetEntity
+import com.example.gymlog.data.originalOrName
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -126,7 +127,7 @@ object HomePeriod {
                 rows += MutableRow(
                     sessionId = detail.session.id,
                     exerciseId = item.exercise.id,
-                    name = item.exercise.name,
+                    name = item.exercise.originalOrName(),
                     part = ExerciseClassification.exerciseGroupingKey(item.exercise),
                     setCount = item.sets.size,
                     volumeKg = exerciseVolume(item.sets, bodyWeight),

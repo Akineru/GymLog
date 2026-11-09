@@ -27,6 +27,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -81,6 +82,8 @@ fun ExerciseGifPlayer(
     modifier: Modifier = Modifier,
     /** true = 等比放大裁切填满容器（头部横幅用）；默认 false = 完整放入留边。 */
     fill: Boolean = false,
+    /** 留边处的底色。默认 surfaceVariant；动作详情头部用白底，避免两侧露出灰边。 */
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
 ) {
     val context = LocalContext.current
     val path = media?.gifPath
@@ -115,7 +118,7 @@ fun ExerciseGifPlayer(
     Canvas(
         modifier = modifier
             .clip(if (fill) RectangleShape else RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .background(containerColor),
     ) {
         frameTick
         val width = loaded.width().coerceAtLeast(1)

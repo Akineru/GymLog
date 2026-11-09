@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog.data.BodyRecordRepository
 import com.example.gymlog.data.ExerciseEntity
+import com.example.gymlog.data.ExerciseGuideBuilder
 import com.example.gymlog.data.ExerciseHistoryEntry
 import com.example.gymlog.data.ExerciseHistoryLogic
 import com.example.gymlog.data.ExerciseMediaRepository
@@ -15,6 +16,7 @@ import com.example.gymlog.data.MuscleMapLogic
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -63,6 +65,20 @@ class ExerciseDetailViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ExerciseDetailUiState(),
     )
+
+    /**
+     * 「要点」页用：数据集自带的中文步骤，用来生成「动作怎么做」。
+     *
+     * 单独一条流，不进 [uiState]：uiState 的 combine 已经有 5 个来源，
+     * 再加一个反而更难读，而步骤只被要点页用到。
+     */
+    val instructionSteps: StateFlow<List<String>> = repository.observeInstructionSteps(exerciseId)
+        .map { ExerciseGuideBuilder.parseSteps(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
+        )
 
     fun saveTrainingFields(
         aliases: String?,

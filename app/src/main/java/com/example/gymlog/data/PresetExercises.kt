@@ -124,6 +124,8 @@ object PresetExercises {
         return ExerciseEntity(
             id = "preset_$id",
             name = name,
+            // 预置动作的名字是人工起的，已经足够干净，原样沿用
+            originalName = name,
             bodyPart = bodyPart.name,
             equipmentType = equipmentType.name,
             weightMode = weightMode.name,

@@ -41,7 +41,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import com.example.gymlog.ui.theme.GlassBackdropBlobs
+import com.example.gymlog.ui.theme.appMeshBackground
 import com.example.gymlog.ui.theme.GymLogCard
 import com.example.gymlog.ui.theme.GymLogSpacing
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -78,6 +78,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import com.example.gymlog.ui.theme.LocalGymLogDarkTheme
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.automirrored.outlined.TrendingUp
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -110,6 +118,7 @@ import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.data.WorkoutClockLogic
 import com.example.gymlog.data.WeightMode
 import com.example.gymlog.data.displayName
+import com.example.gymlog.data.originalOrName
 import com.example.gymlog.data.orderedForDay
 import com.example.gymlog.data.partVolumes
 import com.example.gymlog.ui.home.HomeScreen
@@ -610,16 +619,20 @@ fun GymLogApp(
     val navigationBarBottom = with(density) {
         WindowInsets.navigationBars.getBottom(this).toDp()
     }
-    var measuredBarHeight by remember { mutableStateOf(80.dp + navigationBarBottom) }
+    var measuredBarHeight by remember { mutableStateOf(56.dp + navigationBarBottom) }
+    // 「锻炼中」悬浮条是否收起；不随切页重置，重启 App（草稿丢弃）时自然恢复展开
+    var miniBarCollapsed by rememberSaveable { mutableStateOf(false) }
     val isRoot = screen.isRoot
 
     Box(Modifier.fillMaxSize()) {
-        // 全 app 唯一的流体色块层：铺满整屏（含顶栏与底部导航后方），各 tab 页不再自绘
-        GlassBackdropBlobs(modifier = Modifier.matchParentSize())
+        // 全 app 唯一的页面背景：淡蓝灰底 + 四角色晕，铺满整屏（含顶栏与底部导航后方），各页不再自绘
+        Box(modifier = Modifier.matchParentSize().appMeshBackground())
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(bottom = (measuredBarHeight - 24.dp).coerceAtLeast(8.dp))
+                // 内容一直铺到底栏上沿：「锻炼中」悬浮条盖在内容之上，内容从它背后穿过去，
+                // 卡片上下都能看见内容（2026-11-09）。
+                .padding(bottom = measuredBarHeight)
                 .consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
                 .then(if (isRoot) Modifier else Modifier.clearAndSetSemantics {}),
         ) {
@@ -730,23 +743,31 @@ fun GymLogApp(
 
         if (isRoot) {
             Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .onSizeChanged { size ->
-                        measuredBarHeight = with(density) { size.height.toDp() }
-                    },
+                modifier = Modifier.align(Alignment.BottomCenter),
             ) {
                 activeWorkout?.let { workout ->
                     ActiveWorkoutMiniBar(
                         workout = workout,
+                        collapsed = miniBarCollapsed,
+                        onToggleCollapse = { miniBarCollapsed = !miniBarCollapsed },
                         onResume = { activeDraft?.let { screen = it } },
                         onDiscard = { confirmDiscardActive = true },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        // 下方留 12dp：让悬浮条和底栏之间有空隙，投影也落得下
+                        modifier = Modifier.padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 12.dp,
+                        ),
                     )
                 }
                 RootTabBar(
                     selected = screen.toRootTab(),
                     onSelect = { screen = it.toScreen() },
+                    // 内容只为底栏让高度；悬浮条不占内容区，内容从它背后穿过去
+                    modifier = Modifier.onSizeChanged { size ->
+                        measuredBarHeight = with(density) { size.height.toDp() }
+                    },
                 )
             }
         }
@@ -1202,127 +1223,87 @@ private fun RootTabBar(
     modifier: Modifier = Modifier,
 ) {
     val tabs = listOf(
-        Triple(RootTab.Home, Icons.Filled.Home, stringResource(R.string.tab_home)),
-        Triple(RootTab.Calendar, Icons.Filled.CalendarMonth, stringResource(R.string.tab_calendar)),
-        Triple(RootTab.Train, Icons.Filled.FitnessCenter, stringResource(R.string.tab_train)),
-        Triple(RootTab.Progress, Icons.AutoMirrored.Filled.TrendingUp, stringResource(R.string.tab_progress)),
-        Triple(RootTab.Mine, Icons.Filled.Person, stringResource(R.string.tab_mine)),
+        Triple(RootTab.Home, Icons.Outlined.Home, stringResource(R.string.tab_home)),
+        Triple(RootTab.Calendar, Icons.Outlined.CalendarMonth, stringResource(R.string.tab_calendar)),
+        Triple(RootTab.Train, Icons.Outlined.FitnessCenter, stringResource(R.string.tab_train)),
+        Triple(
+            RootTab.Progress,
+            Icons.AutoMirrored.Outlined.TrendingUp,
+            stringResource(R.string.tab_progress),
+        ),
+        Triple(RootTab.Mine, Icons.Outlined.Person, stringResource(R.string.tab_mine)),
     )
-    val itemHeight = 48.dp
+    val surface = MaterialTheme.colorScheme.surfaceContainerLowest
+    val barTop = surface.copy(alpha = if (LocalGymLogDarkTheme.current) 0.92f else 0.88f)
+    val barBottom = surface.copy(alpha = if (LocalGymLogDarkTheme.current) 0.98f else 0.97f)
+    val divider = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+    val selectedTint = MaterialTheme.colorScheme.primary
+    val unselectedTint = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Box(
+    Column(
         modifier = modifier
-            .padding(start = 24.dp, end = 24.dp, bottom = 30.dp)
-            .systemGestureExclusion()
-            .clip(RoundedCornerShape(999.dp))
-            .background(Color.White.copy(alpha = 0.55f))
-            .drawBehind {
-                // 顶部斜向玻璃高光
-                drawRect(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.55f),
-                            Color.Transparent,
-                        ),
-                        start = Offset.Zero,
-                        end = Offset(size.width * 0.5f, size.height * 0.6f),
-                    ),
-                )
-            }
-            .border(
-                width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.95f),
-                        Color.White.copy(alpha = 0.3f),
-                        Color.White.copy(alpha = 0.6f),
-                    ),
-                ),
-                shape = RoundedCornerShape(999.dp),
-            )
-            .padding(6.dp),
-        contentAlignment = Alignment.CenterStart,
+            .fillMaxWidth()
+            .background(Brush.verticalGradient(listOf(barTop, barBottom))),
     ) {
-        BoxWithConstraints {
-            // 格宽 = 胶囊实际内宽 / 5，任何屏宽下滑块与图标严格对齐
-            val itemWidth = maxWidth / tabs.size
-            val sliderX by animateDpAsState(
-                targetValue = itemWidth * selected.ordinal,
-                animationSpec = tween(260),
-                label = "nav-slider-x",
-            )
-        // 选中滑块（品牌蓝渐变胶囊，随选中页动画平移）
         Box(
             modifier = Modifier
-                .offset(x = sliderX)
-                .width(itemWidth)
-                .height(itemHeight)
-                .clip(RoundedCornerShape(999.dp))
-                .background(
-                    Brush.linearGradient(
-                        listOf(BrandAccentSoft, BrandAccent),
-                    ),
-                )
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(999.dp),
-                    ambientColor = Color(0x66000000),
-                    spotColor = Color(0x333B7DF8),
-                ),
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(divider),
         )
-        // 图标（无文字标签，等分宽度保证间距均匀）
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+        ) {
             tabs.forEach { (tab, icon, label) ->
                 val isSelected = tab == selected
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(itemHeight)
+                        .fillMaxHeight()
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                         ) { onSelect(tab) },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = label,
-                        tint = if (isSelected) Color.White else Color(0xFF5A6676),
-                        modifier = Modifier.size(22.dp),
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(width = 54.dp, height = 29.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    if (isSelected) {
+                                        selectedTint.copy(alpha = 0.12f)
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = if (isSelected) selectedTint else unselectedTint,
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 10.sp,
+                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                            ),
+                            color = if (isSelected) selectedTint else unselectedTint,
+                            maxLines = 1,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
                 }
             }
         }
-        }
-    }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HomeTopBar(
-    onOpenSettings: () -> Unit,
-    onOpenAbout: () -> Unit,
-) {
-    Surface(color = MaterialTheme.colorScheme.surface) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(TopAppBarDefaults.windowInsets)
-                .heightIn(min = 56.dp)
-                .padding(horizontal = 4.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.home_title),
-                style = MaterialTheme.typography.titleLarge,
-                maxLines = 1,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .clickable(role = Role.Button, onClick = onOpenAbout)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-            )
-            Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-                SettingsTopBarAction(onOpenSettings)
-            }
-        }
+        Spacer(Modifier.navigationBarsPadding())
     }
 }
 
@@ -1744,7 +1725,7 @@ private fun SessionExerciseRow(
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = item.exercise.name,
+                text = item.exercise.originalOrName(),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -1772,16 +1753,19 @@ private fun SessionExerciseRow(
                 )
             }
         }
+        // 缩略图与重量数字按训练详情页（CollapsedExerciseCard）的比例摆放：
+        // 图 48dp + 左右各 8dp、组数区 124dp。这样名字列在 360dp 宽的手机上
+        // 能留出 5 个汉字以上的宽度，长名字换行而不是两个一个字。
         ExerciseThumbnail(
             exercise = item.exercise,
             media = media,
             modifier = Modifier
-                .padding(horizontal = 0.dp)
-                .size(64.dp),
+                .padding(horizontal = 8.dp)
+                .size(SESSION_THUMBNAIL_SIZE),
         )
         SessionSetGrid(
             cells = sessionSetGridCells(setCells),
-            modifier = Modifier.width(164.dp),
+            modifier = Modifier.width(SESSION_SET_GRID_WIDTH),
         )
     }
 }
@@ -1794,6 +1778,15 @@ internal fun sessionSetGridCells(lines: List<String>): List<String> {
 private const val SESSION_SET_GRID_COLUMNS = 2
 private const val SESSION_SET_GRID_CAPACITY = SESSION_SET_GRID_COLUMNS * 3
 private const val SESSION_SET_GRID_MORE = "…"
+
+/**
+ * 缩略图 48dp（与训练详情页一致），左右各 8dp。
+ * 组数区固定 124dp：360dp 宽的手机上，卡片内可用宽度 312dp，
+ * 减掉缩略图 64dp 与组数区 124dp 后名字列还剩 124dp（约 7 个汉字），
+ * 长名字换行显示、不再被挤成一行两个字。
+ */
+private val SESSION_THUMBNAIL_SIZE = 48.dp
+private val SESSION_SET_GRID_WIDTH = 124.dp
 
 @Composable
 private fun SessionSetGrid(

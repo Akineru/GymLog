@@ -30,6 +30,7 @@ object LegacyRecordMigrator {
             ExerciseEntity(
                 id = exerciseId,
                 name = exerciseName,
+                originalName = exerciseName,
                 bodyPart = BodyPart.OTHER.name,
                 equipmentType = EquipmentType.OTHER.name,
                 weightMode = WeightMode.WEIGHTED.name,

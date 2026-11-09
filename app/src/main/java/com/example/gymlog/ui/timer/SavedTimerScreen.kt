@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
+import com.example.gymlog.ui.theme.ceramicSurface
 import com.example.gymlog.data.TimerLapEntity
 import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.ui.theme.GymLogCard
@@ -115,26 +116,21 @@ fun SavedTimerScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                                ),
-                            )
+                            .ceramicSurface(RoundedCornerShape(20.dp))
                             .padding(18.dp),
                         verticalArrangement = Arrangement.spacedBy(7.dp),
                     ) {
                         Text(
                             text = "训练计时",
                             style = MaterialTheme.typography.labelLarge,
-                            color = Color(0xFFBBD0EC),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = TrainingTimerLogic.formatDuration(saved.record.durationMillis),
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontFeatureSettings = "tnum",
                             ),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable(role = Role.Button, onClick = { editing = true })
@@ -148,7 +144,7 @@ fun SavedTimerScreen(
                                 text = LocalDate.ofEpochDay(saved.record.dateEpochDay)
                                     .format(savedTimerDateFormatter),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFBBD0EC),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Text(
                                 text = if (laps.isEmpty()) {
@@ -157,7 +153,7 @@ fun SavedTimerScreen(
                                     "${laps.size} 圈"
                                 },
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFBBD0EC),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }

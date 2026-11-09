@@ -25,7 +25,7 @@ import androidx.room.RoomDatabase
         PhotoWallEntity::class,
         ExerciseDurationEntity::class,
     ],
-    version = 21,
+    version = 25,
     exportSchema = false,
 )
 abstract class GymLogDatabase : RoomDatabase() {

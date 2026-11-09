@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>外观入口效果图</title>
+<style>
+  :root{--bg:#F3F6FA;--card:#fff;--soft:#E8F0FF;--blue:#2563EB;--ink:#0B1220;--muted:#667085;--line:#E1E7F0}
+  *{box-sizing:border-box}
+  body{margin:0;background:#E7ECF5;color:var(--ink);font-family:"Microsoft YaHei Light","Microsoft YaHei","PingFang SC",sans-serif;-webkit-font-smoothing:antialiased}
+  .sheet{width:760px;padding:28px 30px 34px}
+  .sheet h1{font-size:17px;margin:0 0 4px;font-weight:400}
+  .sheet p{font-size:10px;color:#6B7A90;margin:0 0 20px}
+  .row{display:flex;gap:30px;align-items:flex-start}
+  .frame{width:330px}
+  .caption{font-size:10px;color:#667085;margin:0 0 7px;padding-left:2px}
+  .phone{width:330px;height:720px;border-radius:28px;background:var(--bg);border:5px solid #101827;overflow:hidden;box-shadow:0 14px 30px rgba(28,48,84,.14);position:relative}
+  .screen{height:100%;display:flex;flex-direction:column}
+  .status{height:22px;padding:6px 16px 0;display:flex;justify-content:space-between;font-size:8px}
+  .status .right{font-size:7px;letter-spacing:1px}
+  .head{height:56px;padding:0 16px;display:flex;align-items:center;gap:13px}
+  .head .back{font-size:20px;line-height:1;color:#1D2939;width:18px}
+  .head h2{font-size:19px;font-weight:400;margin:0}
+  .body{flex:1;padding:0 13px;overflow:hidden}
+  .section{font-size:9px;color:#7B8798;margin:8px 0 6px 2px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;margin-bottom:9px;overflow:hidden}
+  .entry{display:flex;align-items:center;gap:10px;padding:12px 12px}
+  .icon{width:38px;height:38px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--blue);flex:0 0 38px}
+  .icon svg{width:19px;height:19px}
+  .txt{flex:1;min-width:0}
+  .txt b{display:block;font-size:13px;font-weight:400;color:#1D2939}
+  .txt span{display:block;font-size:9px;color:#7B8798;margin-top:3px}
+  .arr{font-size:18px;color:#98A6B8}
+  .appearance-card{padding:12px}
+  .label{font-size:13px;color:#1D2939;margin:0 0 9px}
+  .segment{display:flex;background:#F0F4FA;border:1px solid #E1E7F0;border-radius:12px;padding:3px;margin-bottom:13px}
+  .segment .seg{flex:1;text-align:center;font-size:9px;color:#667085;padding:7px 2px;border-radius:9px}
+  .segment .seg.on{background:var(--blue);color:#fff}
+  .switchrow{display:flex;align-items:center;gap:10px;border-top:1px solid #EEF2F8;padding-top:11px}
+  .switchrow .txt{flex:1}
+  .switchrow b{font-size:11px;font-weight:400;color:#1D2939;display:block}
+  .switchrow span{display:block;font-size:8px;color:#7B8798;margin-top:3px;line-height:1.5}
+  .switch{width:36px;height:21px;border-radius:12px;background:#D6DFEC;position:relative;flex:0 0 36px}
+  .switch::after{content:"";width:15px;height:15px;border-radius:50%;background:#fff;position:absolute;left:3px;top:3px;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .switch.on{background:var(--blue)}
+  .switch.on::after{left:18px}
+  .hint{font-size:8px;color:#7B8798;line-height:1.6;padding:0 3px;margin-top:2px}
+  .foot{flex:1}
+  .navbar{height:48px;flex:0 0 48px;background:#fff;border-top:1px solid #E7EDF6;display:flex;align-items:center;padding:3px 7px}
+  .navitem{flex:1;text-align:center;font-size:7px;color:#7B8798}
+  .navitem .bubble{width:35px;height:20px;border-radius:10px;margin:0 auto 2px;display:flex;align-items:center;justify-content:center;font-size:12px}
+  .navitem.on{color:var(--blue);font-weight:600}
+  .navitem.on .bubble{background:var(--soft)}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>外观入口 · 效果图</h1>
+  <p>把外观改成和通知一样的标准入口；点击后进入独立外观页。仅确认布局，不修改代码。</p>
+  <div class="row">
+    <div class="frame">
+      <div class="caption">设置页：外观变成普通入口行</div>
+      <div class="phone"><div class="screen">
+        <div class="status"><span>15:43</span><span class="right">5G ▮▮</span></div>
+        <div class="head"><div class="back">←</div><h2>设置</h2></div>
+        <div class="body">
+          <div class="section">偏好设置</div>
+          <div class="card">
+            <div class="entry">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17M6 6l12 12M18 6 6 18"/></svg>
+              </div>
+              <div class="txt"><b>外观</b><span>跟随系统 · 使用壁纸配色</span></div>
+              <div class="arr">›</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="entry">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 9a6 6 0 1 0-9.3 5.1L10 20h4l1.3-5.9A6 6 0 0 0 18 9Z"/><path d="M10 20h4"/></svg>
+              </div>
+              <div class="txt"><b>通知</b><span>定时器到点提醒与系统权限</span></div>
+              <div class="arr">›</div>
+            </div>
+          </div>
+          <div class="section" style="margin-top:12px">数据</div>
+          <div class="card">
+            <div class="entry">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 15v4h14v-4"/></svg></div>
+              <div class="txt"><b>数据管理</b><span>导出、导入或清除本地数据</span></div><div class="arr">›</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="entry">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 10.5V17M12 7.2v.2"/></svg></div>
+              <div class="txt"><b>关于</b><span>版本信息与更新记录</span></div><div class="arr">›</div>
+            </div>
+          </div>
+        </div>
+        <div class="navbar">
+          <div class="navitem"><div class="bubble">⌂</div>首页</div>
+          <div class="navitem"><div class="bubble">▣</div>日历</div>
+          <div class="navitem"><div class="bubble">⚒</div>训练</div>
+          <div class="navitem"><div class="bubble">⌁</div>统计</div>
+          <div class="navitem on"><div class="bubble">♙</div>我的</div>
+        </div>
+      </div></div>
+    </div>
+    <div class="frame">
+      <div class="caption">点击后：独立外观设置页</div>
+      <div class="phone"><div class="screen">
+        <div class="status"><span>15:43</span><span class="right">5G ▮▮</span></div>
+        <div class="head"><div class="back">←</div><h2>外观</h2></div>
+        <div class="body">
+          <div class="card appearance-card">
+            <p class="label">主题</p>
+            <div class="segment">
+              <div class="seg on">跟随系统</div>
+              <div class="seg">浅色</div>
+              <div class="seg">深色</div>
+            </div>
+            <div class="switchrow">
+              <div class="txt"><b>使用壁纸配色</b><span>关闭后使用应用自己的配色，日历上的部位颜色更清楚。</span></div>
+              <div class="switch"></div>
+            </div>
+          </div>
+          <div class="hint">外观只影响本机的显示方式，不会改变训练记录或身体数据。</div>
+          <div class="foot"></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

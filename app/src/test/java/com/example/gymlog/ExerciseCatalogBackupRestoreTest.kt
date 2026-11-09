@@ -85,8 +85,8 @@ class ExerciseCatalogBackupRestoreTest {
             assertEquals("自定义保留", db.exerciseDao().getById("custom_keep")!!.name)
             assertEquals(1, db.backupDao().allSets().size)
             assertEquals("custom_keep", db.backupDao().allSets().single().exerciseId)
-            assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
-            assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
+            assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+            assertEquals(1_283, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
             assertNotNull(db.exerciseDao().getById("preset_barbell_bench_press"))
             assertNotNull(db.exerciseDao().getById("ds_0001"))
             assertTrue(exercises.observeExercises("", null, null).first().none { it.id.startsWith("preset_") })
@@ -96,7 +96,7 @@ class ExerciseCatalogBackupRestoreTest {
             assertNull(db.exerciseDao().getById("preset_barbell_bench_press"))
             assertNotNull(db.exerciseDao().getById("ds_0001"))
             assertTrue(exercises.observeExercises("", null, null).first().none { it.id.startsWith("preset_") })
-            assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+            assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
         } finally {
             db.close()
         }

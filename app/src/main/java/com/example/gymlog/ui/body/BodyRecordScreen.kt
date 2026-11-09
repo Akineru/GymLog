@@ -70,6 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
+import com.example.gymlog.ui.theme.ceramicSurface
 import com.example.gymlog.data.BodyMeasurementEntity
 import com.example.gymlog.data.BodyMetrics
 import com.example.gymlog.data.Gender
@@ -265,12 +266,7 @@ private fun CurrentBodyCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                ),
-            ),
+            .ceramicSurface(RoundedCornerShape(20.dp)),
     ) {
         Column(
             modifier = Modifier.padding(start = 16.dp, top = 14.dp, end = 40.dp, bottom = 14.dp),
@@ -279,13 +275,13 @@ private fun CurrentBodyCard(
             Text(
                 text = "当前身体",
                 style = MaterialTheme.typography.labelLarge,
-                color = Color(0xFFBBD0EC),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (metrics.isEmpty()) {
                 Text(
                     text = stringResource(R.string.body_history_empty),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFFBBD0EC),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
                 metrics.chunked(2).forEach { row ->
@@ -310,7 +306,7 @@ private fun CurrentBodyCard(
             Icon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = stringResource(R.string.body_edit),
-                tint = Color(0xFFBBD0EC),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -406,15 +402,16 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
         Icon(
             imageVector = metric.icon,
             contentDescription = null,
-            tint = Color(0xFFBBD0EC),
-            modifier = Modifier.size(32.dp),
+            tint = MaterialTheme.colorScheme.primary,
+            // 实心图标在白卡上太大就是一坨蓝，收到 24dp 更像图标
+            modifier = Modifier.size(24.dp),
         )
         Column(modifier = Modifier.padding(start = 10.dp)) {
             Text(
                 text = metric.label,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Normal,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -423,7 +420,7 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
                     text = metric.value,
                     style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
                     fontWeight = FontWeight.Normal,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis,
@@ -433,7 +430,7 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
                         text = metric.unit,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Normal,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         softWrap = false,
                         modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
@@ -447,9 +444,10 @@ private fun MetricCell(metric: ShownMetric, modifier: Modifier = Modifier) {
                         fontFeatureSettings = "tnum",
                     ),
                     color = when (change.tone) {
-                        ChangeTone.DOWN -> Color(0xFF7BE0A5)
-                        ChangeTone.UP -> Color(0xFFFFB4A2)
-                        ChangeTone.FLAT -> Color(0xFF9FB4CC)
+                        // 白卡上必须压深：原来的浅绿/浅橙对比度只有 1.5 左右
+                        ChangeTone.DOWN -> Color(0xFF1F7A4D)
+                        ChangeTone.UP -> Color(0xFFB2452F)
+                        ChangeTone.FLAT -> Color(0xFF6B7688)
                     },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

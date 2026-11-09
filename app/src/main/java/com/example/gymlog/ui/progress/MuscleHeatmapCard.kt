@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
@@ -173,16 +174,25 @@ private fun HeatRangeSwitch(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(if (active) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    // 和首页周月切换一致的浅色滑块：白色底 + 品牌蓝文字，不用实心蓝
+                    .background(
+                        if (active) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                        } else {
+                            Color.Transparent
+                        },
+                    )
                     .clickable { onRange(value) }
                     .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = stringResource(label),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = if (active) FontWeight.Medium else FontWeight.Normal,
+                    ),
                     color = if (active) {
-                        MaterialTheme.colorScheme.onPrimary
+                        MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
                     },

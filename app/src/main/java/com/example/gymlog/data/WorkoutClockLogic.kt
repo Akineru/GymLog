@@ -14,6 +14,12 @@ object WorkoutClockLogic {
         displayMillis: Long,
         deltaMillis: Long,
     ): TimerAdjustment {
+        // 已经归零（跑完或者被减到 0）之后再调时长，等于重新配一次：
+        // 旧的总时长必须作废，否则「2 分钟到点 + 再按 4 次 +30 秒」会显示成 4 分钟。
+        if (displayMillis <= 0L) {
+            val fresh = deltaMillis.coerceAtLeast(0L)
+            return TimerAdjustment(durationMillis = fresh, displayMillis = fresh)
+        }
         val duration = (durationMillis + deltaMillis).coerceAtLeast(0L)
         val display = (displayMillis + deltaMillis).coerceIn(0L, duration)
         return TimerAdjustment(durationMillis = duration, displayMillis = display)

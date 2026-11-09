@@ -335,6 +335,7 @@ class WorkoutRepository(
                 val entity = exercises[exerciseId] ?: ExerciseEntity(
                     id = exerciseId,
                     name = "未知动作",
+                    originalName = "未知动作",
                     bodyPart = BodyPart.OTHER.name,
                     equipmentType = EquipmentType.OTHER.name,
                     weightMode = WeightMode.WEIGHTED.name,

@@ -51,7 +51,7 @@ class ExerciseClassificationTest {
     fun datasetContainsEveryActualBodyAndEquipmentCategory() = runBlocking {
         ExerciseCatalogImporter(context, db).importIfNeeded()
         val rows = db.exerciseDao().allExercises().filter { it.source == ExerciseSource.DATASET }
-        assertEquals(1_324, rows.size)
+        assertEquals(1_283, rows.size)
         assertTrue(db.exerciseDao().allExercises().none { it.id.startsWith("preset_") })
         assertEquals(10, rows.mapNotNull { it.bodyCategoryId }.distinct().size)
         assertEquals(28, rows.mapNotNull { it.equipmentCategoryId }.distinct().size)

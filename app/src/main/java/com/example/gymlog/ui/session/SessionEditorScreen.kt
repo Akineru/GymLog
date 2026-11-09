@@ -108,7 +108,7 @@ import com.example.gymlog.data.TrainingTimerLogic
 import com.example.gymlog.data.WeightLogic
 import com.example.gymlog.data.WorkoutClockLogic
 import com.example.gymlog.data.WeightMode
-import com.example.gymlog.data.displayName
+import com.example.gymlog.data.originalOrName
 import com.example.gymlog.ui.exercise.ExerciseThumbnail
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
@@ -576,7 +576,7 @@ private fun SaveSummaryStat(
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color(0xFFBBD0EC),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
         )
         Text(
@@ -584,7 +584,7 @@ private fun SaveSummaryStat(
             style = MaterialTheme.typography.titleSmall.copy(
                 fontFeatureSettings = "tnum",
             ),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 3.dp),
@@ -699,7 +699,7 @@ private fun CollapsedExerciseCard(
                     color = if (finished) finishedInk else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = item.exercise.name,
+                    text = item.exercise.originalOrName(),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -758,6 +758,14 @@ private fun CollapsedExerciseCard(
                     }
                 }
             }
+            Icon(
+                imageVector = Icons.Filled.KeyboardArrowDown,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(start = 2.dp)
+                    .size(18.dp),
+            )
         }
     }
 }
@@ -812,7 +820,7 @@ private fun ExerciseBlock(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = item.exercise.name,
+                        text = item.exercise.originalOrName(),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                     )
                     Text(
@@ -850,20 +858,32 @@ private fun ExerciseBlock(
                     onRequestBodyWeight = onRequestBodyWeight,
                 )
             }
-            Row(
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+                contentAlignment = Alignment.Center,
             ) {
-                TextButton(onClick = onAddSet) {
-                    Icon(Icons.Filled.Add, contentDescription = null)
-                    Text(
-                        stringResource(R.string.add_set),
-                        modifier = Modifier.padding(start = 4.dp),
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    TextButton(onClick = onAddSet) {
+                        Icon(Icons.Filled.Add, contentDescription = null)
+                        Text(
+                            stringResource(R.string.add_set),
+                            modifier = Modifier.padding(start = 4.dp),
+                        )
+                    }
+                    TextButton(onClick = onFinishExercise) {
+                        Text(stringResource(R.string.training_finish_action))
+                    }
                 }
-                TextButton(onClick = onFinishExercise) {
-                    Text(stringResource(R.string.training_finish_action))
+                IconButton(onClick = onToggleExpanded) {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowUp,
+                        contentDescription = stringResource(R.string.training_collapse_exercise),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -1236,58 +1256,54 @@ private fun TrainingSavePage(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFF060B14), Color(0xFF11263F), Color(0xFF234A73)),
-                                ),
-                            )
-                            .padding(horizontal = 16.dp, vertical = 15.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
+                    GymLogCard(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 15.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "本次训练",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Text(
+                                    text = LocalDate.ofEpochDay(state.dateEpochDay).format(dateFormatter),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                             Text(
-                                text = "本次训练",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = Color(0xFFBBD0EC),
-                                modifier = Modifier.weight(1f),
+                                text = TrainingTimerLogic.formatDuration(state.finishedDurationMillis),
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontFeatureSettings = "tnum",
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
-                            Text(
-                                text = LocalDate.ofEpochDay(state.dateEpochDay).format(dateFormatter),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFFBBD0EC),
-                            )
-                        }
-                        Text(
-                            text = TrainingTimerLogic.formatDuration(state.finishedDurationMillis),
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontFeatureSettings = "tnum",
-                            ),
-                            color = Color.White,
-                        )
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.16f))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            SaveSummaryStat(
-                                label = stringResource(R.string.training_volume),
-                                value = WeightLogic.displayVolume(volume),
-                                modifier = Modifier.weight(1f),
-                            )
-                            SaveSummaryStat(
-                                label = stringResource(R.string.training_sets),
-                                value = completedSets.size.toString(),
-                                modifier = Modifier.weight(1f),
-                            )
-                            SaveSummaryStat(
-                                label = stringResource(R.string.training_parts),
-                                value = parts.joinToString("、").ifEmpty { "—" },
-                                modifier = Modifier.weight(1f),
-                            )
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                SaveSummaryStat(
+                                    label = stringResource(R.string.training_volume),
+                                    value = WeightLogic.displayVolume(volume),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                SaveSummaryStat(
+                                    label = stringResource(R.string.training_sets),
+                                    value = completedSets.size.toString(),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                SaveSummaryStat(
+                                    label = stringResource(R.string.training_parts),
+                                    value = parts.joinToString("、").ifEmpty { "—" },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
                         }
                     }
                 }

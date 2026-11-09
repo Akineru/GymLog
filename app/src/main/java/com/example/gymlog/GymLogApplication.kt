@@ -33,6 +33,10 @@ import com.example.gymlog.data.MIGRATION_17_18
 import com.example.gymlog.data.MIGRATION_18_19
 import com.example.gymlog.data.MIGRATION_19_20
 import com.example.gymlog.data.MIGRATION_20_21
+import com.example.gymlog.data.MIGRATION_21_22
+import com.example.gymlog.data.MIGRATION_22_23
+import com.example.gymlog.data.MIGRATION_23_24
+import com.example.gymlog.data.MIGRATION_24_25
 import com.example.gymlog.data.PhotoStore
 import com.example.gymlog.data.PhotoWallRepository
 import com.example.gymlog.data.ExerciseCatalogCoordinator
@@ -80,6 +84,10 @@ class GymLogApplication : Application() {
                 MIGRATION_18_19,
                 MIGRATION_19_20,
                 MIGRATION_20_21,
+                MIGRATION_21_22,
+                MIGRATION_22_23,
+                MIGRATION_23_24,
+                MIGRATION_24_25,
             )
             .build()
     }

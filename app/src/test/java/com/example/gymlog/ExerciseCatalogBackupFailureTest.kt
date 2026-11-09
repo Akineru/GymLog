@@ -145,7 +145,7 @@ class ExerciseCatalogBackupFailureTest {
             assertEquals(140.0, deadlift.maxPrWeightKg!!, 0.0)
 
             repository.importSnapshot(BackupCodec.decode(encoded))
-            assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+            assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
             assertEquals(before, datasetCounts(db))
             assertNotNull(db.exerciseDao().getById("custom_keep"))
         } finally {

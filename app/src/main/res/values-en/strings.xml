@@ -20,13 +20,13 @@
     <string name="workout_notification_clock_countdown_finished">Rest · %1$s of %2$s · done</string>
     <string name="workout_notification_clock_stopwatch_label">Stopwatch ·</string>
     <string name="workout_notification_clock_stopwatch_paused">Stopwatch · %1$s · paused</string>
-    <string name="training_preferences_title">Training preferences</string>
+    <string name="training_preferences_title">Preferences</string>
     <string name="training_preferences_subtitle">Manage training and record preferences</string>
     <string name="working_pr_min_reps_title">Working-set PR minimum reps</string>
     <string name="working_pr_min_reps_help_body">Only valid sets reaching this rep count count towards the working-set PR. Changes apply immediately. Allowed range is %1$d–%2$d reps; out-of-range or non-numeric input is not saved.</string>
     <string name="max_pr_help_title">Max PR</string>
     <string name="training_preferences_help">View setting explanations</string>
-    <string name="training_preferences_help_title">About training preferences</string>
+    <string name="training_preferences_help_title">About preferences</string>
     <string name="training_preferences_help_got_it">Got it</string>
     <string name="working_pr_min_reps_unit">reps</string>
     <string name="working_pr_min_reps_error">Enter a value between %1$d and %2$d</string>
@@ -49,9 +49,9 @@
     <string name="exercise_detail_edit">Edit details</string>
     <string name="exercise_detail_edit_title">Edit exercise details</string>
     <string name="exercise_detail_edit_aliases_label">Aliases</string>
-    <string name="exercise_detail_edit_aliases_hint">Separate multiple aliases with commas</string>
-    <string name="exercise_detail_edit_aliases_empty">This exercise will have no aliases after saving</string>
-    <string name="exercise_detail_edit_aliases_count">%1$d aliases will be saved: %2$s</string>
+    <string name="exercise_detail_edit_alias_add">Add alias</string>
+    <string name="exercise_detail_edit_alias_hint">New alias</string>
+    <string name="exercise_detail_edit_alias_delete">Remove alias</string>
     <string name="exercise_detail_edit_priority_label">Priority</string>
     <string name="exercise_detail_edit_priority_hint">Higher sorts first (%1$d to %2$d)</string>
     <string name="exercise_detail_edit_how_to_label">How to perform</string>
@@ -67,6 +67,7 @@
     <string name="exercise_detail_cues_details">Details</string>
     <string name="exercise_detail_cues_empty">No notes yet</string>
     <string name="exercise_detail_cues_empty_hint">Use \"Edit details\" in the top bar to add how-to steps and cues.</string>
+    <string name="exercise_detail_edit_auto_hint">Leave empty to show the generated version</string>
     <string name="exercise_detail_missing">This exercise no longer exists</string>
     <string name="weight_bodyweight">Bodyweight</string>
     <string name="weight_bodyweight_plus">Bodyweight + %1$s</string>

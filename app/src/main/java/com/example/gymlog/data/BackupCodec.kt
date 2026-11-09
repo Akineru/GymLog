@@ -136,9 +136,14 @@ private fun ExerciseEntity.toJson(): JSONObject {
 
 private fun JSONObject.toExercise(): ExerciseEntity {
     val isCustom = getBoolean("isCustom")
+    val name = getString("name")
+    val source = optString("source").takeIf { it.isNotBlank() }
+        ?: if (isCustom) ExerciseSource.CUSTOM else ExerciseSource.LEGACY
     return ExerciseEntity(
         id = getString("id"),
-        name = getString("name"),
+        name = name,
+        // originalName 是派生字段，备份里不写，恢复时按同一规则算，旧备份也能直接导入
+        originalName = ExerciseNameCleaner.forExercise(name, source),
         bodyPart = getString("bodyPart"),
         equipmentType = getString("equipmentType"),
         weightMode = getString("weightMode"),
@@ -155,8 +160,7 @@ private fun JSONObject.toExercise(): ExerciseEntity {
         maxPrDateEpochDay = optLongOrNull("maxPrDateEpochDay"),
         archived = optBoolean("archived", false),
         nameEn = optStringOrNull("nameEn"),
-        source = optString("source").takeIf { it.isNotBlank() }
-            ?: if (isCustom) ExerciseSource.CUSTOM else ExerciseSource.LEGACY,
+        source = source,
         sourceId = optStringOrNull("sourceId"),
         equipmentDetail = optStringOrNull("equipmentDetail"),
         bodyPartDetail = optStringOrNull("bodyPartDetail"),

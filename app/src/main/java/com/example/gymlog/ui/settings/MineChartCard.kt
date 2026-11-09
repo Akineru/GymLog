@@ -41,6 +41,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.data.WeightLogic
+import com.example.gymlog.ui.theme.ceramicSurface
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
@@ -90,7 +91,12 @@ fun MineWeeklyChartCard(
         selectedBar = null
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .ceramicSurface(RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+    ) {
         // Box 叠加布局：数值是主角居中，范围切换靠左、单位切换靠右
         Box(modifier = Modifier.fillMaxWidth()) {
             MineChartDropdown(
@@ -151,16 +157,17 @@ fun MineWeeklyChartCard(
                     text = metric.label,
                     style = MaterialTheme.typography.labelLarge,
                     color = if (selected) {
-                        MaterialTheme.colorScheme.onPrimary
+                        MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
                     },
                     modifier = Modifier
                         .background(
                             if (selected) {
-                                MaterialTheme.colorScheme.primary
+                                // 和底栏、统计页范围切换一致：浅蓝底 + 品牌蓝字
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
                             } else {
-                                Color.White.copy(alpha = 0.55f)
+                                MaterialTheme.colorScheme.surfaceVariant
                             },
                             RoundedCornerShape(50),
                         )

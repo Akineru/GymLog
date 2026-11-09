@@ -653,6 +653,8 @@ class BackupRoundTripTest {
             isFavorite = true,
             howTo = "站直，弯举哑铃。",
             cues = "肘部贴紧身体。",
+            // v22 新增：备份里不写这个字段，恢复时按规则重算；自建动作等于 name
+            originalName = "弯举",
         )
     }
 }

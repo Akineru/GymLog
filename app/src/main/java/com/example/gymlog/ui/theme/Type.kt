@@ -12,9 +12,11 @@ import com.example.gymlog.R
 /**
  * OPPO Sans 字体家族（OPPO 官方字体，免费商用）。
  * 打包 Light / Regular / Medium 三档字重，按文字角色分层使用：
- * - Light：大号数字（display / headline），保持数据展示的轻盈感
- * - Medium：标题（title*），在浅色玻璃底上有足够分量
- * - Regular：正文与标签（body* / label*），浅底上不发虚
+ * - Medium：大号数字与标题（display* / headline* / title*）—— 2026-11-09 起由 Light 加粗一档，
+ *   数据展示更有分量，和训练足迹页的效果图观感统一
+ * - Regular：正文与标签（body* / label*），小字号下再重就会糊
+ *
+ * 注意：OPPO Sans 只打包了 Light / Regular / Medium 三档，Medium 是能选的最粗一档。
  */
 private val AppSans = FontFamily(
     Font(R.font.opposans_light, weight = FontWeight.Light),
@@ -25,40 +27,40 @@ private val AppSans = FontFamily(
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = AppSans,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Medium,
         fontSize = 46.sp,
         lineHeight = 52.sp,
         letterSpacing = (-1.2).sp,
     ),
     displayMedium = TextStyle(
         fontFamily = AppSans,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Medium,
         fontSize = 38.sp,
         lineHeight = 44.sp,
         letterSpacing = (-0.8).sp,
     ),
     displaySmall = TextStyle(
         fontFamily = AppSans,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Medium,
         fontSize = 32.sp,
         lineHeight = 38.sp,
         letterSpacing = (-0.5).sp,
     ),
     headlineLarge = TextStyle(
         fontFamily = AppSans,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Medium,
         fontSize = 28.sp,
         lineHeight = 34.sp,
     ),
     headlineMedium = TextStyle(
         fontFamily = AppSans,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Medium,
         fontSize = 24.sp,
         lineHeight = 30.sp,
     ),
     headlineSmall = TextStyle(
         fontFamily = AppSans,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 28.sp,
     ),

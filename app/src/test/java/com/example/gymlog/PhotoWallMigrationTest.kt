@@ -10,6 +10,10 @@ import com.example.gymlog.data.MIGRATION_17_18
 import com.example.gymlog.data.MIGRATION_18_19
 import com.example.gymlog.data.MIGRATION_19_20
 import com.example.gymlog.data.MIGRATION_20_21
+import com.example.gymlog.data.MIGRATION_21_22
+import com.example.gymlog.data.MIGRATION_22_23
+import com.example.gymlog.data.MIGRATION_23_24
+import com.example.gymlog.data.MIGRATION_24_25
 import com.example.gymlog.data.PhotoPaths
 import com.example.gymlog.data.PhotoWallEntity
 import kotlinx.coroutines.runBlocking
@@ -28,7 +32,7 @@ class PhotoWallMigrationTest {
         val name = "migrate-photo-wall.db"
         context.deleteDatabase(name)
         val created = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
+            .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25)
             .build()
         created.openHelper.writableDatabase.execSQL(
             "INSERT INTO day_notes (dateEpochDay, message) VALUES (7, '留下')",
@@ -38,7 +42,7 @@ class PhotoWallMigrationTest {
         created.close()
 
         val upgraded = Room.databaseBuilder(context, GymLogDatabase::class.java, name)
-            .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
+            .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25)
             .build()
         assertEquals("留下", upgraded.backupDao().allDayNotes().single().message)
         val id = "photo1"

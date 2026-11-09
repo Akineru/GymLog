@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.gymlog.data.BackupRepository
+import com.example.gymlog.data.DatasetExerciseAliasSeeder
 import com.example.gymlog.data.DatasetMappingStatus
 import com.example.gymlog.data.DatasetMuscleMapping
 import com.example.gymlog.data.ExerciseCatalogImporter
@@ -24,6 +25,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -56,20 +58,20 @@ class ExerciseCatalogImportTest {
     fun importsActualDatasetAndRegistersMediaWithoutBundlingFiles() = runBlocking {
         val stats = importer.importIfNeeded()
 
-        assertEquals(1_324, stats.added)
+        assertEquals(1_283, stats.added)
         assertEquals(0, stats.linked)
         assertEquals(0, stats.skipped)
         assertEquals(24, stats.pendingMatches)
-        assertEquals(2_498, stats.unmappedTokens)
+        assertEquals(2_418, stats.unmappedTokens)
         assertEquals(0, stats.failed)
         val state = db.exerciseCatalogDao().importState(ExerciseSource.DATASET)
         assertNotNull(state)
-        assertEquals(1_324, state!!.recordCount)
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
-        assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
+        assertEquals(1_283, state!!.recordCount)
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
         assertEquals(89, db.exerciseCatalogDao().presetCandidates().size)
-        assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
-        assertEquals(2_032, db.exerciseMuscleDao().countAll())
+        assertEquals(5_063, db.exerciseCatalogDao().totalMuscleTokens())
+        assertEquals(1_970, db.exerciseMuscleDao().countAll())
 
         val first = db.exerciseDao().getById("ds_0001")
         assertNotNull(first)
@@ -87,11 +89,9 @@ class ExerciseCatalogImportTest {
         assertEquals(com.example.gymlog.data.ExerciseMediaStatus.NOT_BUNDLED, media.downloadState)
         assertTrue(db.exerciseCatalogDao().contentForExercise("ds_0001").any { it.locale == "zh" && !it.instructions.isNullOrBlank() })
 
-        // A duplicate English name is kept as two distinct dataset rows.
+        // 同一个动作的重复录入已下线：0088 保留，1371 不再导入。
         assertNotNull(db.exerciseDao().getById("ds_0088"))
-        assertNotNull(db.exerciseDao().getById("ds_1371"))
-        assertEquals("barbell seated calf raise", db.exerciseDao().getById("ds_0088")!!.nameEn)
-        assertEquals("barbell seated calf raise", db.exerciseDao().getById("ds_1371")!!.nameEn)
+        assertNull(db.exerciseDao().getById("ds_1371"))
 
         // An old preset row with the same semantic action is not modified or
         // auto-linked; the dataset row is separate.
@@ -115,6 +115,24 @@ class ExerciseCatalogImportTest {
     }
 
     @Test
+    fun importFillsColloquialAliasesButKeepsUserOnes() = runBlocking {
+        importer.importIfNeeded()
+
+        // 「雪橇机 45° 腿举」= 倒蹬；绳索动作 = 龙门架
+        val legPress = db.exerciseDao().getById("ds_0739")!!
+        assertTrue(legPress.aliases.orEmpty().contains("倒蹬"))
+        val cableFly = db.exerciseDao().getById("ds_0171")!!
+        assertTrue(cableFly.aliases.orEmpty().contains("龙门架"))
+
+        // 用户自己写过的别名不被覆盖
+        val dao = db.exerciseDao()
+        val userRow = dao.getById("ds_0025")!!
+        dao.updateTrainingFields(id = userRow.id, aliases = "我的卧推", howTo = null, cues = null)
+        DatasetExerciseAliasSeeder(db).seedAll()
+        assertEquals("我的卧推", dao.getById("ds_0025")!!.aliases)
+    }
+
+    @Test
     fun importIsIdempotentAndDoesNotDuplicateRows() = runBlocking {
         importer.importIfNeeded()
         val afterFirst = db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET)
@@ -122,7 +140,7 @@ class ExerciseCatalogImportTest {
 
         assertTrue(second.alreadyImported)
         assertEquals(afterFirst, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
-        assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
     }
 
     @Test
@@ -192,7 +210,7 @@ class ExerciseCatalogImportTest {
         val row = db.exerciseDao().getById("custom_keep")
         assertEquals(ExerciseSource.CUSTOM, row?.source)
         assertEquals("保留动作", row?.name)
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
     }
 
     @Test
@@ -218,13 +236,13 @@ class ExerciseCatalogImportTest {
             ).awaitAll()
         }
         assertEquals(1, results.count { !it.alreadyImported })
-        assertEquals(1_324, results.first { !it.alreadyImported }.added)
+        assertEquals(1_283, results.first { !it.alreadyImported }.added)
         assertTrue(results.any { it.alreadyImported })
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
-        assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
-        assertEquals(1_324, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.added)
-        assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
-        assertEquals(2_032, db.exerciseMuscleDao().countAll())
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.added)
+        assertEquals(5_063, db.exerciseCatalogDao().totalMuscleTokens())
+        assertEquals(1_970, db.exerciseMuscleDao().countAll())
     }
 
     @Test
@@ -264,10 +282,10 @@ class ExerciseCatalogImportTest {
             },
         )
         assertEquals(beforeLinks, db.exerciseMuscleDao().countAll())
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
-        assertEquals(2_648, db.exerciseCatalogDao().allContents().size)
-        assertEquals(1_324, db.exerciseCatalogDao().allMedia().size)
-        assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(2_566, db.exerciseCatalogDao().allContents().size)
+        assertEquals(1_283, db.exerciseCatalogDao().allMedia().size)
+        assertEquals(5_063, db.exerciseCatalogDao().totalMuscleTokens())
         assertEquals(89, db.exerciseCatalogDao().presetCandidates().size)
     }
 
@@ -287,13 +305,13 @@ class ExerciseCatalogImportTest {
                 async { repository.clearLocalData() },
             ).awaitAll()
         }
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
-        assertEquals(1_324, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
-        assertEquals(1_324, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.added)
-        assertEquals(2_648, db.exerciseCatalogDao().allContents().size)
-        assertEquals(1_324, db.exerciseCatalogDao().allMedia().size)
-        assertEquals(5_229, db.exerciseCatalogDao().totalMuscleTokens())
-        assertEquals(2_032, db.exerciseMuscleDao().countAll())
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().sourceMapCount(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.added)
+        assertEquals(2_566, db.exerciseCatalogDao().allContents().size)
+        assertEquals(1_283, db.exerciseCatalogDao().allMedia().size)
+        assertEquals(5_063, db.exerciseCatalogDao().totalMuscleTokens())
+        assertEquals(1_970, db.exerciseMuscleDao().countAll())
         assertEquals(89, db.exerciseCatalogDao().presetCandidates().size)
     }
 
@@ -313,9 +331,9 @@ class ExerciseCatalogImportTest {
         assertEquals(0, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
 
         val retry = importer.importIfNeeded()
-        assertEquals(1_324, retry.added)
+        assertEquals(1_283, retry.added)
         assertEquals(0, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.failed)
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
     }
 
     @Test
@@ -349,9 +367,9 @@ class ExerciseCatalogImportTest {
 
         db.openHelper.writableDatabase.execSQL("DELETE FROM exercises WHERE id = 'conflict'")
         val retry = importer.importIfNeeded()
-        assertEquals(1_324, retry.added)
+        assertEquals(1_283, retry.added)
         assertEquals(0, db.exerciseCatalogDao().importState(ExerciseSource.DATASET)!!.failed)
-        assertEquals(1_324, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
+        assertEquals(1_283, db.exerciseCatalogDao().exerciseCountBySource(ExerciseSource.DATASET))
     }
 
     @Test

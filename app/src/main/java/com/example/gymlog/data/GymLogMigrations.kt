@@ -5,6 +5,124 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+/**
+ * 清掉指向已不存在动作的子表行。
+ *
+ * 子表虽然声明了 `ON DELETE CASCADE`，但迁移期间 Room 不开启外键约束（`PRAGMA foreign_keys` 是关闭的），
+ * 级联不会触发，删掉 `exercises` 行后子表会留下孤儿行，只能手工清。
+ */
+private fun purgeOrphanExerciseReferences(db: SupportSQLiteDatabase) {
+    val childTables = listOf(
+        "exercise_content" to "exerciseId",
+        "exercise_media" to "exerciseId",
+        "exercise_source_map" to "localExerciseId",
+        "exercise_muscle_tokens" to "exerciseId",
+        "exercise_muscles" to "exerciseId",
+    )
+    childTables.forEach { (table, column) ->
+        db.execSQL(
+            """
+            DELETE FROM `$table` WHERE NOT EXISTS (
+                SELECT 1 FROM `exercises` WHERE `exercises`.`id` = `$table`.`$column`
+            )
+            """.trimIndent(),
+        )
+    }
+}
+
+/**
+ * 把数据集里已下线的重复动作从用户库里清掉：训练组和动作用时先改挂到保留动作，再删动作行，
+ * 最后清子表孤儿行。是幂等的，库里没有这些动作时什么也不做。
+ */
+private fun retireDatasetExercises(db: SupportSQLiteDatabase) {
+    // workout_sets / exercise_durations 对 exercises 是 RESTRICT，必须先改挂到保留动作；
+    // 其余子表虽然声明了 CASCADE，但迁移期间外键约束没开，级联不会触发，最后统一清孤儿行。
+    RetiredDatasetExercises.localKeeperOf.forEach { (retired, keeper) ->
+        db.execSQL(
+            """
+            UPDATE `workout_sets` SET `exerciseId` = ?
+            WHERE `exerciseId` = ?
+            AND EXISTS (SELECT 1 FROM `exercises` WHERE `id` = ?)
+            """.trimIndent(),
+            arrayOf(keeper, retired, keeper),
+        )
+        db.execSQL(
+            """
+            UPDATE `exercise_durations` SET `exerciseId` = ?
+            WHERE `exerciseId` = ?
+            AND EXISTS (SELECT 1 FROM `exercises` WHERE `id` = ?)
+            """.trimIndent(),
+            arrayOf(keeper, retired, keeper),
+        )
+        // 保留动作不存在时（正常不会发生：数据集导入会建好）宁可不删，避免留下孤儿训练组。
+        db.execSQL(
+            """
+            DELETE FROM `exercises` WHERE `id` = ?
+            AND EXISTS (SELECT 1 FROM `exercises` WHERE `id` = ?)
+            """.trimIndent(),
+            arrayOf(retired, keeper),
+        )
+    }
+    purgeOrphanExerciseReferences(db)
+}
+
+val MIGRATION_22_23 = object : Migration(22, 23) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 数据集去重：同一个动作的视角版 / 版本 2 / 重复录入 / 重复翻译已从 dataset_v1.json 删除。
+        // 已导入到用户库里的旧行要一并删掉，否则动作库和选择器里还是重复的。
+        retireDatasetExercises(db)
+    }
+}
+
+/**
+ * 22 → 23 那版迁移漏了子表清理（见 [purgeOrphanExerciseReferences] 的说明），
+ * 这里对已经升到 23 的库补一次。数据集去重是 23 的唯一内容，所以这一步只做清理、不动业务数据。
+ */
+val MIGRATION_23_24 = object : Migration(23, 24) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        purgeOrphanExerciseReferences(db)
+    }
+}
+
+/**
+ * 后补 4 条重复（`版本 3` ×2、`（女）` 示范版 ×2）时新增：已经升到 24 的库要靠这一级再删一次。
+ * 逻辑与 [MIGRATION_22_23] 相同且幂等，新装或从 22 一路升上来的库到这里已经没东西可删。
+ */
+val MIGRATION_24_25 = object : Migration(24, 25) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        retireDatasetExercises(db)
+    }
+}
+
+val MIGRATION_21_22 = object : Migration(21, 22) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 新增「原始动作名」：去掉器械、负重方式、姿态和泛部位词后的名字，只用于显示。
+        // 加列后按 [ExerciseNameCleaner] 逐个回填；数据集以外的动作（预置、用户自建）原样沿用 name。
+        val columns = db.query("PRAGMA table_info(`exercises`)").use { cursor ->
+            val names = HashSet<String>()
+            while (cursor.moveToNext()) names.add(cursor.getString(1))
+            names
+        }
+        if ("originalName" !in columns) {
+            db.execSQL("ALTER TABLE `exercises` ADD COLUMN `originalName` TEXT NOT NULL DEFAULT ''")
+        }
+        val rows = db.query("SELECT `id`, `name`, `source` FROM `exercises`").use { cursor ->
+            val pending = ArrayList<Triple<String, String, String>>()
+            while (cursor.moveToNext()) {
+                pending += Triple(cursor.getString(0), cursor.getString(1), cursor.getString(2))
+            }
+            pending
+        }
+        for ((id, name, source) in rows) {
+            val originalName = ExerciseNameCleaner.forExercise(name, source)
+            db.execSQL(
+                "UPDATE `exercises` SET `originalName` = ? WHERE `id` = ?",
+                arrayOf(originalName, id),
+            )
+        }
+    }
+}
+
 val MIGRATION_20_21 = object : Migration(20, 21) {
     override fun migrate(db: SupportSQLiteDatabase) {
         // 新增「收藏」字段；优先级从 0–100 收窄为 0–10。

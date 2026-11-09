@@ -46,3 +46,7 @@ local.properties
 # IDE 本机状态（设备选择器、部署目标会随着插拔设备变化）
 /.idea/deviceManager.xml
 /.idea/deploymentTargetSelector.xml
+/.idea/deviceHardwareInput.xml
+
+# 验收用的临时截图：原型与设备实拍都在 docs/mockups，png 由 html/设备现出，不入库
+/docs/mockups/*.png
