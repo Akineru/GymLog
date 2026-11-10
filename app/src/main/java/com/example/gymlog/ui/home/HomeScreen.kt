@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -361,14 +362,14 @@ private fun OverviewCard(
                 label = stringResource(R.string.home_stat_days),
                 value = summary.trainingDays.toString(),
                 unit = stringResource(R.string.home_unit_day),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(STAT_WEIGHT_NARROW),
             )
             ColumnDivider()
             StatColumn(
                 label = stringResource(R.string.home_stat_sets),
                 value = summary.setCount.toString(),
                 unit = stringResource(R.string.home_unit_set),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(STAT_WEIGHT_NARROW),
             )
             ColumnDivider()
             StatColumn(
@@ -381,7 +382,7 @@ private fun OverviewCard(
                 unit = stringResource(
                     if (volumeInTons) R.string.home_unit_t else R.string.home_unit_kg,
                 ),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(STAT_WEIGHT_WIDE),
                 onClick = { volumeInTons = !volumeInTons },
             )
         }
@@ -596,7 +597,7 @@ private fun StatColumn(
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 21.sp,
+                    fontSize = statValueFontSize(value, 21.sp, 18.sp, 16.sp),
                     lineHeight = 24.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = (-0.5).sp,
@@ -605,6 +606,8 @@ private fun StatColumn(
                 color = colors.ink,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                // 数字先收缩，单位永远留出位置（否则 KG 会被列宽裁掉）
+                modifier = Modifier.weight(1f, fill = false),
             )
             if (unit.isNotBlank()) {
                 Text(
@@ -620,12 +623,30 @@ private fun StatColumn(
     }
 }
 
+/**
+ * 三列统计的宽度分配：天数和组数最多两三位，让出宽度给「训练容量」（六七位数）。
+ * 等比分配时容量列会被裁掉单位，见 airead「首页统计列宽」。
+ */
+private const val STAT_WEIGHT_NARROW = 0.8f
+private const val STAT_WEIGHT_WIDE = 1.4f
+
+/**
+ * 数字太长时降一档字号：`11,287` 用最大号，七位以上（含千分位）才缩，
+ * 这样常规数据视觉不变，极端值也不会把单位挤出去。
+ */
+private fun statValueFontSize(value: String, large: TextUnit, medium: TextUnit, small: TextUnit): TextUnit =
+    when {
+        value.length >= 11 -> small
+        value.length >= 9 -> medium
+        else -> large
+    }
+
 @Composable
 private fun ColumnDivider() {
     val colors = homeColors()
     Box(
         modifier = Modifier
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 8.dp)
             .width(1.dp)
             .height(30.dp)
             .background(colors.hair),
@@ -995,21 +1016,21 @@ private fun DaySummaryCard(
                 label = stringResource(R.string.home_summary_duration),
                 value = durationLabel.primary,
                 unit = durationLabel.primaryUnit,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(STAT_WEIGHT_NARROW),
             )
             ColumnDivider()
             SummaryStat(
                 label = stringResource(R.string.home_stat_sets),
                 value = setCount.toString(),
                 unit = stringResource(R.string.home_unit_set),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(STAT_WEIGHT_NARROW),
             )
             ColumnDivider()
             SummaryStat(
                 label = stringResource(R.string.home_stat_volume),
                 value = WeightLogic.displayVolume(volumeKg),
                 unit = "",
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(STAT_WEIGHT_WIDE),
             )
         }
     }
@@ -1038,7 +1059,7 @@ private fun SummaryStat(
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 22.sp,
+                    fontSize = statValueFontSize(value, 22.sp, 19.sp, 16.sp),
                     lineHeight = 25.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = (-0.6).sp,
@@ -1047,6 +1068,7 @@ private fun SummaryStat(
                 color = colors.ink,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
             )
             if (unit.isNotBlank()) {
                 Text(

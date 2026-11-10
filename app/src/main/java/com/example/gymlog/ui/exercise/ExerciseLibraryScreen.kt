@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -33,14 +34,17 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,12 +63,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -458,7 +464,8 @@ private fun AddExerciseDialog(
     var equipment by remember { mutableStateOf(ExerciseClassification.equipmentStandard.first()) }
     var primary by remember { mutableStateOf(setOf<String>()) }
     var secondary by remember { mutableStateOf(setOf<String>()) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var musclesDialog by remember { mutableStateOf(false) }
+    var equipmentDialog by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -466,68 +473,80 @@ private fun AddExerciseDialog(
         title = {
             Text(
                 text = stringResource(R.string.add_custom_exercise),
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
             )
         },
         text = {
             Column(
-                modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedTextField(
+                Text(
+                    text = stringResource(R.string.add_exercise_name),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                BasicTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.field_exercise)) },
                     singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     modifier = Modifier.fillMaxWidth(),
+                    decorationBox = { inner ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(46.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 14.dp),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            if (name.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.add_exercise_name_hint),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                )
+                            }
+                            inner()
+                        }
+                    },
                 )
-                Text(
-                    text = stringResource(R.string.filter_body_part),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Spacer(Modifier.height(2.dp))
+                SectionHeader(
+                    label = stringResource(R.string.filter_body_part),
+                    value = bodyPart.labelZh,
                 )
                 FlowChipBlock(
                     options = ExerciseClassification.bodyStandard.map { it to it.labelZh },
                     selected = bodyPart,
                     onSelect = { bodyPart = it },
                 )
-                Text(
-                    text = stringResource(R.string.filter_equipment),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Spacer(Modifier.height(6.dp))
+                PickerRow(
+                    label = stringResource(R.string.filter_equipment),
+                    value = equipment.labelZh,
+                    onClick = { equipmentDialog = true },
                 )
-                FlowChipBlock(
-                    options = ExerciseClassification.equipmentStandard.map { it to it.labelZh },
-                    selected = equipment,
-                    onSelect = { equipment = it },
+                Spacer(Modifier.height(8.dp))
+                MusclePickerRow(
+                    count = primary.size + secondary.size,
+                    onClick = { musclesDialog = true },
                 )
-                MuscleRolePicker(
-                    primary = primary,
-                    secondary = secondary,
-                    onPrimary = { id ->
-                        val next = toggleRole(primary, secondary, id)
-                        primary = next.first
-                        secondary = next.second
-                    },
-                    onSecondary = { id ->
-                        val next = toggleRole(secondary, primary, id)
-                        secondary = next.first
-                        primary = next.second
-                    },
-                )
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    if (name.trim().isEmpty()) {
-                        error = "请填写动作名称"
-                    } else {
-                        onConfirm(name, bodyPart, equipment, WeightMode.WEIGHTED, linksFrom(primary, secondary))
-                    }
+                    onConfirm(name, bodyPart, equipment, WeightMode.WEIGHTED, linksFrom(primary, secondary))
                 },
+                enabled = name.isNotBlank(),
+                shape = RoundedCornerShape(10.dp),
             ) {
                 Text(stringResource(R.string.save))
             }
@@ -538,6 +557,166 @@ private fun AddExerciseDialog(
             }
         },
     )
+
+    if (equipmentDialog) {
+        ChipPickerDialog(
+            title = stringResource(R.string.filter_equipment),
+            options = ExerciseClassification.equipmentStandard.map { it to it.labelZh },
+            selected = equipment,
+            onSelect = { equipment = it },
+            onDismiss = { equipmentDialog = false },
+        )
+    }
+
+    if (musclesDialog) {
+        MuscleEditorDialog(
+            initial = linksFrom(primary, secondary),
+            title = stringResource(R.string.add_exercise_muscle_title),
+            onDismiss = { musclesDialog = false },
+            onConfirm = { links ->
+                primary = links.filter { it.role == MuscleRole.PRIMARY }.map { it.muscleId }.toSet()
+                secondary = links.filter { it.role == MuscleRole.SECONDARY }.map { it.muscleId }.toSet()
+                musclesDialog = false
+            },
+        )
+    }
+}
+
+/** 一行"名字 + 当前值 + 右箭头"，点进去在子对话框里选。 */
+@Composable
+private fun PickerRow(label: String, value: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(11.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = label, style = MaterialTheme.typography.titleSmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** 通用单选子对话框：点一项即选中，关掉回主表单。 */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun <T> ChipPickerDialog(
+    title: String,
+    options: List<Pair<T, String>>,
+    selected: T,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+            )
+        },
+        text = {
+            Column(modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                FlowChipBlock(options = options, selected = selected, onSelect = onSelect)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.ok))
+            }
+        },
+    )
+}
+
+/** 分组标题：左侧名字，右侧当前选中值，省得在十几个 chip 里找蓝的那块。 */@Composable
+private fun SectionHeader(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = label, style = MaterialTheme.typography.titleSmall)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+/** 肌群选择收成一行，点进去在子对话框里选，主对话框不用再滚。 */
+@Composable
+private fun MusclePickerRow(count: Int, onClick: () -> Unit) {
+    val countText = if (count > 0) {
+        stringResource(R.string.add_exercise_muscle_count, count)
+    } else {
+        stringResource(R.string.add_exercise_muscle_optional)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(11.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.add_exercise_muscle_title),
+            style = MaterialTheme.typography.titleSmall,
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = countText,
+                style = MaterialTheme.typography.labelMedium,
+                color = if (count > 0) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** 全项目统一的选择 chip：未选淡灰底无描边，选中实心主色。 */
+@Composable
+private fun SelectChip(selected: Boolean, label: String, onClick: () -> Unit) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        shape = RoundedCornerShape(10.dp),
+        border = null,
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -547,12 +726,15 @@ private fun <T> FlowChipBlock(
     selected: T,
     onSelect: (T) -> Unit,
 ) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         options.forEach { (value, label) ->
-            FilterChip(
+            SelectChip(
                 selected = selected == value,
+                label = label,
                 onClick = { onSelect(value) },
-                label = { Text(label) },
             )
         }
     }
@@ -568,6 +750,7 @@ internal fun MuscleEditorDialog(
     initial: List<MuscleLink>,
     onDismiss: () -> Unit,
     onConfirm: (List<MuscleLink>) -> Unit,
+    title: String? = null,
 ) {
     var primary by remember {
         mutableStateOf(initial.filter { it.role == MuscleRole.PRIMARY }.map { it.muscleId }.toSet())
@@ -580,7 +763,7 @@ internal fun MuscleEditorDialog(
         shape = RoundedCornerShape(24.dp),
         title = {
             Text(
-                text = stringResource(R.string.muscle_edit),
+                text = title ?: stringResource(R.string.muscle_edit),
                 style = MaterialTheme.typography.titleLarge,
             )
         },
@@ -623,27 +806,33 @@ private fun MuscleRolePicker(
     onPrimary: (String) -> Unit,
     onSecondary: (String) -> Unit,
 ) {
-    Text(stringResource(R.string.muscle_primary), style = MaterialTheme.typography.labelLarge)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Text(stringResource(R.string.muscle_primary), style = MaterialTheme.typography.titleSmall)
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         MuscleCatalog.all.forEach { muscle ->
-            FilterChip(
+            SelectChip(
                 selected = muscle.id in primary,
+                label = muscle.nameZh,
                 onClick = { onPrimary(muscle.id) },
-                label = { Text(muscle.nameZh) },
             )
         }
     }
     Text(
         stringResource(R.string.muscle_secondary),
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.titleSmall,
         modifier = Modifier.padding(top = 8.dp),
     )
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         MuscleCatalog.all.forEach { muscle ->
-            FilterChip(
+            SelectChip(
                 selected = muscle.id in secondary,
+                label = muscle.nameZh,
                 onClick = { onSecondary(muscle.id) },
-                label = { Text(muscle.nameZh) },
             )
         }
     }

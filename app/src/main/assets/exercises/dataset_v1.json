@@ -3808,7 +3808,7 @@
   },
   {
    "datasetId": "1369",
-   "name": "弹力带 双腿 提踵 - (弹力带下方双 腿) 版本 2",
+   "name": "弹力带 双腿 提踵 - (弹力带下方双 腿)",
    "nameEn": "band two legs calf raise - (band under both legs) v. 2",
    "bodyPart": "LEGS",
    "bodyPartDetail": "lower legs",
@@ -7096,7 +7096,7 @@
   },
   {
    "datasetId": "0079",
-   "name": "杠铃 反向 手腕弯举 版本 2",
+   "name": "杠铃 反向 手腕弯举",
    "nameEn": "barbell revers wrist curl v. 2",
    "bodyPart": "ARMS",
    "bodyPartDetail": "lower arms",
@@ -8071,7 +8071,7 @@
   },
   {
    "datasetId": "0096",
-   "name": "杠铃 侧 屈 版本 2",
+   "name": "杠铃 侧 屈",
    "nameEn": "barbell side bent v. 2",
    "bodyPart": "ABS",
    "bodyPartDetail": "waist",
@@ -8368,7 +8368,7 @@
   },
   {
    "datasetId": "2810",
-   "name": "杠铃 分腿深蹲 版本 2",
+   "name": "杠铃 分腿深蹲",
    "nameEn": "barbell split squat v. 2",
    "bodyPart": "LEGS",
    "bodyPartDetail": "upper legs",
@@ -13090,7 +13090,7 @@
   },
   {
    "datasetId": "0186",
-   "name": "绳索 仰卧 肱三头肌伸展 版本 2",
+   "name": "绳索 仰卧 肱三头肌伸展",
    "nameEn": "cable lying triceps extension v. 2",
    "bodyPart": "ARMS",
    "bodyPartDetail": "upper arms",
@@ -14319,7 +14319,7 @@
   },
   {
    "datasetId": "0199",
-   "name": "绳索 下压 (直臂) 版本 2",
+   "name": "绳索 下压 (直臂)",
    "nameEn": "cable pushdown (straight arm) v. 2",
    "bodyPart": "BACK",
    "bodyPartDetail": "back",
@@ -29460,7 +29460,7 @@
   },
   {
    "datasetId": "2321",
-   "name": "哑铃 站姿 内侧 肱二头肌弯举 版本 2",
+   "name": "哑铃 站姿 内侧 肱二头肌弯举",
    "nameEn": "dumbbell standing inner biceps curl v. 2",
    "bodyPart": "ARMS",
    "bodyPartDetail": "upper arms",
@@ -39088,7 +39088,7 @@
   },
   {
    "datasetId": "2286",
-   "name": "杠杆机 髋伸展 版本 2",
+   "name": "杠杆机 髋伸展",
    "nameEn": "lever hip extension v. 2",
    "bodyPart": "LEGS",
    "bodyPartDetail": "upper legs",
@@ -42349,7 +42349,7 @@
   },
   {
    "datasetId": "1495",
-   "name": "腹斜肌卷腹 版本 2",
+   "name": "腹斜肌卷腹",
    "nameEn": "oblique crunch v. 2",
    "bodyPart": "ABS",
    "bodyPartDetail": "waist",
@@ -44308,7 +44308,7 @@
   },
   {
    "datasetId": "3552",
-   "name": "快速步伐 版本 2",
+   "name": "快速步伐",
    "nameEn": "quick feet v. 2",
    "bodyPart": "LEGS",
    "bodyPartDetail": "upper legs",
@@ -46621,7 +46621,7 @@
   },
   {
    "datasetId": "0705",
-   "name": "侧桥 版本 2",
+   "name": "侧桥",
    "nameEn": "side bridge v. 2",
    "bodyPart": "ABS",
    "bodyPartDetail": "waist",
@@ -47337,7 +47337,7 @@
   },
   {
    "datasetId": "0735",
-   "name": "仰卧起坐 版本 2",
+   "name": "仰卧起坐",
    "nameEn": "sit-up v. 2",
    "bodyPart": "ABS",
    "bodyPartDetail": "waist",
@@ -51263,7 +51263,7 @@
   },
   {
    "datasetId": "2138",
-   "name": "固定单车 跑步 版本 3",
+   "name": "固定单车 跑步",
    "nameEn": "stationary bike run v. 3",
    "bodyPart": "OTHER",
    "bodyPartDetail": "cardio",
@@ -51736,7 +51736,7 @@
   },
   {
    "datasetId": "3433",
-   "name": "游泳踢腿 版本 2 （男）",
+   "name": "游泳踢腿 （男）",
    "nameEn": "swimmer kicks v. 2 (male)",
    "bodyPart": "LEGS",
    "bodyPartDetail": "upper legs",

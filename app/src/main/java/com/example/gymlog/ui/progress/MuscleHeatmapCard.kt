@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -146,17 +149,50 @@ internal fun MuscleHeatmapCard(
         AlertDialog(
             onDismissRequest = { showHelp = false },
             shape = RoundedCornerShape(24.dp),
-            title = { Text(stringResource(R.string.muscle_heat_help)) },
-            text = {
+            title = {
                 Text(
-                    stringResource(
-                        if (recoveryMode) {
-                            R.string.muscle_heat_help_recovery_body
-                        } else {
-                            R.string.muscle_heat_help_body
-                        },
-                    ),
+                    text = stringResource(R.string.muscle_heat_help),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
                 )
+            },
+            text = {
+                val red = heatColor(MuscleHeatLevel.MEDIUM, dark) ?: Color.Gray
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (recoveryMode) {
+                        LegendRow(
+                            color = recoveryColor(MuscleRecoveryState.RECOVERING, dark),
+                            text = stringResource(R.string.muscle_recovery_legend_recovering),
+                        )
+                        LegendRow(
+                            color = recoveryColor(MuscleRecoveryState.RECOVERED, dark),
+                            text = stringResource(R.string.muscle_recovery_legend_recovered),
+                        )
+                        LegendRow(
+                            color = recoveryColor(MuscleRecoveryState.STALE, dark),
+                            text = stringResource(R.string.muscle_recovery_legend_stale),
+                        )
+                    } else {
+                        LegendRow(
+                            color = legendIdle(dark),
+                            text = stringResource(R.string.muscle_heat_legend_none),
+                        )
+                        LegendRow(
+                            color = red,
+                            text = stringResource(R.string.muscle_heat_legend_red),
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                        Text(
+                            text = stringResource(R.string.muscle_heat_legend_note),
+                            modifier = Modifier.padding(start = 19.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )                    }
+                }
             },
             confirmButton = {
                 TextButton(onClick = { showHelp = false }) {
@@ -387,14 +423,38 @@ private fun HeatFact(label: String, value: String) {
     }
 }
 
+/** 说明弹窗的一行：左侧色点 + 右侧说明，色点承担"标签"作用，不再用冒号。 */
+@Composable
+private fun LegendRow(color: Color, text: String) {
+    Row(verticalAlignment = Alignment.Top) {
+        Box(
+            modifier = Modifier
+                .padding(top = 5.dp)
+                .size(9.dp)
+                .clip(CircleShape)
+                .background(color),
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(
+            text = text,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+/** 说明弹窗里"这段时间没练过"的浅灰，跟人体图未着色时的底色一致。 */
+private fun legendIdle(dark: Boolean) = if (dark) Color(0xFF4A505C) else Color(0xFFC9CDD4)
+
 /**
- * 恢复三态配色：浅绿=恢复中，深绿=已恢复，灰=久未训练。
+ * 恢复三态配色：黄=恢复中，绿=已恢复，灰=久未训练。
  * 和训练热力的红色系不同屏出现，只在恢复段使用。
  */
 internal fun recoveryColor(state: MuscleRecoveryState, dark: Boolean): Color {
     val rgb = when (state) {
-        MuscleRecoveryState.RECOVERING -> if (dark) 0xFFC8E6C9L else 0xFFA5D6A7L
-        MuscleRecoveryState.RECOVERED -> if (dark) 0xFF66BB6AL else 0xFF2E7D32L
+        MuscleRecoveryState.RECOVERING -> if (dark) 0xFFFFD54FL else 0xFFFFC63DL
+        MuscleRecoveryState.RECOVERED -> if (dark) 0xFF81C784L else 0xFF43A047L
         MuscleRecoveryState.STALE -> if (dark) 0xFFAEB6C4L else 0xFF7C8698L
     }
     val alpha = when (state) {

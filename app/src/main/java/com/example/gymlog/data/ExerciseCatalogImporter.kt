@@ -53,6 +53,7 @@ open class ExerciseCatalogImporter(
             // Rows restored from an older backup may still need classification
             // even when the dataset itself is already complete.
             ExerciseClassificationMigrator(database).migrateAll()
+            DatasetVersionSuffixCleaner(database).cleanAll()
             DatasetExerciseAliasSeeder(database).seedAll()
             return previous.toStats(alreadyImported = true)
         }
@@ -260,6 +261,7 @@ open class ExerciseCatalogImporter(
                 state.toStats()
             }
             ExerciseClassificationMigrator(database).migrateAll()
+            DatasetVersionSuffixCleaner(database).cleanAll()
             DatasetExerciseAliasSeeder(database).seedAll()
             return stats
         } catch (error: Throwable) {

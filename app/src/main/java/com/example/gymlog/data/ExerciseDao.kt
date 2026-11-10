@@ -51,6 +51,10 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE id = :id")
     suspend fun getById(id: String): ExerciseEntity?
 
+    /** 只改名字：动作库显示 [ExerciseEntity.name]，详情页显示 [ExerciseEntity.originalName]。 */
+    @Query("UPDATE exercises SET name = :name, originalName = :originalName WHERE id = :id")
+    suspend fun updateName(id: String, name: String, originalName: String)
+
     @Query(
         """
         SELECT * FROM exercises

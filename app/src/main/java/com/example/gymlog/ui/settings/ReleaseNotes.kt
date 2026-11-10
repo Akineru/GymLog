@@ -17,6 +17,28 @@ data class ReleaseNote(
 object ReleaseHistory {
     val notes: List<ReleaseNote> = listOf(
         ReleaseNote(
+            versionName = "1.6.4",
+            date = "2026年11月10日",
+            sections = listOf(
+                ReleaseSection(
+                    title = "训练页",
+                    items = listOf(
+                        "肌群训练热力图从统计页搬到训练页，就在「今天练什么？」下面。",
+                        "热力图新增「恢复」：黄色是还在恢复期，绿色是已恢复，灰色是 14 天以上没练。",
+                    ),
+                ),
+                ReleaseSection(
+                    title = "界面与修复",
+                    items = listOf(
+                        "首页「训练容量」数字太长时，右边的 KG 会被裁掉，已修好。",
+                        "颜色说明弹窗改成色点加分行说明，不再是一段密密麻麻的文字。",
+                        "新增自定义动作：器械和肌群改成一行点开选择，一屏就能填完。",
+                        "清掉动作名里的「版本 2」这类后缀。",
+                    ),
+                ),
+            ),
+        ),
+        ReleaseNote(
             versionName = "1.6.3",
             date = "2026年11月10日",
             sections = listOf(
