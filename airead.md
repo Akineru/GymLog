@@ -304,7 +304,7 @@ app/src/test/                    逻辑与迁移测试，不覆盖界面导航
 
 
 
-动作库与「添加训练」的选择页共用 `ExerciseBrowsePane`：**双击左侧竖排分类（`BodyCategoryRail`）= 选中该分类 + 右侧动作网格平滑滚回顶部；**单击器械筛选行（`EquipmentCategoryBar`）也回顶****（`gridState.animateScrollToItem(0)`，页面级 `rememberLazyGridState` 提升）。手势用 `detectTapGestures(onTap, onDoubleTap)` 而非 `combinedClickable`；注意两个坑：① 回调必须经 `rememberUpdatedState` 再读，否则第一次点击触发重组后 `pointerInput` 若以 lambda 为 key 会被取消重启、吞掉第二次点击；② `pointerInput` 的 key 只留 `part.id`。
+动作库与「添加训练」的选择页共用 `ExerciseBrowsePane`：**切换左侧部位分类（`BodyCategoryRail`）或器械筛选（`EquipmentCategoryBar`）后，右侧动作网格必须从顶部开始**，不能沿用上一组滚到的位置；**重复点当前已选中的那一项也回顶**。实现是在 `ExerciseLibraryScreen` 里用 `LaunchedEffect(state.bodyPart.id, state.equipmentType.id, topRequest) { gridState.scrollToItem(0) }`（页面级 `rememberLazyGridState` 提升），点击回调里把 `topRequest++`（`mutableIntStateOf`）——筛选没变时靠计数器重新触发。**不要**在点击回调里 `animateScrollToItem`：列表数据是异步刷新的，点击瞬间抢滚动会被随后的重建覆盖，现象就是「还停在原来滚下去的距离」（踩过）。也不要为了「点当前项」去注册 `onDoubleTap`：那会让每次单击都等双击判定才生效，切分类会明显变慢。分类栏手势只注册单击（`detectTapGestures(onTap)`）；回调仍经 `rememberUpdatedState` 再读、`pointerInput` 的 key 只留 `part.id`，避免状态重组取消进行中的手势。
 
 
 
@@ -1998,3 +1998,13 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 ## 1.6.3 的 Release 正文
 
 与 `ReleaseNotes.kt` 六节同源（动作库瘦身与更名 / 搜得到本地叫法 / 动作要点 / 动作详情页改版 / 训练与记录 / 修复与其他），末尾补一行版本与迁移信息。
+
+## 肌群热力图从统计页挪到训练页（2026-11-10）
+
+用户要求把训练热力图放到训练页、「今天练什么？」卡片下面。
+
+- `ui/GymLogApp.kt`：`MuscleHeatViewModel` 从 `RootTab.Progress` 的 `TabPane` 移到 `RootTab.Train` 的 `TabPane`，作为 `heatState` / `onHeatRange` 传给 `TrainingHomeScreen`；`ProgressScreen` 不再接这两个参数。
+- `ui/train/TrainingHomeScreen.kt`：LazyColumn 里新增 `item(key = "muscle-heat")`，位置在 `start`（「今天练什么？」+ 开始训练）之后、「动作库」之前。**开练时 `start` 卡会隐藏（`hasActiveWorkout`），热力图会顶到第一位**——这是刻意的降级顺序，不要再加别的判断。
+- `ui/progress/ProgressScreen.kt`：删掉热力图 item，统计页现在只剩「训练足迹」「身体数据」两个入口行。
+- 组件本身（`ui/progress/MuscleHeatmapCard.kt`）没改，仍是 `internal`：同模块跨包可用，`ui.train` 直接引用即可。
+- 验证：模拟器实测顺序为「今天练什么？→ 肌群训练热力图 → 动作库 → 训练计时器」；点肌肉弹出底部详情（臀大肌 / 1 课次 / 1 动作 / 1 组 / 最近一次 11月8日 / 杠铃 硬拉·主要肌群）；周/月切换后日期区间与颜色同步变化。

@@ -37,8 +37,6 @@ import com.example.gymlog.data.ExerciseClassification
 fun BodyCategoryRail(
     selected: ExerciseClassification.BodyCategory,
     onSelect: (ExerciseClassification.BodyCategory) -> Unit,
-    /** 双击分类时回调（通常是「右侧列表滚回顶部」）；null 则只响应单击。 */
-    onDoubleClick: (() -> Unit)? = null,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -48,10 +46,8 @@ fun BodyCategoryRail(
     ) {
         items(ExerciseClassification.bodyUi, key = { it.id }) { part ->
             val isSelected = part.id == selected.id
-            // 回调放进 rememberUpdatedState：第一次点击会触发 onSelect → 状态更新 → 重组，
-            // 若直接把回调当 pointerInput 的 key，重组会取消手势、吞掉双击的第二次点击。
+            // 回调放进 rememberUpdatedState，避免重组后手指下的手势仍持有旧 lambda。
             val currentOnSelect by rememberUpdatedState(onSelect)
-            val currentOnDoubleClick by rememberUpdatedState(onDoubleClick)
             Box(
                 modifier = Modifier
                     .padding(horizontal = 6.dp, vertical = 3.dp)
@@ -75,12 +71,9 @@ fun BodyCategoryRail(
                         RoundedCornerShape(14.dp),
                     )
                     .pointerInput(part.id) {
-                        // 不用 combinedClickable：detectTapGestures 的语义和需求一致——
-                        // 每次点按都触发 onSelect（单击换分类），双击在此基础上再滚回顶部。
-                        detectTapGestures(
-                            onTap = { currentOnSelect(part) },
-                            onDoubleTap = currentOnDoubleClick?.let { cb -> { cb() } },
-                        )
+                        // 只处理单击：保留 pointerInput + key 的写法，避免 combinedClickable
+                        // 在状态重组时取消进行中的手势。
+                        detectTapGestures(onTap = { currentOnSelect(part) })
                     },
                 contentAlignment = Alignment.Center,
             ) {

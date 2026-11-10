@@ -55,7 +55,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +68,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymlog.R
 import com.example.gymlog.ui.settings.SettingsTopBarAction
@@ -114,7 +112,15 @@ fun ExerciseLibraryScreen(
     val libraryDialogOpen = showAddDialog
     BackHandler(enabled = libraryDialogOpen) { showAddDialog = false }
     val gridState = rememberLazyGridState()
-    val scope = rememberCoroutineScope()
+    // 换部位 / 换器械后，新结果必须从顶部开始（不能沿用上一组滚到的位置）。
+    // 放在状态变化上做，而不是在点击回调里抢动画：列表数据是异步刷新的，
+    // 点击瞬间滚动容易被随后的重建覆盖，表现就是「还停在原来滚下去的距离」。
+    // topRequest 用来覆盖「点的就是当前已选中的分类」的情况——那时筛选状态没变，
+    // 光靠 key 不会重新触发，计数器一变就会再滚一次顶部。
+    var topRequest by remember { mutableIntStateOf(0) }
+    LaunchedEffect(state.bodyPart.id, state.equipmentType.id, topRequest) {
+        gridState.scrollToItem(0)
+    }
     if (showBack) {
         BackHandler(enabled = !libraryDialogOpen, onBack = onBack)
     }
@@ -212,19 +218,18 @@ fun ExerciseLibraryScreen(
             Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 BodyCategoryRail(
                     selected = state.bodyPart,
-                    onSelect = viewModel::onBodyPartSelected,
-                    // 双击分类 = 换分类（onSelect 已处理）+ 右侧列表滚回顶部
-                    onDoubleClick = {
-                        scope.launch { gridState.animateScrollToItem(0) }
+                    // 点分类一律回顶：换部位靠筛选状态变化，重复点当前部位靠计数器
+                    onSelect = { part ->
+                        viewModel.onBodyPartSelected(part)
+                        topRequest++
                     },
                 )
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     EquipmentCategoryBar(
                         selected = state.equipmentType,
-                        // 换器械筛选同样把右侧列表滚回顶部，和双击分类的行为保持一致
                         onSelect = { type ->
                             viewModel.onEquipmentSelected(type)
-                            scope.launch { gridState.animateScrollToItem(0) }
+                            topRequest++
                         },
                     )
                     ExerciseSummaryText(

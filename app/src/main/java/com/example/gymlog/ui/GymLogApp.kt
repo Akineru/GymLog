@@ -689,8 +689,17 @@ fun GymLogApp(
                 )
             }
             TabPane(visible = isRoot && screen.toRootTab() == RootTab.Train) {
+                val heatViewModel: com.example.gymlog.ui.progress.MuscleHeatViewModel = viewModel(
+                    factory = com.example.gymlog.ui.progress.MuscleHeatViewModel.factory(
+                        app.workoutRepository,
+                        app.exerciseRepository,
+                    ),
+                )
+                val heatState by heatViewModel.state.collectAsStateWithLifecycle()
                 TrainingHomeScreen(
                     hasActiveWorkout = activeWorkout != null,
+                    heatState = heatState,
+                    onHeatRange = heatViewModel::setRange,
                     onStartTraining = {
                         val draft = activeDraft ?: Screen.SessionEditor(
                             sessionId = null,
@@ -704,19 +713,10 @@ fun GymLogApp(
                 )
             }
             TabPane(visible = isRoot && screen.toRootTab() == RootTab.Progress) {
-                val heatViewModel: com.example.gymlog.ui.progress.MuscleHeatViewModel = viewModel(
-                    factory = com.example.gymlog.ui.progress.MuscleHeatViewModel.factory(
-                        app.workoutRepository,
-                        app.exerciseRepository,
-                    ),
-                )
-                val heatState by heatViewModel.state.collectAsStateWithLifecycle()
                 ProgressScreen(
                     onOpenTrainingTrend = { screen = Screen.TrainingTrend },
                     onOpenBodyTrend = { screen = Screen.BodyTrend },
                     onOpenSettings = { screen = Screen.Settings(RootTab.Progress) },
-                    heatState = heatState,
-                    onHeatRange = heatViewModel::setRange,
                 )
             }
             TabPane(visible = isRoot && screen.toRootTab() == RootTab.Mine) {

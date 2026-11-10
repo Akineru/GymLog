@@ -41,7 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.gymlog.R
+import com.example.gymlog.data.MuscleHeatRange
 import com.example.gymlog.data.TrainingTimerLogic
+import com.example.gymlog.ui.progress.MuscleHeatUiState
+import com.example.gymlog.ui.progress.MuscleHeatmapCard
 import com.example.gymlog.ui.settings.SettingsTopBarAction
 import com.example.gymlog.ui.theme.GymLogActionButton
 import com.example.gymlog.ui.theme.GymLogCard
@@ -60,6 +63,8 @@ data class ActiveWorkoutUi(
 @Composable
 fun TrainingHomeScreen(
     hasActiveWorkout: Boolean,
+    heatState: MuscleHeatUiState,
+    onHeatRange: (MuscleHeatRange) -> Unit,
     onStartTraining: () -> Unit,
     onOpenLibrary: () -> Unit,
     onOpenTimer: () -> Unit,
@@ -93,6 +98,10 @@ fun TrainingHomeScreen(
                     item(key = "start") {
                         StartTrainingCard(onStartTraining = onStartTraining)
                     }
+                }
+                // 肌群热力图从统计页挪到这里，紧跟在「今天练什么？」下面
+                item(key = "muscle-heat") {
+                    MuscleHeatmapCard(state = heatState, onRange = onHeatRange)
                 }
                 item(key = "library") {
                     LibraryCard(onOpenLibrary = onOpenLibrary)

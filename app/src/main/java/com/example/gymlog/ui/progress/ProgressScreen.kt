@@ -43,8 +43,6 @@ fun ProgressScreen(
     onOpenTrainingTrend: () -> Unit,
     onOpenBodyTrend: () -> Unit,
     onOpenSettings: () -> Unit,
-    heatState: MuscleHeatUiState,
-    onHeatRange: (com.example.gymlog.data.MuscleHeatRange) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,9 +63,6 @@ fun ProgressScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            item {
-                MuscleHeatmapCard(state = heatState, onRange = onHeatRange)
-            }
             item {
                 ProgressRow(
                     title = stringResource(R.string.stats_training_title),
