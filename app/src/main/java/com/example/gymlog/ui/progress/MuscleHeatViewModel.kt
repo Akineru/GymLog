@@ -7,6 +7,7 @@ import com.example.gymlog.data.ExerciseRepository
 import com.example.gymlog.data.MuscleHeatLogic
 import com.example.gymlog.data.MuscleHeatRange
 import com.example.gymlog.data.MuscleHeatStat
+import com.example.gymlog.data.MuscleRecoveryInfo
 import com.example.gymlog.data.WorkoutRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,8 @@ data class MuscleHeatUiState(
     val start: LocalDate = LocalDate.now().minusDays(6),
     val end: LocalDate = LocalDate.now(),
     val stats: Map<String, MuscleHeatStat> = emptyMap(),
+    /** 仅恢复模式下有值：肌群 id → 恢复状态。 */
+    val recovery: Map<String, MuscleRecoveryInfo> = emptyMap(),
 )
 
 class MuscleHeatViewModel(
@@ -37,16 +40,24 @@ class MuscleHeatViewModel(
     ) { sessions, links, selected ->
         val today = LocalDate.now()
         val period = MuscleHeatLogic.period(today, selected)
-        val stats = MuscleHeatLogic.aggregate(
-            touches = MuscleHeatLogic.touches(sessions, links),
-            startEpochDay = period.start.toEpochDay(),
-            endEpochDay = period.endInclusive.toEpochDay(),
-        )
+        val touches = MuscleHeatLogic.touches(sessions, links)
+        val recoveryMode = selected == MuscleHeatRange.RECOVERY
         MuscleHeatUiState(
             range = selected,
             start = period.start,
             end = period.endInclusive,
-            stats = stats,
+            // 恢复模式下 stats 只取每块肌肉「最近一次训练那天」，让底部详情的动作列表
+            // 和「上次训练」日期对得上；着色走 recovery 而不是 stats。
+            stats = if (recoveryMode) {
+                MuscleHeatLogic.latestSessionStats(touches)
+            } else {
+                MuscleHeatLogic.aggregate(
+                    touches = touches,
+                    startEpochDay = period.start.toEpochDay(),
+                    endEpochDay = period.endInclusive.toEpochDay(),
+                )
+            },
+            recovery = if (recoveryMode) MuscleHeatLogic.recovery(touches, today) else emptyMap(),
         )
     }.flowOn(Dispatchers.Default).stateIn(
         scope = viewModelScope,

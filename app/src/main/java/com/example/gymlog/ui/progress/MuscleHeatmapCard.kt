@@ -45,6 +45,8 @@ import com.example.gymlog.data.MuscleCatalog
 import com.example.gymlog.data.MuscleHeatLevel
 import com.example.gymlog.data.MuscleHeatRange
 import com.example.gymlog.data.MuscleHeatStat
+import com.example.gymlog.data.MuscleRecoveryInfo
+import com.example.gymlog.data.MuscleRecoveryState
 import com.example.gymlog.data.MuscleRole
 import com.example.gymlog.ui.muscle.MuscleFigure
 import com.example.gymlog.ui.muscle.muscleKey
@@ -64,10 +66,17 @@ internal fun MuscleHeatmapCard(
 ) {
     val sex = rememberMuscleSex()
     val dark = LocalGymLogDarkTheme.current
-    val colors = remember(state.stats, dark) {
-        state.stats.mapNotNull { (id, stat) ->
-            heatColor(stat.level, dark)?.let { id to it }
-        }.toMap()
+    val recoveryMode = state.range == MuscleHeatRange.RECOVERY
+    val colors = remember(state.stats, state.recovery, recoveryMode, dark) {
+        if (recoveryMode) {
+            state.recovery.mapNotNull { (id, info) ->
+                recoveryColor(info.state, dark)?.let { id to it }
+            }.toMap()
+        } else {
+            state.stats.mapNotNull { (id, stat) ->
+                heatColor(stat.level, dark)?.let { id to it }
+            }.toMap()
+        }
     }
     var selectedId by remember { mutableStateOf<String?>(null) }
     var showHelp by remember { mutableStateOf(false) }
@@ -92,11 +101,15 @@ internal fun MuscleHeatmapCard(
             }
             HeatRangeSwitch(selected = state.range, onRange = onRange)
             Text(
-                text = stringResource(
-                    R.string.muscle_heat_range,
-                    state.start.format(dayFormat),
-                    state.end.format(dayFormat),
-                ),
+                text = if (recoveryMode) {
+                    stringResource(R.string.muscle_heat_recovery_asof, state.end.format(dayFormat))
+                } else {
+                    stringResource(
+                        R.string.muscle_heat_range,
+                        state.start.format(dayFormat),
+                        state.end.format(dayFormat),
+                    )
+                },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -134,7 +147,17 @@ internal fun MuscleHeatmapCard(
             onDismissRequest = { showHelp = false },
             shape = RoundedCornerShape(24.dp),
             title = { Text(stringResource(R.string.muscle_heat_help)) },
-            text = { Text(stringResource(R.string.muscle_heat_help_body)) },
+            text = {
+                Text(
+                    stringResource(
+                        if (recoveryMode) {
+                            R.string.muscle_heat_help_recovery_body
+                        } else {
+                            R.string.muscle_heat_help_body
+                        },
+                    ),
+                )
+            },
             confirmButton = {
                 TextButton(onClick = { showHelp = false }) {
                     Text(stringResource(R.string.training_preferences_help_got_it))
@@ -148,6 +171,7 @@ internal fun MuscleHeatmapCard(
             name = muscle.nameZh,
             range = state.range,
             stat = state.stats[muscle.id],
+            recovery = state.recovery[muscle.id],
             onDismiss = { selectedId = null },
         )
     }
@@ -168,6 +192,7 @@ private fun HeatRangeSwitch(
         listOf(
             MuscleHeatRange.WEEK to R.string.muscle_heat_week,
             MuscleHeatRange.MONTH to R.string.muscle_heat_month,
+            MuscleHeatRange.RECOVERY to R.string.muscle_heat_recovery,
         ).forEach { (value, label) ->
             val active = selected == value
             Box(
@@ -228,11 +253,16 @@ private fun MuscleHeatSheet(
     name: String,
     range: MuscleHeatRange,
     stat: MuscleHeatStat?,
+    recovery: MuscleRecoveryInfo?,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val rangeLabel = stringResource(
-        if (range == MuscleHeatRange.WEEK) R.string.muscle_heat_week else R.string.muscle_heat_month,
+        when (range) {
+            MuscleHeatRange.WEEK -> R.string.muscle_heat_week
+            MuscleHeatRange.MONTH -> R.string.muscle_heat_month
+            MuscleHeatRange.RECOVERY -> R.string.muscle_heat_recovery
+        },
     )
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -249,29 +279,35 @@ private fun MuscleHeatSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(text = name, style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = rangeLabel,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (recovery != null) {
+                RecoverySummary(info = recovery)
+            } else {
+                Text(
+                    text = rangeLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (stat == null || stat.sessionCount == 0) {
                 Text(
                     text = stringResource(R.string.muscle_heat_empty),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    HeatFact(stringResource(R.string.muscle_heat_sessions), stat.sessionCount.toString())
-                    HeatFact(stringResource(R.string.muscle_heat_exercise_count), stat.exercises.size.toString())
-                    HeatFact(stringResource(R.string.muscle_heat_sets), stat.setCount.toString())
-                }
-                val last = stat.lastDateEpochDay
-                if (last != null) {
-                    Text(
-                        text = stringResource(R.string.muscle_heat_last) + "  " +
-                            java.time.LocalDate.ofEpochDay(last).format(dayFormat),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                if (recovery == null) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        HeatFact(stringResource(R.string.muscle_heat_sessions), stat.sessionCount.toString())
+                        HeatFact(stringResource(R.string.muscle_heat_exercise_count), stat.exercises.size.toString())
+                        HeatFact(stringResource(R.string.muscle_heat_sets), stat.setCount.toString())
+                    }
+                    val last = stat.lastDateEpochDay
+                    if (last != null) {
+                        Text(
+                            text = stringResource(R.string.muscle_heat_last) + "  " +
+                                java.time.LocalDate.ofEpochDay(last).format(dayFormat),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
                 }
                 Text(
                     text = stringResource(R.string.muscle_heat_actions),
@@ -294,6 +330,46 @@ private fun MuscleHeatSheet(
     }
 }
 
+/** 恢复模式下底部详情的头部：状态 + 上次训练 + 预计恢复。 */
+@Composable
+private fun RecoverySummary(info: MuscleRecoveryInfo) {
+    val dark = LocalGymLogDarkTheme.current
+    val color = recoveryColor(info.state, dark)
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(color),
+            )
+            Text(
+                text = stringResource(recoveryStateLabel(info.state)),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
+        Text(
+            text = stringResource(R.string.muscle_recovery_last) + "  " +
+                java.time.LocalDate.ofEpochDay(info.lastDateEpochDay).format(dayFormat),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(
+            text = stringResource(R.string.muscle_recovery_expected) + "  " +
+                java.time.LocalDate.ofEpochDay(info.expectedRecoveryEpochDay).format(dayFormat),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun recoveryStateLabel(state: MuscleRecoveryState): Int = when (state) {
+    MuscleRecoveryState.RECOVERING -> R.string.muscle_recovery_state_recovering
+    MuscleRecoveryState.RECOVERED -> R.string.muscle_recovery_state_recovered
+    MuscleRecoveryState.STALE -> R.string.muscle_recovery_state_stale
+}
+
 @Composable
 private fun HeatFact(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -309,6 +385,24 @@ private fun HeatFact(label: String, value: String) {
             textAlign = TextAlign.Center,
         )
     }
+}
+
+/**
+ * 恢复三态配色：浅绿=恢复中，深绿=已恢复，灰=久未训练。
+ * 和训练热力的红色系不同屏出现，只在恢复段使用。
+ */
+internal fun recoveryColor(state: MuscleRecoveryState, dark: Boolean): Color {
+    val rgb = when (state) {
+        MuscleRecoveryState.RECOVERING -> if (dark) 0xFFC8E6C9L else 0xFFA5D6A7L
+        MuscleRecoveryState.RECOVERED -> if (dark) 0xFF66BB6AL else 0xFF2E7D32L
+        MuscleRecoveryState.STALE -> if (dark) 0xFFAEB6C4L else 0xFF7C8698L
+    }
+    val alpha = when (state) {
+        MuscleRecoveryState.RECOVERING -> 0.85f
+        MuscleRecoveryState.RECOVERED -> 1f
+        MuscleRecoveryState.STALE -> 0.85f
+    }
+    return Color(rgb).copy(alpha = alpha)
 }
 
 internal fun heatColor(level: MuscleHeatLevel, dark: Boolean): Color? {

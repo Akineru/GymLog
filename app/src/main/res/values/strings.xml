@@ -426,7 +426,9 @@
     <string name="muscle_heat_title">肌群训练热力图</string>
     <string name="muscle_heat_week">最近一周</string>
     <string name="muscle_heat_month">最近一月</string>
+    <string name="muscle_heat_recovery">恢复</string>
     <string name="muscle_heat_range">%1$s – %2$s</string>
+    <string name="muscle_heat_recovery_asof">按最近一次训练估算 · 截至 %1$s</string>
     <string name="muscle_heat_sessions">训练课次</string>
     <string name="muscle_heat_exercise_count">动作</string>
     <string name="muscle_heat_sets">训练组数</string>
@@ -435,6 +437,12 @@
     <string name="muscle_heat_help">颜色说明</string>
     <string name="muscle_heat_help_body">灰色表示这段时间没有练到。练过的肌肉显示红色，练得越勤颜色越深。同一节训练里，同一块肌肉只算一次；作为主练时更深，只作为次要肌群时更浅。</string>
     <string name="muscle_heat_actions">训练动作</string>
+    <string name="muscle_recovery_state_recovering">恢复中</string>
+    <string name="muscle_recovery_state_recovered">已恢复</string>
+    <string name="muscle_recovery_state_stale">久未训练</string>
+    <string name="muscle_recovery_last">上次训练</string>
+    <string name="muscle_recovery_expected">预计恢复</string>
+    <string name="muscle_heat_help_recovery_body">浅绿表示最近练过、还在恢复期；深绿表示已经过了恢复窗口；灰色表示 14 天以上没练到，没练过的肌肉保持底色。窗口按大肌群 3 天、小肌群 2 天估算，最近一次只作为次要肌群时再减半。这是按训练时间推算的参考，不是生理测量。</string>
     <string name="stats_training_title">训练足迹</string>
     <string name="stats_training_hint">容量、组数和个人纪录</string>
     <string name="stats_body_hint">体重、体脂和 BMI 变化</string>

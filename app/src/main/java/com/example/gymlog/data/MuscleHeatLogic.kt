@@ -5,7 +5,25 @@ import java.time.LocalDate
 enum class MuscleHeatRange {
     WEEK,
     MONTH,
+    RECOVERY,
 }
+
+/**
+ * 恢复三态。只按自然日差估算，不做小时级精度，也不代表生理测量。
+ */
+enum class MuscleRecoveryState {
+    RECOVERING,
+    RECOVERED,
+    STALE,
+}
+
+data class MuscleRecoveryInfo(
+    val state: MuscleRecoveryState,
+    /** 最近一次练到这块肌肉的日期（主练或次要都算）。 */
+    val lastDateEpochDay: Long,
+    /** 按窗口推算的恢复日 = 上次训练日 + 窗口天数。 */
+    val expectedRecoveryEpochDay: Long,
+)
 
 /**
  * 热力分档。数值是「主练课次当量」，不是组数：
@@ -49,10 +67,34 @@ data class MuscleHeatStat(
 )
 
 object MuscleHeatLogic {
+    /** 超过这么多天没练，就不再算「已恢复」，改判「久未训练」。 */
+    const val STALE_DAYS = 14L
+
+    /** 大肌群恢复窗口（天）。 */
+    private const val LONG_WINDOW_DAYS = 3
+
+    /** 小肌群恢复窗口（天）；只以次要角色练到时再减半。 */
+    private const val SHORT_WINDOW_DAYS = 2
+
+    /** 小肌群；不在这张表里的（含未知 id）都按大肌群算。 */
+    private val SMALL_MUSCLES = setOf(
+        "deltoid_anterior",
+        "deltoid_lateral",
+        "deltoid_posterior",
+        "biceps_brachii",
+        "triceps_brachii",
+        "forearm",
+        "rectus_abdominis",
+        "external_oblique",
+        "gastrocnemius",
+    )
+
     fun period(today: LocalDate, range: MuscleHeatRange): ClosedRange<LocalDate> {
         val start = when (range) {
             MuscleHeatRange.WEEK -> today.minusDays(6)
             MuscleHeatRange.MONTH -> today.minusDays(29)
+            // 恢复看的是「相对今天」，没有区间概念。
+            MuscleHeatRange.RECOVERY -> today
         }
         return start..today
     }
@@ -102,6 +144,51 @@ object MuscleHeatLogic {
             summarize(muscleId, rows)
         }
     }
+
+    /**
+     * 按「最近一次训练」估算每块肌肉的恢复状态。
+     *
+     * 入参必须是**全量** touches（不能先按周 / 月窗口过滤）：恢复看的是历史里的最近一次。
+     * 从没练过的肌肉不出现在返回表里，图上保持未着色的灰底。
+     */
+    fun recovery(
+        touches: List<MuscleHeatTouch>,
+        today: LocalDate,
+    ): Map<String, MuscleRecoveryInfo> {
+        val todayEpochDay = today.toEpochDay()
+        return touches.groupBy { it.muscleId }.mapValues { (muscleId, rows) ->
+            val lastDate = rows.maxOf { it.dateEpochDay }
+            val latestRows = rows.filter { it.dateEpochDay == lastDate }
+            // 最近那节课只以次要肌群出现才减半；既有主练又有次要时按主练算。
+            val secondaryOnly = latestRows.none { it.role == MuscleRole.PRIMARY }
+            val window = windowDays(muscleId).let { if (secondaryOnly) it / 2 else it }
+            val days = todayEpochDay - lastDate
+            val state = when {
+                days < window -> MuscleRecoveryState.RECOVERING
+                days <= STALE_DAYS -> MuscleRecoveryState.RECOVERED
+                else -> MuscleRecoveryState.STALE
+            }
+            MuscleRecoveryInfo(
+                state = state,
+                lastDateEpochDay = lastDate,
+                expectedRecoveryEpochDay = lastDate + window,
+            )
+        }
+    }
+
+    /**
+     * 每块肌肉只保留「最近一次训练那天」的记录再汇总。
+     * 恢复模式下底部详情要用它，动作列表才能和「上次训练 M月d日」对得上。
+     */
+    fun latestSessionStats(touches: List<MuscleHeatTouch>): Map<String, MuscleHeatStat> {
+        return touches.groupBy { it.muscleId }.mapValues { (muscleId, rows) ->
+            val lastDate = rows.maxOf { it.dateEpochDay }
+            summarize(muscleId, rows.filter { it.dateEpochDay == lastDate })
+        }
+    }
+
+    private fun windowDays(muscleId: String): Int =
+        if (muscleId in SMALL_MUSCLES) SHORT_WINDOW_DAYS else LONG_WINDOW_DAYS
 
     private fun summarize(muscleId: String, rows: List<MuscleHeatTouch>): MuscleHeatStat {
         val bySession = rows.groupBy { it.sessionId }

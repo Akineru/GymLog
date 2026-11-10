@@ -7,6 +7,7 @@ import com.example.gymlog.data.MuscleHeatRange
 import com.example.gymlog.data.MuscleHeatLevel
 import com.example.gymlog.data.MuscleHeatTouch
 import com.example.gymlog.data.MuscleLink
+import com.example.gymlog.data.MuscleRecoveryState
 import com.example.gymlog.data.MuscleRole
 import com.example.gymlog.data.SessionDetail
 import com.example.gymlog.data.SessionExercise
@@ -144,6 +145,144 @@ class MuscleHeatLogicTest {
         val touches = MuscleHeatLogic.touches(sessions, links)
         assertEquals(setOf("latissimus_dorsi", "biceps_brachii"), touches.map { it.muscleId }.toSet())
         assertTrue(touches.all { it.exerciseId == exercise.id && it.setCount == 1 })
+    }
+
+
+    @Test
+    fun recoveryLargeMuscleRecoversOnTheThirdDay() {
+        val day = LocalDate.of(2026, 11, 10)
+        fun stateAfter(daysAgo: Long) = MuscleHeatLogic.recovery(
+            listOf(
+                touch(
+                    sessionId = "s1",
+                    day = day.minusDays(daysAgo).toEpochDay(),
+                    exerciseId = "e1",
+                    name = "卧推",
+                    muscleId = "pectoralis_major",
+                    role = MuscleRole.PRIMARY,
+                    sets = 3,
+                ),
+            ),
+            day,
+        ).getValue("pectoralis_major")
+
+        assertEquals(MuscleRecoveryState.RECOVERING, stateAfter(2).state)
+        // 边界：差满窗口那一天就算已恢复
+        assertEquals(MuscleRecoveryState.RECOVERED, stateAfter(3).state)
+        assertEquals(
+            day.minusDays(2).toEpochDay() + 3,
+            stateAfter(2).expectedRecoveryEpochDay,
+        )
+    }
+
+    @Test
+    fun recoverySecondaryOnlyHalvesTheWindow() {
+        val day = LocalDate.of(2026, 11, 10)
+        fun stateAfter(daysAgo: Long) = MuscleHeatLogic.recovery(
+            listOf(
+                touch(
+                    sessionId = "s1",
+                    day = day.minusDays(daysAgo).toEpochDay(),
+                    exerciseId = "e1",
+                    name = "划船",
+                    muscleId = "biceps_brachii",
+                    role = MuscleRole.SECONDARY,
+                    sets = 2,
+                ),
+            ),
+            day,
+        ).getValue("biceps_brachii")
+
+        // 小肌群窗口 2 天，只作次要减半成 1 天：昨天练的今天就已恢复
+        assertEquals(MuscleRecoveryState.RECOVERED, stateAfter(1).state)
+        assertEquals(MuscleRecoveryState.RECOVERING, stateAfter(0).state)
+    }
+
+    @Test
+    fun recoveryWithPrimaryRoleKeepsTheFullWindow() {
+        val day = LocalDate.of(2026, 11, 10)
+        val yesterday = day.minusDays(1).toEpochDay()
+        val info = MuscleHeatLogic.recovery(
+            listOf(
+                touch("s1", yesterday, "e1", "划船", "biceps_brachii", MuscleRole.SECONDARY, 2),
+                touch("s1", yesterday, "e2", "弯举", "biceps_brachii", MuscleRole.PRIMARY, 3),
+            ),
+            day,
+        ).getValue("biceps_brachii")
+
+        // 最近一次既有主练又有次要，按主练的完整窗口（2 天）算
+        assertEquals(MuscleRecoveryState.RECOVERING, info.state)
+    }
+
+    @Test
+    fun recoveryBecomesStaleAfterFourteenDays() {
+        val day = LocalDate.of(2026, 11, 10)
+        fun stateAfter(daysAgo: Long) = MuscleHeatLogic.recovery(
+            listOf(
+                touch(
+                    sessionId = "s1",
+                    day = day.minusDays(daysAgo).toEpochDay(),
+                    exerciseId = "e1",
+                    name = "深蹲",
+                    muscleId = "quadriceps",
+                    role = MuscleRole.PRIMARY,
+                    sets = 4,
+                ),
+            ),
+            day,
+        ).getValue("quadriceps")
+
+        assertEquals(MuscleRecoveryState.RECOVERED, stateAfter(MuscleHeatLogic.STALE_DAYS).state)
+        assertEquals(MuscleRecoveryState.STALE, stateAfter(MuscleHeatLogic.STALE_DAYS + 1).state)
+    }
+
+    @Test
+    fun recoverySkipsMusclesThatWereNeverTrained() {
+        val day = LocalDate.of(2026, 11, 10)
+        val recovery = MuscleHeatLogic.recovery(
+            listOf(touch("s1", day.toEpochDay(), "e1", "卧推", "pectoralis_major", MuscleRole.PRIMARY, 3)),
+            day,
+        )
+
+        assertEquals(setOf("pectoralis_major"), recovery.keys)
+    }
+
+    @Test
+    fun recoveryTreatsUnknownMuscleAsLarge() {
+        val day = LocalDate.of(2026, 11, 10)
+        val info = MuscleHeatLogic.recovery(
+            listOf(
+                touch(
+                    sessionId = "s1",
+                    day = day.minusDays(2).toEpochDay(),
+                    exerciseId = "e1",
+                    name = "未知动作",
+                    muscleId = "mystery_muscle",
+                    role = MuscleRole.PRIMARY,
+                    sets = 1,
+                ),
+            ),
+            day,
+        ).getValue("mystery_muscle")
+
+        assertEquals(MuscleRecoveryState.RECOVERING, info.state)
+    }
+
+    @Test
+    fun latestSessionStatsKeepsOnlyTheMostRecentDay() {
+        val day = LocalDate.of(2026, 11, 10)
+        val stats = MuscleHeatLogic.latestSessionStats(
+            listOf(
+                touch("old", day.minusDays(9).toEpochDay(), "e1", "上斜卧推", "pectoralis_major", MuscleRole.PRIMARY, 3),
+                touch("old", day.minusDays(9).toEpochDay(), "e2", "双杠臂屈伸", "pectoralis_major", MuscleRole.SECONDARY, 3),
+                touch("new", day.minusDays(1).toEpochDay(), "e3", "平板卧推", "pectoralis_major", MuscleRole.PRIMARY, 4),
+            ),
+        ).getValue("pectoralis_major")
+
+        // 只剩最近那节课：1 个动作、1 课次，和「上次训练」日期对得上
+        assertEquals(1, stats.sessionCount)
+        assertEquals(listOf("平板卧推"), stats.exercises.map { it.name })
+        assertEquals(day.minusDays(1).toEpochDay(), stats.lastDateEpochDay)
     }
 
     private fun touch(
