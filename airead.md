@@ -2057,3 +2057,10 @@ version 2 必须带 `timerRecords`、`timerLaps` 和 `avatarJpeg`（可以是 JS
 - 修法：`STAT_WEIGHT_NARROW = 0.8f`（天数、组数）、`STAT_WEIGHT_WIDE = 1.4f`（容量），分隔线左右留白 12dp→8dp。两处卡片共用同一组常量。
 - 兜底：`statValueFontSize()` 按字符串长度降字号（≥9 位 19sp / ≥11 位 16sp），数字再加 `weight(1f, fill = false)`，保证单位永远有位置。常规数值字号不变。
 - 已验证：月视图 `11,287 kg`、今日 `7,400 kg` 均完整显示；单测 448 全通过。
+
+## 1.6.4 发版（2026-11-10）
+
+- `versionCode 24` / `versionName 1.6.4`，Room 未变（无迁移）。
+- 公告（`ReleaseNotes.kt`）只写两节：训练页（热力图搬家 + 恢复分段）、界面与修复（容量 KG 裁切、说明弹窗、新增动作弹窗、版本号后缀）。用户要求「简单一点」，别再写长条目。
+- 发布：提交 `5eb282c` → tag `v1.6.4` → `gh release create` 带 `GymLog-1.6.4.apk`（debug 包改名，171MB，Release 的包仍是未签名 build）。
+- 本次推送网络正常（之前代理 7897 不通的问题已自行恢复）。
